@@ -1,11 +1,11 @@
 from mazegenerator.mazegenerator import MazeGenerator
+from src.controller import Controller
 
 
 def main() -> None:
-    print("Hello from pac-man!")
     gen = MazeGenerator()
-    print(gen.maze)
-
+    controller = Controller(gen.maze)
+    controller.run()
 
 if __name__ == "__main__":
     main()

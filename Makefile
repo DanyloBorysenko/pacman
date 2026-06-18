@@ -1,5 +1,6 @@
 UV := uv
 PY := $(UV) run python3
+SRC := src
 DEB := pdb
 
 install: .venv/.installed
@@ -9,10 +10,10 @@ install: .venv/.installed
 	@touch $@
 
 run: .venv/.installed
-	$(PY) main.py
+	$(PY) -m $(SRC)
 
 debug: .venv/.installed
-	$(PY) -m $(DEB) main.py
+	$(PY) -m $(DEB) -m $(SRC)
 
 clean: .venv/.installed
 	find . -type d -name "__pycache__" -exec rm -rf {} +
@@ -24,8 +25,8 @@ fclean: clean
 re: fclean install
 
 lint: .venv/.installed
-	$(UV) run flake8 main.py
-	$(UV) run mypy main.py --warn-return-any \
+	$(UV) run flake8 $(src)
+	$(UV) run mypy $(src) --warn-return-any \
 		      --warn-unused-ignores \
 		      --ignore-missing-imports \
 		      --disallow-untyped-defs \
