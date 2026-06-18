@@ -31,4 +31,4 @@ lint: .venv/.installed
 		      --disallow-untyped-defs \
 		      --check-untyped-defs
 
-.PHONY: install run debug clean fclean lint
+.PHONY: install run debug clean fclean lint re
