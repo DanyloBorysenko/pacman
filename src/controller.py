@@ -1,21 +1,19 @@
 from src.renderer import Renderer
 from src.state import GameState
+from src.logic import GameLogic
 from typing import List
 import pygame
 
 CELL_SIZE = 50
-# Controller now takes maze but we must change it on smt like
-# class GameState:
-#     maze: List[List[int]]
 
 
 class Controller:
-    def __init__(self, state: GameState):
+    def __init__(self, state: GameLogic, logic: GameLogic):
         pygame.init()
+        self.logic = logic
         self.state = state
-        self.maze = state.maze
-        self.width = CELL_SIZE * len(state.maze[0])
-        self.height = CELL_SIZE * len(state.maze)
+        self.width = CELL_SIZE * len(self.state.maze[0])
+        self.height = CELL_SIZE * len(self.state.maze)
         self.screen = pygame.display.set_mode((self.width, self.height))
         self.clock = pygame.Clock()
         self.renderer = Renderer(self.screen, CELL_SIZE)

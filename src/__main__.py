@@ -1,14 +1,13 @@
 from mazegenerator.mazegenerator import MazeGenerator
 from src.controller import Controller
-from src.state import GameState, Position
+from src.logic import GameLogic
 
 
 def main() -> None:
     gen = MazeGenerator()
-    state = GameState(
-        maze=gen.maze,
-        pacman=Position(0, 0))
-    controller = Controller(state)
+    logic = GameLogic(gen)
+    state = logic.create_default_state()
+    controller = Controller(state, logic)
     controller.run()
 
 
