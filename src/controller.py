@@ -1,10 +1,9 @@
 from src.renderer import Renderer
-from src.state import GameState
+from src.state import GameState, Direction
 from src.logic import GameLogic
+from src.constants import CELL_SIZE
 from typing import List
 import pygame
-
-CELL_SIZE = 50
 
 
 class Controller:
@@ -19,13 +18,26 @@ class Controller:
         self.renderer = Renderer(self.screen, CELL_SIZE)
 
     def run(self) -> None:
-        running = True
-        while running:
-            self.clock.tick(60)
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    running = False
+        self.running = True
+        while self.running:
+            dt = self.clock.tick(60) / 1000
+            self._process_events()
+            self.logic.update(self.state, dt)
             self.screen.fill("black")
             self.renderer.draw(self.state)
             pygame.display.update()
         pygame.quit()
+
+    def _process_events(self) -> None:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.running = False
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_UP:
+                    self.logic.update_direction(self.state, Direction.UP)
+                if event.key == pygame.K_DOWN:
+                    self.logic.update_direction(self.state, Direction.DOWN)
+                if event.key == pygame.K_LEFT:
+                    self.logic.update_direction(self.state, Direction.LEFT)
+                if event.key == pygame.K_RIGHT:
+                    self.logic.update_direction(self.state, Direction.RIGHT)
