@@ -1,4 +1,5 @@
 from typing import List
+from src.state import GameState
 import pygame
 
 MAZE_COLOR = "white"
@@ -16,7 +17,10 @@ class Renderer:
         self.surface = surface
         self.cell_size = cell_size
 
-    def draw_maze(self, maze: List[List[int]]) -> None:
+    def draw(self, state: GameState) -> None:
+        self._draw_maze(state.maze)
+
+    def _draw_maze(self, maze: List[List[int]]) -> None:
         for row, line in enumerate(maze):
             for col, cell in enumerate(line):
                 self._draw_cell(row, col, cell)

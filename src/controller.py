@@ -1,4 +1,5 @@
 from src.renderer import Renderer
+from src.state import GameState
 from typing import List
 import pygame
 
@@ -9,13 +10,14 @@ CELL_SIZE = 50
 
 
 class Controller:
-    def __init__(self, maze: List[List[int]]):
+    def __init__(self, state: GameState):
         pygame.init()
-        self.width = CELL_SIZE * len(maze[0])
-        self.height = CELL_SIZE * len(maze)
+        self.state = state
+        self.maze = state.maze
+        self.width = CELL_SIZE * len(state.maze[0])
+        self.height = CELL_SIZE * len(state.maze)
         self.screen = pygame.display.set_mode((self.width, self.height))
         self.clock = pygame.Clock()
-        self.maze = maze
         self.renderer = Renderer(self.screen, CELL_SIZE)
 
     def run(self) -> None:
@@ -26,6 +28,6 @@ class Controller:
                 if event.type == pygame.QUIT:
                     running = False
             self.screen.fill("black")
-            self.renderer.draw_maze(self.maze)
+            self.renderer.draw(self.state)
             pygame.display.update()
         pygame.quit()
