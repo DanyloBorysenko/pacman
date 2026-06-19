@@ -12,14 +12,12 @@ class Renderer:
     def __init__(
             self,
             surface: pygame.Surface,
-            maze: List[List[int]],
             cell_size: int) -> None:
         self.surface = surface
         self.cell_size = cell_size
-        self.maze = maze
 
-    def draw_maze(self) -> None:
-        for row, line in enumerate(self.maze):
+    def draw_maze(self, maze: List[List[int]]) -> None:
+        for row, line in enumerate(maze):
             for col, cell in enumerate(line):
                 self._draw_cell(row, col, cell)
 

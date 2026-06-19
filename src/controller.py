@@ -16,7 +16,7 @@ class Controller:
         self.screen = pygame.display.set_mode((self.width, self.height))
         self.clock = pygame.Clock()
         self.maze = maze
-        self.renderer = Renderer(self.screen, self.maze, CELL_SIZE)
+        self.renderer = Renderer(self.screen, CELL_SIZE)
 
     def run(self) -> None:
         running = True
@@ -26,6 +26,6 @@ class Controller:
                 if event.type == pygame.QUIT:
                     running = False
             self.screen.fill("black")
-            self.renderer.draw_maze()
+            self.renderer.draw_maze(self.maze)
             pygame.display.update()
         pygame.quit()
