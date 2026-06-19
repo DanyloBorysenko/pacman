@@ -15,8 +15,7 @@ WEST = 8
 class Renderer:
     def __init__(
             self,
-            surface: pygame.Surface,
-            cell_size: int) -> None:
+            surface: pygame.Surface) -> None:
         self.surface = surface
 
     def draw(self, state: GameState) -> None:
@@ -31,7 +30,7 @@ class Renderer:
     def _draw_packman(self, x: float, y: float) -> None:
         pygame.draw.circle(
             self.surface, PACK_MAN_COLOR,
-            (x, y), CELL_SIZE // 3)
+            (int(x), int(y)), CELL_SIZE // 3)
 
     def _draw_cell(self, row: int, col: int, cell: int) -> None:
         x, y = self._cell_top_left(row, col)

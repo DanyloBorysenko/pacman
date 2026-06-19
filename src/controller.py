@@ -1,13 +1,13 @@
 from src.renderer import Renderer
 from src.state import GameState, Direction
-from src.logic import GameLogic
+from src.logic import GameState
 from src.constants import CELL_SIZE
 from typing import List
 import pygame
 
 
 class Controller:
-    def __init__(self, state: GameLogic, logic: GameLogic):
+    def __init__(self, state: GameState, logic: GameState):
         pygame.init()
         self.logic = logic
         self.state = state
@@ -15,7 +15,7 @@ class Controller:
         self.height = CELL_SIZE * len(self.state.maze)
         self.screen = pygame.display.set_mode((self.width, self.height))
         self.clock = pygame.Clock()
-        self.renderer = Renderer(self.screen, CELL_SIZE)
+        self.renderer = Renderer(self.screen)
 
     def run(self) -> None:
         self.running = True

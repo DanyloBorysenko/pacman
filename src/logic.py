@@ -33,8 +33,8 @@ class GameLogic:
     def update_direction(self, state: GameState, direction: Direction) -> None:
         state.pacman.direction = direction
 
-    def _pacman_cell(self, pacman: Pacman) -> tuple[int, int]:
+    def _entity_cell(self, x: float, y: float) -> tuple[int, int]:
         return (
-            int(pacman.y // CELL_SIZE),
-            int(pacman.x // CELL_SIZE),
+            int(y // CELL_SIZE),
+            int(x // CELL_SIZE),
         )
