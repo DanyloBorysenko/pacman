@@ -4,10 +4,10 @@ from enum import Enum
 
 
 class Direction(Enum):
-    RIGHT = "right"
-    DOWN = "down"
-    LEFT = "left"
-    UP = "up"
+    RIGHT = (1, 0)
+    DOWN = (0, 1)
+    LEFT = (-1, 0)
+    UP = (0, -1)
 
 
 @dataclass

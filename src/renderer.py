@@ -1,5 +1,5 @@
 from typing import List, Tuple
-from src.state import GameState
+from src.state import GameState, Direction
 from src.constants import CELL_SIZE
 import pygame
 
@@ -19,6 +19,7 @@ class Renderer:
         self.surface = surface
 
     def draw(self, state: GameState) -> None:
+        self.state = state
         self._draw_maze(state.maze)
         self._draw_packman(state.pacman.x, state.pacman.y)
 
@@ -28,9 +29,23 @@ class Renderer:
                 self._draw_cell(row, col, cell)
 
     def _draw_packman(self, x: float, y: float) -> None:
+        center_x = int(x)
+        center_y = int(y)
+        radius = CELL_SIZE // 3
         pygame.draw.circle(
             self.surface, PACK_MAN_COLOR,
-            (int(x), int(y)), CELL_SIZE // 3)
+            (center_x, center_y), radius)
+        direction = (self.state.pacman.direction
+                     if self.state.pacman.direction else Direction.RIGHT)
+        dx, dy = direction.value
+        if dx != 0:
+            eye_x = center_x + (dx * (radius // 3))
+            eye_y = center_y - (radius // 3)
+        else:
+            eye_x = center_x + (radius // 3)
+            eye_y = center_y + (dy * (radius // 3))
+        pygame.draw.circle(
+            self.surface, "black", (eye_x, eye_y), radius // 5)
 
     def _draw_cell(self, row: int, col: int, cell: int) -> None:
         x, y = self._cell_top_left(row, col)
