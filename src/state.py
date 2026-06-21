@@ -16,9 +16,11 @@ class Pacman:
     x: float
     y: float
     direction: Direction | None
+    mouth_phase: float = 0.0
 
 
 @dataclass
 class GameState:
     maze: List[List[int]]
     pacman: Pacman
+    paused: bool = False

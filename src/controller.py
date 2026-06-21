@@ -1,13 +1,13 @@
 from src.renderer import Renderer
 from src.state import GameState, Direction
-from src.logic import GameState
+from src.logic import GameLogic
 from src.constants import CELL_SIZE
 from typing import List
 import pygame
 
 
 class Controller:
-    def __init__(self, state: GameState, logic: GameState):
+    def __init__(self, state: GameState, logic: GameLogic):
         pygame.init()
         self.logic = logic
         self.state = state
@@ -41,3 +41,5 @@ class Controller:
                     self.logic.update_direction(self.state, Direction.LEFT)
                 if event.key == pygame.K_RIGHT:
                     self.logic.update_direction(self.state, Direction.RIGHT)
+                if event.key == pygame.K_SPACE:
+                    self.logic.apply_pause(self.state)

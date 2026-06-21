@@ -17,7 +17,10 @@ class GameLogic:
         return state
 
     def update(self, state: GameState, dt: float) -> None:
+        if state.paused:
+            return
         pacman = state.pacman
+        pacman.mouth_phase += dt * 8
         if pacman.direction is Direction.RIGHT:
             pacman.x += PACMAN_SPEED * dt
 
@@ -32,6 +35,9 @@ class GameLogic:
 
     def update_direction(self, state: GameState, direction: Direction) -> None:
         state.pacman.direction = direction
+
+    def apply_pause(self, state: GameState) -> None:
+        state.paused = not state.paused
 
     def _entity_cell(self, x: float, y: float) -> tuple[int, int]:
         return (
