@@ -27,7 +27,7 @@ class Renderer:
             for col, cell in enumerate(line):
                 self._draw_cell(row, col, cell)
 
-    def _draw_packman(self, x: float, y: float) -> None:
+    def _draw_packman(self, x: int, y: int) -> None:
         pygame.draw.circle(
             self.surface, PACK_MAN_COLOR,
             (int(x), int(y)), CELL_SIZE // 3)
