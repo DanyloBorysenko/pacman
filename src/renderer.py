@@ -22,14 +22,14 @@ class Renderer:
     def draw(self, state: GameState) -> None:
         self.state = state
         self._draw_maze(state.maze)
-        self._draw_packman(state.pacman)
+        self._draw_pacman(state.pacman)
 
     def _draw_maze(self, maze: List[List[int]]) -> None:
         for row, line in enumerate(maze):
             for col, cell in enumerate(line):
                 self._draw_cell(row, col, cell)
 
-    def _draw_packman(self, pacman: Pacman) -> None:
+    def _draw_pacman(self, pacman: Pacman) -> None:
         center_x = int(pacman.x)
         center_y = int(pacman.y)
         radius = CELL_SIZE // 3
