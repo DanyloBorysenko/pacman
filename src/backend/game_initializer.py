@@ -4,8 +4,6 @@ from random import random
 from typing import List, Tuple
 from ..state import GameState
 
-
-GUM_PROBABILITY = 0.8
 WALL_MASK = 15
 PACGUM = 16
 SUPER_PACGUM = 32
@@ -33,7 +31,7 @@ def find_valid_center(maze: np.ndarray) -> Tuple[int, int]:
                     # Make sure we don't look outside the array boundaries
                     if 0 <= test_y < height and 0 <= test_x < width:
                         # Check if it's a valid walkable corridor
-                        if (self.game_state.maze[test_y, test_x] & WALL_MASK) < 15:
+                        if (maze[test_y, test_x] & WALL_MASK) < 15:
                             valid_y = test_y
                             valid_x = test_x
                             found = True
@@ -46,7 +44,7 @@ def find_valid_center(maze: np.ndarray) -> Tuple[int, int]:
 
 
 class GameInitializer:
-	def __init__(self, game_state: GameState):
+    def __init__(self, game_state: GameState):
         self.game_state = game_state
         if not isinstance(game_state.maze, np.ndarray):
             self.game_state.maze = np.array(game_state.maze)
@@ -61,10 +59,13 @@ class GameInitializer:
 			]
         self.valid_center = find_valid_center(self.game_state.maze)
 
-	def _place_pacgums(self) -> None:
+    def _place_pacgums(self) -> None:
         total_pacgums = self.game_state.config.pacgum
         is_valid_corridors = (self.game_state.maze & WALL_MASK) < 15
+
         is_valid_corridors[self.valid_center[0], self.valid_center[1]] = False
+        for y, x in self.corners:
+            is_valid_corridors[y, x] = False
 
         valid_indices = np.argwhere(is_valid_corridors)
         num_to_select = min(total_pacgums, len(valid_indices))
@@ -73,12 +74,12 @@ class GameInitializer:
         chosen_coordinates = valid_indices[chosen_row_indices]
         self.game_state.maze[chosen_coordinates[:, 0], chosen_coordinates[:, 1]] |= PACGUM
 	
-	def _place_super_pacgums(self) -> None:
+    def _place_super_pacgums(self) -> None:
         for y, x in self.corners:
             self.game_state.maze[y, x] &= ~PACGUM
             self.game_state.maze[y, x] |= SUPER_PACGUM
 	
-	def _place_ghosts(self) -> None:
+    def _place_ghosts(self) -> None:
         self.game_state.ghosts[0].x, self.game_state.ghosts[0].y = 0, 0
         self.game_state.ghosts[1].x, self.game_state.ghosts[1].y = 0, self.game_state.maze.shape[1] - 1
         self.game_state.ghosts[2].x, self.game_state.ghosts[2].y = self.game_state.maze.shape[0] - 1, 0
@@ -92,3 +93,14 @@ class GameInitializer:
     def _place_pacman(self) -> None:
         self.game_state.pacman.y, self.game_state.pacman.x = self.valid_center[0], self.valid_center[1]
 
+
+if __name__ == "__main__":
+    from mazegenerator.mazegenerator import MazeGenerator
+    from .maze_renderer import generate_maze
+
+    gen = MazeGenerator(size=(10, 15), seed=42)
+    maze = np.array(gen.maze)
+    maze[1, 1] |= PACGUM
+    maze[1, 8] |= SUPER_PACGUM
+    print(maze)
+    generate_maze(raw_maze=maze)

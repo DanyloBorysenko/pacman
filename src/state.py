@@ -61,6 +61,6 @@ class GameState:
     maze: List[List[int]]
     pacman: Pacman
     ghosts: List[Ghost]
-    live_status: GameState
+    live_status: GameStats
     config: GameConfig
 
