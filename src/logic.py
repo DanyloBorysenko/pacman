@@ -1,4 +1,4 @@
-from src.state import GameState, Pacman, Direction
+from src.state import GameState, Pacman, Direction, Ghost
 from mazegenerator.mazegenerator import MazeGenerator
 from src.constants import CELL_SIZE
 
@@ -13,7 +13,9 @@ class GameLogic:
     def create_default_state(self) -> GameState:
         state = GameState(
             maze=self.maze,
-            pacman=Pacman(5 * CELL_SIZE + CELL_SIZE // 2, CELL_SIZE // 2, None))
+            pacman=Pacman(
+                5 * CELL_SIZE + CELL_SIZE // 2, CELL_SIZE // 2, None),
+            ghosts=[Ghost(3 * CELL_SIZE + CELL_SIZE // 2, CELL_SIZE // 2, None, "red"), Ghost(8 * CELL_SIZE + CELL_SIZE // 2, CELL_SIZE // 2, None, "red")])
         return state
 
     def update(self, state: GameState, dt: float) -> None:

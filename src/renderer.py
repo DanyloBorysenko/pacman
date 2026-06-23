@@ -6,6 +6,7 @@ import math
 
 MAZE_COLOR = "turquoise"
 PACK_MAN_COLOR = "yellow"
+BACKGROUND_COLOR = "black"
 WALL_WIDTH = 5
 NORTH = 1
 EAST = 2
@@ -21,23 +22,40 @@ class Renderer:
 
     def draw(self, state: GameState) -> None:
         self.state = state
-        self._draw_maze(state.maze)
-        self._draw_pacman(state.pacman)
+        self._draw_maze()
+        self._draw_pacman()
+        self._draw_gosts()
 
-    def _draw_maze(self, maze: List[List[int]]) -> None:
-        for row, line in enumerate(maze):
+    def _draw_maze(self) -> None:
+        for row, line in enumerate(self.state.maze):
             for col, cell in enumerate(line):
                 self._draw_cell(row, col, cell)
 
-    def _draw_pacman(self, pacman: Pacman) -> None:
+    def _draw_gosts(self) -> None:
+        for ghost in self.state.ghosts:
+            center_x = int(ghost.x)
+            center_y = int(ghost.y)
+            radius = CELL_SIZE // 3
+            pygame.draw.circle(
+                self.surface, ghost.colour, (center_x, center_y), radius)
+            eye_surf = pygame.Surface((radius // 2.5, radius // 2))
+            left_eye_rect = eye_surf.get_frect()
+            left_eye_rect.center = (center_x - radius // 2, center_y - radius // 3)
+            pygame.draw.ellipse(self.surface, "white", left_eye_rect)
+            right_eye_rect = eye_surf.get_frect()
+            right_eye_rect.center = (center_x + radius // 2, center_y - radius // 3)
+            pygame.draw.ellipse(self.surface, "white", right_eye_rect)
+
+    def _draw_pacman(self) -> None:
+        pacman = self.state.pacman
         center_x = int(pacman.x)
         center_y = int(pacman.y)
         radius = CELL_SIZE // 3
         pygame.draw.circle(
             self.surface, PACK_MAN_COLOR,
             (center_x, center_y), radius)
-        direction = (self.state.pacman.direction
-                     if self.state.pacman.direction else Direction.RIGHT)
+        direction = (pacman.direction
+                     if pacman.direction else Direction.RIGHT)
         dx, dy = direction.value
         if dx != 0:
             eye_x = center_x + (dx * (radius // 3))
@@ -46,8 +64,8 @@ class Renderer:
             eye_x = center_x + (radius // 3)
             eye_y = center_y + (dy * (radius // 3))
         pygame.draw.circle(
-            self.surface, "black", (eye_x, eye_y), radius // 5)
-        chomp_factor = abs(math.sin(pacman.mouth_phase))  # Adjust 0.012 to make it faster/slower
+            self.surface, BACKGROUND_COLOR, (eye_x, eye_y), radius // 5)
+        chomp_factor = abs(math.sin(pacman.mouth_phase))
 
         # Perpendicular vectors for jaw spread
         perpendicular_x = -dy
@@ -74,7 +92,7 @@ class Renderer:
             (int(jaw1_x), int(jaw1_y)),
             (int(jaw2_x), int(jaw2_y))
         ]
-        pygame.draw.polygon(self.surface, "black", mouth_points)
+        pygame.draw.polygon(self.surface, BACKGROUND_COLOR, mouth_points)
 
     def _draw_cell(self, row: int, col: int, cell: int) -> None:
         x, y = self._cell_top_left(row, col)
