@@ -2,11 +2,7 @@ import numpy as np
 import enum
 from random import random
 from typing import List, Tuple
-from ..state import GameState
-
-WALL_MASK = 15
-PACGUM = 16
-SUPER_PACGUM = 32
+from ..state import GameState, BitMaps
 
 
 def find_valid_center(maze: np.ndarray) -> Tuple[int, int]:
@@ -31,7 +27,7 @@ def find_valid_center(maze: np.ndarray) -> Tuple[int, int]:
                     # Make sure we don't look outside the array boundaries
                     if 0 <= test_y < height and 0 <= test_x < width:
                         # Check if it's a valid walkable corridor
-                        if (maze[test_y, test_x] & WALL_MASK) < 15:
+                        if (maze[test_y, test_x] & BitMaps.WALL_MASK) < 15:
                             valid_y = test_y
                             valid_x = test_x
                             found = True
@@ -61,7 +57,7 @@ class GameInitializer:
 
     def _place_pacgums(self) -> None:
         total_pacgums = self.game_state.config.pacgum
-        is_valid_corridors = (self.game_state.maze & WALL_MASK) < 15
+        is_valid_corridors = (self.game_state.maze & BitMaps.WALL_MASK) < 15
 
         is_valid_corridors[self.valid_center[0], self.valid_center[1]] = False
         for y, x in self.corners:
@@ -76,8 +72,8 @@ class GameInitializer:
 	
     def _place_super_pacgums(self) -> None:
         for y, x in self.corners:
-            self.game_state.maze[y, x] &= ~PACGUM
-            self.game_state.maze[y, x] |= SUPER_PACGUM
+            self.game_state.maze[y, x] &= ~BitMaps.PACGUM
+            self.game_state.maze[y, x] |= BitMaps.SUPER_PACGUM
 	
     def _place_ghosts(self) -> None:
         self.game_state.ghosts[0].x, self.game_state.ghosts[0].y = 0, 0
@@ -100,7 +96,7 @@ if __name__ == "__main__":
 
     gen = MazeGenerator(size=(10, 15), seed=42)
     maze = np.array(gen.maze)
-    maze[1, 1] |= PACGUM
-    maze[1, 8] |= SUPER_PACGUM
+    maze[1, 1] |= BitMaps.PACGUM
+    maze[1, 8] |= BitMaps.SUPER_PACGUM
     print(maze)
     generate_maze(raw_maze=maze)

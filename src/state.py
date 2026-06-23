@@ -1,13 +1,23 @@
 from dataclasses import dataclass
 from typing import List
-from enum import Enum
+from enum import Enum, IntEnum
 
 
 class Direction(Enum):
-    RIGHT = "right"
-    DOWN = "down"
-    LEFT = "left"
-    UP = "up"
+    RIGHT = (1, 0)
+    DOWN = (0, 1)
+    LEFT = (-1, 0)
+    UP = (0, -1)
+
+
+class BitMaps(IntEnum):
+	NORTH = 1
+	SOUTH = 4
+	WEST = 8
+	EAST = 2
+	WALL_MASK = 15
+	PACGUM = 16
+	SUPER_PACGUM = 32
 
 
 class GameConfig(Enum):
