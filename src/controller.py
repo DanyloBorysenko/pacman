@@ -1,7 +1,6 @@
 from src.renderer import Renderer
 from src.state import GameState, Direction
 from src.logic import GameLogic
-from src.constants import CELL_SIZE
 from typing import List
 import pygame
 
