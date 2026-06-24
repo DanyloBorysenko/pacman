@@ -7,7 +7,7 @@ import math
 MAZE_COLOR = "turquoise"
 PACK_MAN_COLOR = "yellow"
 BACKGROUND_COLOR = "black"
-PADDING = 10
+MENU_FONT_SIZE = 50
 WALL_WIDTH = 5
 NORTH = 1
 EAST = 2
@@ -24,7 +24,7 @@ class Renderer:
         self.offset_y = 0
 
     def draw_main_menu(self) -> None:
-        text_font = pygame.font.Font(size=50)
+        text_font = pygame.font.Font(size=MENU_FONT_SIZE)
         surf = text_font.render("Start game", True, "yellow")
         rect = surf.get_frect()
         rect.center = (WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2)
