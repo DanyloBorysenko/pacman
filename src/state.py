@@ -48,7 +48,8 @@ class Ghost:
     # coordinate for ghost
     x: float
     y: float
-    state: None # chasing or fleeing
+    is_edibe: False # chasing or fleeing
+    edible_sine: int | None
     colour: None # colour of the ghost when chasing
     
 
