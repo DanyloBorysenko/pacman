@@ -23,7 +23,7 @@ def find_valid_center(maze: np.ndarray) -> Tuple[int, int]:
                 if abs(dy) + abs(dx) == radius:
                     test_y = ideal_y + dy
                     test_x = ideal_x + dx
-                    
+
                     # Make sure we don't look outside the array boundaries
                     if 0 <= test_y < height and 0 <= test_x < width:
                         # Check if it's a valid walkable corridor
@@ -45,7 +45,13 @@ class GameInitializer:
         if not isinstance(game_state.maze, np.ndarray):
             self.game_state.maze = np.array(game_state.maze)
         self._get_valid_center_and_corners()
-    
+
+    def initialize(self) -> None:
+        self._place_pacgums()
+        self._place_super_pacgums()
+        self._place_ghosts()
+        self._place_pacman()
+
     def _get_valid_center_and_corners(self) -> None:
         self.corners = [
 			(0, 0),
@@ -56,7 +62,7 @@ class GameInitializer:
         self.valid_center = find_valid_center(self.game_state.maze)
 
     def _place_pacgums(self) -> None:
-        total_pacgums = self.game_state.config.pacgum
+        total_pacgums = self.game_state.config.pacgum.value
         is_valid_corridors = (self.game_state.maze & BitMaps.WALL_MASK) < 15
 
         is_valid_corridors[self.valid_center[0], self.valid_center[1]] = False
@@ -68,13 +74,13 @@ class GameInitializer:
 
         chosen_row_indices = np.random.choice(len(valid_indices), size=num_to_select, replace=False)
         chosen_coordinates = valid_indices[chosen_row_indices]
-        self.game_state.maze[chosen_coordinates[:, 0], chosen_coordinates[:, 1]] |= PACGUM
-	
+        self.game_state.maze[chosen_coordinates[:, 0], chosen_coordinates[:, 1]] |= BitMaps.PACGUM
+
     def _place_super_pacgums(self) -> None:
         for y, x in self.corners:
             self.game_state.maze[y, x] &= ~BitMaps.PACGUM
             self.game_state.maze[y, x] |= BitMaps.SUPER_PACGUM
-	
+
     def _place_ghosts(self) -> None:
         self.game_state.ghosts[0].x, self.game_state.ghosts[0].y = 0, 0
         self.game_state.ghosts[1].x, self.game_state.ghosts[1].y = 0, self.game_state.maze.shape[1] - 1
@@ -84,7 +90,7 @@ class GameInitializer:
     def _get_valid_center(self) -> None:
         yc, xc = self.game_state.maze.shape[0] // 2, self.game_state.maze.shape[1] // 2
         if self.game_state.maze[yc, xc] < 15:
-            return yx, xc
+            return yc, xc
 
     def _place_pacman(self) -> None:
         self.game_state.pacman.y, self.game_state.pacman.x = self.valid_center[0], self.valid_center[1]

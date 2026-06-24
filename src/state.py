@@ -49,17 +49,17 @@ class Ghost:
     # coordinate for ghost
     x: float
     y: float
-    state: None  # chasing or fleeing
-    colour: None  # colour of the ghost when chasing
+    state: bool = None  # chasing or fleeing
+    colour: int = None  # colour of the ghost when chasing
 
 
 @dataclass
 class GameStats:
-    current_score: int
-    current_level: int
-    lives_remain: int
-    time_left: int
-    cheat_mode: int
+    current_score: int = 0
+    current_level: int = 0
+    lives_remain: int = 0
+    time_left: int = None
+    cheat_mode: bool = False
 
 
 @dataclass
@@ -68,5 +68,5 @@ class GameState:
     pacman: Pacman
     ghosts: List[Ghost]
     paused: bool = True
-    live_status: GameStats
-    config: GameConfig
+    live_status: GameStats = None
+    config: GameConfig = None

@@ -22,6 +22,7 @@ class Renderer:
         self.surface = surface
         self.offset_x = 0
         self.offset_y = 0
+        self.cell_offset = CELL_SIZE // 2
 
     def draw_main_menu(self) -> None:
         text_font = pygame.font.Font(size=MENU_FONT_SIZE)
@@ -47,8 +48,8 @@ class Renderer:
 
     def _draw_gosts(self) -> None:
         for ghost in self.state.ghosts:
-            center_x = int(ghost.x) + self.offset_x
-            center_y = int(ghost.y) + self.offset_y
+            center_x = int(ghost.x) * CELL_SIZE + self.offset_x + self.cell_offset
+            center_y = int(ghost.y) * CELL_SIZE + self.offset_y + self.cell_offset
             radius = CELL_SIZE // 3
             pygame.draw.circle(
                 self.surface, ghost.colour, (center_x, center_y), radius)
@@ -62,8 +63,8 @@ class Renderer:
 
     def _draw_pacman(self) -> None:
         pacman = self.state.pacman
-        center_x = int(pacman.x) + self.offset_x
-        center_y = int(pacman.y) + self.offset_y
+        center_x = int(pacman.x) * CELL_SIZE + self.offset_x + self.cell_offset
+        center_y = int(pacman.y) * CELL_SIZE + self.offset_y + self.cell_offset
         radius = CELL_SIZE // 3
         pygame.draw.circle(
             self.surface, PACK_MAN_COLOR,
