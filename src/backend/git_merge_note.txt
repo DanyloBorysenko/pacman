@@ -1,0 +1,69 @@
+To pull the latest changes from the `main` branch into your current feature branch without messing up your workspace, use the following sequence of Git commands.
+
+Run these commands from the root directory of your project repository:
+
+### Step 1: Save your current progress
+
+Before shifting things around, make sure your current work is committed. If it's not ready for a commit, you can stash it temporarily:
+
+```bash
+git add .
+git commit -m "wip: temporary commit before syncing with main"
+# OR use git stash if you don't want to make a commit yet:
+# git stash
+
+```
+
+### Step 2: Fetch the latest changes from GitHub/GitLab
+
+You need to make sure your local machine knows about the updates your partner pushed to the remote repository:
+
+```bash
+git fetch origin
+
+```
+
+### Step 3: Merge main into your branch
+
+Make sure you are actively on your feature branch (you can check with `git branch`), then run:
+
+```bash
+git merge origin/main
+
+```
+
+*Note: Using `origin/main` directly allows you to pull the absolute newest changes from the remote server straight into your branch without having to manually switch to your local `main` branch, pulling, and switching back.*
+
+---
+
+### What if a Merge Conflict Happens?
+
+Because you and your partner are splitting up the responsibilities into different files (like `engine.py` vs. `display.py`), Git should handle the merge automatically.
+
+However, if you both modified the exact same line in a file (like the `Makefile` or `README.md` ), Git will pause and say: `CONFLICT (content): Merge conflict in...`
+
+If this happens, don't panic:
+
+1. Open the conflicted file in your code editor.
+2. Look for the conflict markers:
+```text
+<<<<<<< HEAD
+Your changes here
+=======
+Your partner's changes from main
+>>>>>>> origin/main
+
+```
+
+
+3. Edit the file to keep what you both actually need, delete the markers (`<<<<<<<`, `=======`, `>>>>>>>`), and save.
+4. Finalize the merge by running:
+```bash
+git add <filename>
+git commit -m "chore: resolved merge conflict with main"
+
+```
+
+
+
+*(If you used `git stash` in Step 1, remember to bring your work back now with `git stash pop`).*
