@@ -1,7 +1,7 @@
 from typing import Tuple
 import math
 import time
-from ..state import GameState, Direction, BitMaps
+from ..state import GameState, Direction, BitMaps, Ghost
 
 # Speeds are now explicitly: Grid Tiles Per Second
 PACMAN_SPEED = 4.0
@@ -109,6 +109,7 @@ class GameStateManager:
                 ghost.is_edible = True
                 ghost.colour = "blue"
                 ghost.edible_since = time.time()
+                ghost.time_laps = 0
             print(f"Score: {self.game_state.live_status.current_score}")
 
     def update_ghosts(self, dt: float) -> None:
@@ -116,15 +117,26 @@ class GameStateManager:
         pacman_coords = (int(self.game_state.pacman.y), int(self.game_state.pacman.x))
 
         for ghost in self.game_state.ghosts:
+            if ghost.is_edible:
+                # print(f"Ghost edible, time laps: {ghost.time_laps}")
+                ghost.time_laps += dt
+                if ghost.time_laps >= self.game_state.config.ghost_edible_time.value:
+                    ghost.is_edible = False
+                    ghost.time_laps = 0
+                    ghost.colour = ghost.initial_colour
+
             # 1. Bootstrapping: Initialize targets if they are fresh out of spawn (-1 baseline setup)
             if ghost.xd == -1 and ghost.yd == -1:
                 curr_x = int(ghost.x)
                 curr_y = int(ghost.y)
                 curr_coords = (curr_y, curr_x)
 
-                # Fetch direction vector from the ghost's active AI script
-                dx, dy = ghost.strategy.get_next_move(curr_coords, self.game_state.maze, pacman_coords)
-                ghost.assigned_direction_vector = (dx, dy)
+                # Fetch direction vector from the ghost's movement
+                dx, dy = ghost.strategy.get_next_move(
+                    curr_coords, self.game_state.maze,
+                    pacman_coords, ghost.assigned_direction,
+                    ghost.is_edible)
+                ghost.assigned_direction = (dx, dy)
                 ghost.xd = curr_x + dx
                 ghost.yd = curr_y + dy
 
@@ -145,18 +157,20 @@ class GameStateManager:
                 # We have landed! Ask the AI strategy for the next step vector
                 curr_coords = (int(ghost.y), int(ghost.x))
                 dx, dy = ghost.strategy.get_next_move(
-                    curr_coords, self.game_state.maze, pacman_coords)
+                    curr_coords, self.game_state.maze, pacman_coords,
+                    ghost.assigned_direction, ghost.is_edible)
 
                 # Update assignments for the next track step segment
-                ghost.assigned_direction_vector = (dx, dy)
+                ghost.assigned_direction = (dx, dy)
                 ghost.xd = int(ghost.x) + dx
                 ghost.yd = int(ghost.y) + dy
             else:
                 # 4. CONTINUOUS GLIDE
-                vec = ghost.assigned_direction_vector
+                vec = ghost.assigned_direction
                 if vec:
                     ghost.x += vec[0] * step_size
                     ghost.y += vec[1] * step_size
+
 
     def check_collisions(self) -> None:
         """Evaluates proximity between Pac-Man and all ghosts, triggering state updates."""
@@ -171,6 +185,7 @@ class GameStateManager:
 
                 # STEP B: Ghost is Frightened (Edible)
                 if ghost.is_edible:
+                    print(f"ghost is eaten, time laps: {ghost.time_laps}")
                     self._process_ghost_eaten(ghost, i)
 
                 # STEP A: Ghost is Dangerous
@@ -178,13 +193,15 @@ class GameStateManager:
                     self._process_player_death()
                     break  # Stop checking other ghosts on this frame since player died
 
-    def _process_ghost_eaten(self, ghost, ghost_index: int) -> None:
+    def _process_ghost_eaten(self, ghost: Ghost, ghost_index: int) -> None:
         """Handles Step B: Pac-Man devours an edible ghost."""
         # 1. Award points dynamically from config
         self.game_state.live_status.current_score += self.game_state.config.points_per_ghost.value
 
         # 2. Reset this specific ghost's state flags
         ghost.is_edible = False
+        ghost.time_laps = 0
+        ghost.colour = ghost.initial_colour
 
         # 3. Teleport the ghost back to its starting coordinate layout
         # (Assuming your state handles individual home corners)
@@ -192,9 +209,9 @@ class GameStateManager:
         ghost.y = float(ghost.home_y)
 
         # 4. Reset its GridMover targets so it doesn't try to glide back outwards sideways
-        mover = self.game_state.ghosts[ghost_index]
-        mover.xd = -1
-        mover.yd = -1
+        ghost.xd = -1
+        ghost.yd = -1
+        # time.sleep(1)
 
     def _process_player_death(self) -> None:
         """Handles Step A: Player loses a life to a dangerous ghost."""
@@ -205,6 +222,7 @@ class GameStateManager:
         # 2. Check for game over state transition
         if self.game_state.live_status.lives_remain <= 0:
             self.game_state.current_screen = "GAME_OVER"
+            self.game_state.paused = True
         else:
             # 3. Respawn Pac-Man at the map's safe starting center
             self.game_state.pacman.x = float(self.game_state.pacman.start_x)
@@ -223,3 +241,4 @@ class GameStateManager:
                 ghost.is_edible = False
                 ghost.xd = -1
                 ghost.yd = -1
+        # time.sleep(1)

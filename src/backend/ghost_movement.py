@@ -10,35 +10,44 @@ class GhostMovementStrategy(ABC):
     """Abstract base class establishing the contract for all Ghost AI behaviors."""
 
     @abstractmethod
-    def get_next_move(self, current_pos: Tuple[int, int], maze: np.ndarray, pacman_pos: Tuple[int, int]) -> Tuple[int, int]:
-        """
-        Calculate the next target step vector (dx, dy).
-
-        :param current_pos: (y, x) integer grid coordinates of the ghost.
-        :param maze: The current NumPy array game board.
-        :param pacman_pos: (y, x) integer grid coordinates of Pac-Man (for tracking).
-        :return: A direction tuple (dx, dy) representing the chosen move.
-        """
+    def get_next_move(
+            self, current_pos: Tuple[int, int],
+            maze: np.ndarray,
+            pacman_pos: Tuple[int, int],
+            current_dir: Tuple[int, int] = (0, 0),
+            ghost_edible: bool = False
+            ) -> Tuple[int, int]:
         pass
 
     def _get_valid_directions(self, current_pos: Tuple[int, int],
-                              maze: np.ndarray) -> List[Tuple[int, int]]:
-        """Helper utility shared by all ghosts to scan unblocked paths around them."""
+                              maze: np.ndarray,
+                              current_dir: Tuple[int, int] = (0, 0)) -> List[Tuple[int, int]]:
+        """Helper utility shared by all ghosts to scan unblocked paths, banning 180s."""
         y, x = current_pos
         val = maze[y, x]
         valid_moves = []
 
+        # Find the exact inverse direction vector to ban it
+        opposite_dir = (-current_dir[0], -current_dir[1]) if current_dir != (0, 0) else (0, 0)
+
         # Bitmask direction vectors: (dx, dy)
-        if not (val & BitMaps.NORTH):
+        if not (val & BitMaps.NORTH) and Direction.UP.value != opposite_dir:
             valid_moves.append(Direction.UP.value)
-        if not (val & BitMaps.EAST):
+        if not (val & BitMaps.EAST) and Direction.RIGHT.value != opposite_dir:
             valid_moves.append(Direction.RIGHT.value)
-        if not (val & BitMaps.SOUTH):
+        if not (val & BitMaps.SOUTH) and Direction.DOWN.value != opposite_dir:
             valid_moves.append(Direction.DOWN.value)
-        if not (val & BitMaps.WEST):
+        if not (val & BitMaps.WEST) and Direction.LEFT.value != opposite_dir:
             valid_moves.append(Direction.LEFT.value)
 
-        return valid_moves if valid_moves else [(0, 0)] # Fallback if trapped
+        # Emergency fallback: If it's a dead end, allowing a 180 turn is mandatory
+        if not valid_moves:
+            if not (val & BitMaps.NORTH): valid_moves.append(Direction.UP.value)
+            if not (val & BitMaps.EAST): valid_moves.append(Direction.RIGHT.value)
+            if not (val & BitMaps.SOUTH): valid_moves.append(Direction.DOWN.value)
+            if not (val & BitMaps.WEST): valid_moves.append(Direction.LEFT.value)
+
+        return valid_moves if valid_moves else [(0, 0)]
 
 
 class RandomMovement(GhostMovementStrategy):
@@ -46,7 +55,10 @@ class RandomMovement(GhostMovementStrategy):
 
     def get_next_move(
             self, current_pos: Tuple[int, int],
-            maze: np.ndarray, pacman_pos: Tuple[int, int]
+            maze: np.ndarray,
+            pacman_pos: Tuple[int, int],
+            current_dir: Tuple[int, int] = (0, 0),
+            ghost_edible: bool = False
             ) -> Tuple[int, int]:
         valid_moves = self._get_valid_directions(current_pos, maze)
         return random.choice(valid_moves)
@@ -57,14 +69,18 @@ class DirectionalMovement(GhostMovementStrategy):
 
     def get_next_move(
             self, current_pos: Tuple[int, int],
-            maze: np.ndarray, pacman_pos: Tuple[int, int]
+            maze: np.ndarray,
+            pacman_pos: Tuple[int, int],
+            current_dir: Tuple[int, int] = (0, 0),
+            ghost_edible: bool = False
             ) -> Tuple[int, int]:
-        valid_moves = self._get_valid_directions(current_pos, maze)
+        valid_moves = self._get_valid_directions(current_pos, maze, current_dir)
         y, x = current_pos
         target_y, target_x = pacman_pos
 
         best_move = valid_moves[0]
         min_distance = float('inf')
+        max_distance = 0.0
 
         for dx, dy in valid_moves:
             # Simulate where this step would put the ghost
@@ -75,11 +91,17 @@ class DirectionalMovement(GhostMovementStrategy):
             # dist = math.sqrt((next_x - target_x)**2 + (next_y - target_y)**2)
             dist = abs(next_x - target_x) + abs(next_y - target_y)
 
-            if dist < min_distance:
-                min_distance = dist
-                best_move = (dx, dy)
+            if ghost_edible:
+                if dist > max_distance:
+                    max_distance = dist
+                    best_move = (dx, dy)
+            else:
+                if dist < min_distance:
+                    min_distance = dist
+                    best_move = (dx, dy)
 
         return best_move
+    
 
 
 class PseudoRandomMovement(GhostMovementStrategy):
@@ -90,10 +112,15 @@ class PseudoRandomMovement(GhostMovementStrategy):
         self._chaser = DirectionalMovement()
         self._randomizer = RandomMovement()
 
-    def get_next_move(self, current_pos: Tuple[int, int],
-            maze: np.ndarray, pacman_pos: Tuple[int, int]) -> Tuple[int, int]:
+    def get_next_move(
+            self, current_pos: Tuple[int, int],
+            maze: np.ndarray,
+            pacman_pos: Tuple[int, int],
+            current_dir: Tuple[int, int] = (0, 0),
+            ghost_edible: bool = False
+            ) -> Tuple[int, int]:
         # Generate a seed value between 0.0 and 1.0
         if random.random() < self.chase_probability:
-            return self._chaser.get_next_move(current_pos, maze, pacman_pos)
+            return self._chaser.get_next_move(current_pos, maze, pacman_pos, current_dir, ghost_edible)
         else:
-            return self._randomizer.get_next_move(current_pos, maze, pacman_pos)
+            return self._randomizer.get_next_move(current_pos, maze, pacman_pos, current_dir, ghost_edible)

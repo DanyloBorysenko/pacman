@@ -31,6 +31,7 @@ class GameConfig(Enum):
     points_per_pacgum =10
     points_per_super_pacgum = 50
     points_per_ghost = 200
+    ghost_edible_time = 5
     seed = 42
     level_max_time = 90
 
@@ -59,13 +60,15 @@ class Ghost:
     y: float = 0.0
     xd: int = -1   # Int Target column destination
     yd: int = -1   # Int Target row destination
-    assigned_direction_vector: Direction = (0, 0)  # Current movement delta slice
-    strategy: GhostMovementStrategy = None # Holds the active AI Strategy instance
+    assigned_direction: Direction = (0, 0)
+    strategy: GhostMovementStrategy = None
     colour: str = None
     is_edible: bool = False
     edible_since: int | None = None
+    time_laps: int = 0
     home_x: int = 0
     home_y: int = 0
+    initial_colour: str = None
 
 
 @dataclass

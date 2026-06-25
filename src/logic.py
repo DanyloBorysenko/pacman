@@ -13,10 +13,10 @@ from .backend.ghost_movement import (
 PACMAN_SPEED = 1
 
 GHOSTS = [
-    Ghost(colour="red", strategy=DirectionalMovement()),
-    Ghost(colour="blue", strategy=PseudoRandomMovement()),
-    Ghost(colour="yellow", strategy=PseudoRandomMovement(0.9)),
-    Ghost(colour="green", strategy=RandomMovement()),
+    Ghost(colour="red", strategy=DirectionalMovement(), initial_colour="red"),
+    Ghost(colour="pink", strategy=PseudoRandomMovement(), initial_colour="pink"),
+    Ghost(colour="orange", strategy=PseudoRandomMovement(0.9), initial_colour="orange"),
+    Ghost(colour="green", strategy=RandomMovement(), initial_colour="green"),
 ]
 
 
