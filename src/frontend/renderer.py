@@ -48,8 +48,8 @@ class Renderer:
 
     def _draw_gosts(self) -> None:
         for ghost in self.state.ghosts:
-            center_x = int(ghost.x * CELL_SIZE + self.offset_x + self.cell_offset)
-            center_y = int(ghost.y * CELL_SIZE + self.offset_y + self.cell_offset)
+            center_x = ghost.x * CELL_SIZE + self.offset_x + self.cell_offset
+            center_y = ghost.y * CELL_SIZE + self.offset_y + self.cell_offset
             radius = CELL_SIZE // 3
             pygame.draw.circle(
                 self.surface, ghost.colour, (center_x, center_y), radius)
@@ -135,6 +135,12 @@ class Renderer:
             pygame.draw.line(
                 self.surface, MAZE_COLOR, (x, y),
                 (x, y + CELL_SIZE), WALL_WIDTH)
+
+        center_pos = (x + 50 // 2, y + 50 // 2)
+        if cell & 32:
+            pygame.draw.circle(self.surface, (255, 255, 0), center_pos, 8)
+        elif cell & 16:
+            pygame.draw.circle(self.surface, (255, 184, 151), center_pos, 3)
 
     def _cell_top_left(self, row: int, col: int) -> Tuple[int, int]:
         return (col * CELL_SIZE, row * CELL_SIZE)
