@@ -1,6 +1,10 @@
+from __future__ import annotations
 from dataclasses import dataclass
-from typing import List, Tuple
+from typing import List, Tuple, TYPE_CHECKING, Tuple
 from enum import Enum, IntEnum
+
+if TYPE_CHECKING:
+    from .backend.ghost_movement import GhostMovementStrategy
 
 
 class Direction(Enum):
@@ -45,23 +49,30 @@ class Pacman:
     xd: int = -1
     yd: int = -1
     assigned_direction: Direction | None = None
+    start_x: int = 0
+    start_y: int = 0
 
 
 @dataclass
 class Ghost:
-    # coordinate for ghost
-    x: float
-    y: float
-    is_edibe: bool = False # chasing or fleeing
+    x: float = 0.0   # Floating point actual location
+    y: float = 0.0
+    xd: int = -1   # Int Target column destination
+    yd: int = -1   # Int Target row destination
+    assigned_direction_vector: Direction = (0, 0)  # Current movement delta slice
+    strategy: GhostMovementStrategy = None # Holds the active AI Strategy instance
+    colour: str = None
+    is_edible: bool = False
     edible_since: int | None = None
-    colour: str = None # colour of the ghost when chasing
+    home_x: int = 0
+    home_y: int = 0
 
 
 @dataclass
 class GameStats:
     current_score: int = 0
-    current_level: int = 0
-    lives_remain: int = 0
+    current_level: int = 1
+    lives_remain: int = 3
     time_left: int = None
     cheat_mode: bool = False
 

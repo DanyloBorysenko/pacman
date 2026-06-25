@@ -1,10 +1,23 @@
-from src.state import GameState, Pacman, Direction, Ghost, GameConfig, GameStats
+from src.state import (
+    GameState, Pacman, Direction, Ghost,
+    GameConfig, GameStats)
 from mazegenerator.mazegenerator import MazeGenerator
 from src.constants import CELL_SIZE
 from .backend.game_initializer import GameInitializer
 from .backend.game_state_manager import GameStateManager
+from .backend.ghost_movement import (
+    RandomMovement, DirectionalMovement,
+    PseudoRandomMovement
+)
 
 PACMAN_SPEED = 1
+
+GHOSTS = [
+    Ghost(colour="red", strategy=DirectionalMovement()),
+    Ghost(colour="blue", strategy=PseudoRandomMovement()),
+    Ghost(colour="yellow", strategy=PseudoRandomMovement(0.9)),
+    Ghost(colour="green", strategy=RandomMovement()),
+]
 
 
 class GameLogic:
@@ -16,7 +29,7 @@ class GameLogic:
         state = GameState(
             maze=self.maze,
             pacman=Pacman(0, 0, None),
-            ghosts=[Ghost(0, 0, False, None, "red") for _ in range(4)],
+            ghosts=GHOSTS,
             live_status=GameStats,
             config=GameConfig)
         GameInitializer(game_state=state).initialize()
@@ -29,19 +42,9 @@ class GameLogic:
             return
         pacman = state.pacman
         pacman.mouth_phase += dt * 8
-        # print(f"direction: {pacman.direction.value}")
-        self.game_manager.update(dt, pacman.direction)
-        # if pacman.direction is Direction.RIGHT:
-        #     pacman.x += PACMAN_SPEED * dt
-
-        # elif pacman.direction is Direction.LEFT:
-        #     pacman.x -= PACMAN_SPEED * dt
-
-        # elif pacman.direction is Direction.UP:
-        #     pacman.y -= PACMAN_SPEED * dt
-
-        # elif pacman.direction is Direction.DOWN:
-        #     pacman.y += PACMAN_SPEED * dt
+        self.game_manager.update_pacman(dt, pacman.direction)
+        self.game_manager.update_ghosts(dt)
+        self.game_manager.check_collisions()
 
     def update_direction(self, state: GameState, direction: Direction) -> None:
         state.pacman.direction = direction
