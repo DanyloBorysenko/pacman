@@ -48,8 +48,8 @@ class Renderer:
 
     def _draw_gosts(self) -> None:
         for ghost in self.state.ghosts:
-            center_x = int(ghost.x) * CELL_SIZE + self.offset_x + self.cell_offset
-            center_y = int(ghost.y) * CELL_SIZE + self.offset_y + self.cell_offset
+            center_x = ghost.x * CELL_SIZE + self.offset_x + self.cell_offset
+            center_y = ghost.y * CELL_SIZE + self.offset_y + self.cell_offset
             radius = CELL_SIZE // 3
             pygame.draw.circle(
                 self.surface, ghost.colour, (center_x, center_y), radius)
@@ -63,8 +63,8 @@ class Renderer:
 
     def _draw_pacman(self) -> None:
         pacman = self.state.pacman
-        center_x = int(pacman.x) * CELL_SIZE + self.offset_x + self.cell_offset
-        center_y = int(pacman.y) * CELL_SIZE + self.offset_y + self.cell_offset
+        center_x = int(pacman.x * CELL_SIZE + self.offset_x + self.cell_offset)
+        center_y = int(pacman.y * CELL_SIZE + self.offset_y + self.cell_offset)
         radius = CELL_SIZE // 3
         pygame.draw.circle(
             self.surface, PACK_MAN_COLOR,

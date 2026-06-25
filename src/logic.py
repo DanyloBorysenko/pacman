@@ -29,8 +29,8 @@ class GameLogic:
             return
         pacman = state.pacman
         pacman.mouth_phase += dt * 8
-        print(f"direction: {pacman.direction.value}")
-        self.game_manager.request_move(pacman.direction)
+        # print(f"direction: {pacman.direction.value}")
+        self.game_manager.update(dt, pacman.direction)
         # if pacman.direction is Direction.RIGHT:
         #     pacman.x += PACMAN_SPEED * dt
 

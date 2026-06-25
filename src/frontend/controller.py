@@ -44,7 +44,7 @@ class Controller:
             self.screen.fill("black")
             self.current_scene.render(self.renderer)
             pygame.display.update()
-            time.sleep(0.1)
+            time.sleep(0.05)
         pygame.quit()
 
     def _to_input_event(self,

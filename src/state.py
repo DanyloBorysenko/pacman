@@ -42,9 +42,9 @@ class Pacman:
     y: float
     direction: Direction | None
     mouth_phase: float = 0.0
-    xd: int = 0
-    yd: int = 0
-    assigned_direction: Tuple | None = None
+    xd: int = -1
+    yd: int = -1
+    assigned_direction: Direction | None = None
 
 
 @dataclass
