@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List
+from typing import List, Tuple
 from enum import Enum, IntEnum
 
 
@@ -24,11 +24,11 @@ class GameConfig(Enum):
     high_score_filename = None
     lives = 3
     pacgum = 42
-    points_per_pacgum: 10
-    points_per_super_pacgum: 50
-    points_per_ghost: 200
-    seed: 42
-    level_max_time: 90
+    points_per_pacgum =10
+    points_per_super_pacgum = 50
+    points_per_ghost = 200
+    seed = 42
+    level_max_time = 90
 
 
 class CheatModes(Enum):
@@ -42,6 +42,9 @@ class Pacman:
     y: float
     direction: Direction | None
     mouth_phase: float = 0.0
+    xd: int = 0
+    yd: int = 0
+    assigned_direction: Tuple | None = None
 
 
 @dataclass
@@ -49,9 +52,9 @@ class Ghost:
     # coordinate for ghost
     x: float
     y: float
-    is_edibe: False # chasing or fleeing
-    edible_since: int | None
-    colour: None # colour of the ghost when chasing
+    is_edibe: bool = False # chasing or fleeing
+    edible_since: int | None = None
+    colour: str = None # colour of the ghost when chasing
 
 
 @dataclass

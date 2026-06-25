@@ -4,6 +4,7 @@ from src.constants import WINDOW_WIDTH, WINDOW_HEIGHT
 from .scenes.game_scene import GameScene
 from .scenes.main_menu_scene import MainMenuScene
 from .event import InputEvent
+import time
 import pygame
 
 
@@ -43,6 +44,7 @@ class Controller:
             self.screen.fill("black")
             self.current_scene.render(self.renderer)
             pygame.display.update()
+            time.sleep(0.1)
         pygame.quit()
 
     def _to_input_event(self,

@@ -135,6 +135,12 @@ class Renderer:
             pygame.draw.line(
                 self.surface, MAZE_COLOR, (x, y),
                 (x, y + CELL_SIZE), WALL_WIDTH)
+            
+        center_pos = (x + 50 // 2, y + 50 // 2)
+        if cell & 32:
+            pygame.draw.circle(self.surface, (255, 255, 0), center_pos, 8)
+        elif cell & 16:
+            pygame.draw.circle(self.surface, (255, 184, 151), center_pos, 3)
 
     def _cell_top_left(self, row: int, col: int) -> Tuple[int, int]:
         return (col * CELL_SIZE, row * CELL_SIZE)

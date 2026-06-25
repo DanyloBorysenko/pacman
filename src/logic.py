@@ -1,4 +1,4 @@
-from src.state import GameState, Pacman, Direction, Ghost, GameConfig
+from src.state import GameState, Pacman, Direction, Ghost, GameConfig, GameStats
 from mazegenerator.mazegenerator import MazeGenerator
 from src.constants import CELL_SIZE
 from .backend.game_initializer import GameInitializer
@@ -16,7 +16,8 @@ class GameLogic:
         state = GameState(
             maze=self.maze,
             pacman=Pacman(0, 0, None),
-            ghosts=[Ghost(0, 0, None, "red") for _ in range(4)],
+            ghosts=[Ghost(0, 0, False, None, "red") for _ in range(4)],
+            live_status=GameStats,
             config=GameConfig)
         GameInitializer(game_state=state).initialize()
         self.game_manager = GameStateManager(state)
@@ -28,18 +29,19 @@ class GameLogic:
             return
         pacman = state.pacman
         pacman.mouth_phase += dt * 8
-        # self.game_manager.request_move(pacman.direction.value)
-        if pacman.direction is Direction.RIGHT:
-            pacman.x += PACMAN_SPEED * dt
+        print(f"direction: {pacman.direction.value}")
+        self.game_manager.request_move(pacman.direction)
+        # if pacman.direction is Direction.RIGHT:
+        #     pacman.x += PACMAN_SPEED * dt
 
-        elif pacman.direction is Direction.LEFT:
-            pacman.x -= PACMAN_SPEED * dt
+        # elif pacman.direction is Direction.LEFT:
+        #     pacman.x -= PACMAN_SPEED * dt
 
-        elif pacman.direction is Direction.UP:
-            pacman.y -= PACMAN_SPEED * dt
+        # elif pacman.direction is Direction.UP:
+        #     pacman.y -= PACMAN_SPEED * dt
 
-        elif pacman.direction is Direction.DOWN:
-            pacman.y += PACMAN_SPEED * dt
+        # elif pacman.direction is Direction.DOWN:
+        #     pacman.y += PACMAN_SPEED * dt
 
     def update_direction(self, state: GameState, direction: Direction) -> None:
         state.pacman.direction = direction
