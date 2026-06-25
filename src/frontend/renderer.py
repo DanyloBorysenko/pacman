@@ -136,7 +136,7 @@ class Renderer:
                 self.surface, MAZE_COLOR, (x, y),
                 (x, y + CELL_SIZE), WALL_WIDTH)
 
-        center_pos = (x + 50 // 2, y + 50 // 2)
+        center_pos = (x + self.cell_offset, y + self.cell_offset)
         if cell & 32:
             pygame.draw.circle(self.surface, (255, 255, 0), center_pos, 8)
         elif cell & 16:
