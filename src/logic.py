@@ -4,7 +4,7 @@ from src.constants import CELL_SIZE
 from .backend.game_initializer import GameInitializer
 from .backend.game_state_manager import GameStateManager
 
-PACMAN_SPEED = 1
+PACMAN_SPEED = 1.0
 
 
 class GameLogic:
