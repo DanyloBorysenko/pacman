@@ -1,17 +1,10 @@
-from enum import Enum
+from .models import MenuItem
 from ..scene import Scene
 from .game_scene import GameScene
 from src.logic import GameLogic
 from ..event import InputEvent
 from ..renderer import Renderer
 from typing import List
-
-
-class MenuItem(Enum):
-    START_GAME = "Start Game"
-    VIEW_HIGHSCORES = "View Highscores"
-    INSTRUCTIONS = "Instructions"
-    EXIT = "Exit"
 
 
 class MainMenuScene(Scene):
@@ -25,15 +18,31 @@ class MainMenuScene(Scene):
             MenuItem.INSTRUCTIONS,
             MenuItem.EXIT
         ]
+        self.run_next_scene = {
+            MenuItem.START_GAME: self._game_scene,
+            MenuItem.EXIT: self._exit
+        }
 
     def update(self, dt: float) -> None:
         pass
 
     def handle_event(self, event: InputEvent) -> None:
         if event.type == "keydown":
+            if event.key == "up":
+                self.selected = (self.selected - 1) % len(self.items)
+            if event.key == "down":
+                self.selected = (self.selected + 1) % len(self.items)
             if event.key == "enter":
-                state = self.logic.create_default_state()
-                self.switch_to(GameScene(state, self.logic))
+                func = self.run_next_scene.get(
+                    self.items[self.selected], self._game_scene)
+                func()
 
     def render(self, renderer: Renderer) -> None:
-        return renderer.draw_main_menu()
+        return renderer.draw_main_menu(self.selected, self.items)
+
+    def _game_scene(self) -> None:
+        state = self.logic.create_default_state()
+        self.switch_to(GameScene(state, self.logic))
+
+    def _exit(self) -> None:
+        exit()

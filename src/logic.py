@@ -4,7 +4,7 @@ from src.constants import CELL_SIZE
 from .backend.game_initializer import GameInitializer
 from .backend.game_state_manager import GameStateManager
 
-PACMAN_SPEED = 2.0
+PACMAN_SPEED = 0.1
 
 
 class GameLogic:
@@ -29,19 +29,7 @@ class GameLogic:
             return
         pacman = state.pacman
         pacman.mouth_phase += dt * 8
-        # print(f"direction: {pacman.direction.value}")
         self.game_manager.update(dt, pacman.direction)
-        # if pacman.direction is Direction.RIGHT:
-        #     pacman.x += PACMAN_SPEED * dt
-
-        # elif pacman.direction is Direction.LEFT:
-        #     pacman.x -= PACMAN_SPEED * dt
-
-        # elif pacman.direction is Direction.UP:
-        #     pacman.y -= PACMAN_SPEED * dt
-
-        # elif pacman.direction is Direction.DOWN:
-        #     pacman.y += PACMAN_SPEED * dt
 
     def update_direction(self, state: GameState, direction: Direction) -> None:
         state.pacman.direction = direction

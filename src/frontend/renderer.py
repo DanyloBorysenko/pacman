@@ -1,6 +1,7 @@
 from typing import List, Tuple
-from src.state import GameState, Direction, Pacman
+from src.state import GameState, Direction
 from src.constants import CELL_SIZE, WINDOW_HEIGHT, WINDOW_WIDTH
+from .scenes.models import MenuItem
 import pygame
 import math
 
@@ -8,6 +9,7 @@ MAZE_COLOR = "turquoise"
 PACK_MAN_COLOR = "yellow"
 BACKGROUND_COLOR = "black"
 MENU_FONT_SIZE = 50
+MENU_PADDING = 200
 WALL_WIDTH = 5
 NORTH = 1
 EAST = 2
@@ -20,16 +22,28 @@ class Renderer:
             self,
             surface: pygame.Surface) -> None:
         self.surface = surface
+        self.menu_font = pygame.font.Font(size=MENU_FONT_SIZE)
         self.offset_x = 0
         self.offset_y = 0
         self.cell_offset = CELL_SIZE // 2
 
-    def draw_main_menu(self) -> None:
-        text_font = pygame.font.Font(size=MENU_FONT_SIZE)
-        surf = text_font.render("Start game", True, "yellow")
-        rect = surf.get_frect()
-        rect.center = (WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2)
-        self.surface.blit(surf, rect)
+    def draw_main_menu(self, sel_item: int, items: List[MenuItem]) -> None:
+        count = len(items)
+        item_height = (WINDOW_HEIGHT - MENU_PADDING * 2) // count
+        item_width = WINDOW_WIDTH // 5
+        for ind, item in enumerate(items):
+            item_surf = pygame.Surface((item_width, item_height))
+            item_rect = item_surf.get_frect()
+            item_rect.center = (
+                WINDOW_WIDTH // 2,
+                MENU_PADDING + (ind * item_height) + item_height // 2)
+            if sel_item == ind:
+                pygame.draw.rect(
+                    self.surface, pygame.Color(50, 50, 50), item_rect)
+            surf = self.menu_font.render(item.value, True, "yellow")
+            rect = surf.get_frect()
+            rect.center = item_rect.center
+            self.surface.blit(surf, rect)
 
     def draw(self, state: GameState) -> None:
         self.state = state
@@ -48,8 +62,8 @@ class Renderer:
 
     def _draw_gosts(self) -> None:
         for ghost in self.state.ghosts:
-            center_x = ghost.x * CELL_SIZE + self.offset_x + self.cell_offset
-            center_y = ghost.y * CELL_SIZE + self.offset_y + self.cell_offset
+            center_x = int(ghost.x * CELL_SIZE + self.offset_x + self.cell_offset)
+            center_y = int(ghost.y * CELL_SIZE + self.offset_y + self.cell_offset)
             radius = CELL_SIZE // 3
             pygame.draw.circle(
                 self.surface, ghost.colour, (center_x, center_y), radius)
@@ -144,9 +158,3 @@ class Renderer:
 
     def _cell_top_left(self, row: int, col: int) -> Tuple[int, int]:
         return (col * CELL_SIZE, row * CELL_SIZE)
-
-    def _cell_center(self, row: int, col: int) -> Tuple[int, int]:
-        return (
-            col * CELL_SIZE + CELL_SIZE // 2,
-            row * CELL_SIZE + CELL_SIZE // 2
-        )
