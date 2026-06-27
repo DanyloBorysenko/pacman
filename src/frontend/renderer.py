@@ -1,7 +1,8 @@
-from typing import List, Tuple
-from src.state import GameState, Direction
+from typing import List, Tuple, Dict
+from src.state import GameState, Direction, GameStats
 from src.constants import CELL_SIZE, WINDOW_HEIGHT, WINDOW_WIDTH
 from .scenes.models import MenuItem
+from dataclasses import asdict
 import pygame
 import math
 
@@ -10,6 +11,7 @@ PACK_MAN_COLOR = "yellow"
 BACKGROUND_COLOR = "black"
 MENU_FONT_SIZE = 50
 MENU_PADDING = 200
+PADDING = 20
 WALL_WIDTH = 5
 NORTH = 1
 EAST = 2
@@ -40,7 +42,7 @@ class Renderer:
             if sel_item == ind:
                 pygame.draw.rect(
                     self.surface, pygame.Color(50, 50, 50), item_rect)
-            surf = self.menu_font.render(item.value, True, "yellow")
+            surf = self.menu_font.render(item.value, True, PACK_MAN_COLOR)
             rect = surf.get_frect()
             rect.center = item_rect.center
             self.surface.blit(surf, rect)
@@ -52,8 +54,41 @@ class Renderer:
         self.offset_x = (WINDOW_WIDTH - maze_width) // 2
         self.offset_y = (WINDOW_HEIGHT - maze_height) // 2
         self._draw_maze()
+        self._draw_game_stats()
         self._draw_pacman()
         self._draw_gosts()
+
+    def _draw_game_stats(self) -> None:
+        stats = self.state.live_status
+
+        center_y = WINDOW_HEIGHT // 2
+        spacing = 40
+
+        items = [
+            f"Score:  {stats.current_score}",
+            f"Level:  {stats.current_level}",
+            f"Lives:  {stats.lives_remain}",
+            f"Cheat mode:  {'On' if stats.cheat_mode else 'Off'}",
+        ]
+        start_y = center_y - ((len(items) - 1) * spacing) // 2
+
+        for i, text in enumerate(items):
+            surf = self.menu_font.render(text, True, PACK_MAN_COLOR)
+            rect = surf.get_frect()
+            rect.left = PADDING
+            rect.centery = start_y + i * spacing
+            self.surface.blit(surf, rect)
+
+        if stats.time_left is not None:
+            surf = self.menu_font.render(
+                f"Time: {stats.time_left}",
+                True,
+                PACK_MAN_COLOR,
+            )
+            rect = surf.get_frect()
+            rect.left = PADDING
+            rect.bottom = WINDOW_HEIGHT - PADDING
+            self.surface.blit(surf, rect)
 
     def _draw_maze(self) -> None:
         for row, line in enumerate(self.state.maze):

@@ -60,8 +60,8 @@ class Ghost:
 @dataclass
 class GameStats:
     current_score: int = 0
-    current_level: int = 0
-    lives_remain: int = 0
+    current_level: int = 1
+    lives_remain: int = 3
     time_left: int = None
     cheat_mode: bool = False
 

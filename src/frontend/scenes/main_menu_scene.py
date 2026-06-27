@@ -4,6 +4,7 @@ from .game_scene import GameScene
 from src.logic import GameLogic
 from ..event import InputEvent
 from ..renderer import Renderer
+from ...state import GameStats
 from typing import List
 
 
