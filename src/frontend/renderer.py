@@ -9,7 +9,10 @@ import math
 MAZE_COLOR = "turquoise"
 PACK_MAN_COLOR = "yellow"
 BACKGROUND_COLOR = "black"
+ACCENT = "yellow"
+INSTRUCTION_COLOR = "white"
 MENU_FONT_SIZE = 50
+INSTRUCTION_FONT_SIZE = 20
 MENU_PADDING = 200
 PADDING = 20
 WALL_WIDTH = 5
@@ -18,6 +21,14 @@ EAST = 2
 SOUTH = 4
 WEST = 8
 
+# ── Layout constants (all relative to surface size) ──────────────────────────
+_TITLE_Y_FRAC = 0.04   # title top edge as fraction of height
+_BODY_TOP_FRAC = 0.14   # where columns start
+_COL_LEFT_FRAC = 0.04   # left column x
+_COL_RIGHT_FRAC = 0.52   # right column x
+_LINE_H_FRAC = 0.038  # vertical step between lines
+_FOOTER_BOT_FRAC = 0.97   # footer bottom edge
+
 
 class Renderer:
     def __init__(
@@ -25,6 +36,8 @@ class Renderer:
             surface: pygame.Surface) -> None:
         self.surface = surface
         self.menu_font = pygame.font.Font(size=MENU_FONT_SIZE)
+        self.title_font = pygame.font.Font(None, 50)
+        self.instruction_font = pygame.font.SysFont("DejaVu Sans", 24)
         self.offset_x = 0
         self.offset_y = 0
         self.cell_offset = CELL_SIZE // 2
@@ -46,6 +59,104 @@ class Renderer:
             rect = surf.get_frect()
             rect.center = item_rect.center
             self.surface.blit(surf, rect)
+
+    def draw_instructions(self) -> None:
+        line_h = int(WINDOW_HEIGHT * _LINE_H_FRAC)
+        left_x = int(WINDOW_WIDTH * _COL_LEFT_FRAC)
+        right_x = int(WINDOW_WIDTH * _COL_RIGHT_FRAC)
+        body_top = int(WINDOW_HEIGHT * _BODY_TOP_FRAC)
+
+        # ── Helpers ──
+        def blit_text(text: str, x: int, y: int,
+                      color: str = "white",
+                      font: pygame.font.Font | None = None) -> None:
+            surf = (font or self.instruction_font).render(text, True, color)
+            self.surface.blit(surf, (x, y))
+
+        def draw_column(
+                entries: list[tuple[str, str]], x: int, start_y: int) -> None:
+            """
+            entries: list of (text, color) pairs.
+            An empty string inserts a blank line.
+            """
+            y = start_y
+            for text, color in entries:
+                if text:
+                    blit_text(text, x, y, color)
+                y += line_h
+
+        blank = ("", INSTRUCTION_COLOR)      # empty-line sentinel
+
+        left_column: list[tuple[str, str]] = [
+            ("Controls",                    ACCENT),
+            ("\u2191 / W    Move Up",        INSTRUCTION_COLOR),
+            ("\u2193 / S    Move Down",      INSTRUCTION_COLOR),
+            ("\u2190 / A    Move Left",      INSTRUCTION_COLOR),
+            ("\u2192 / D    Move Right",     INSTRUCTION_COLOR),
+            ("Space      Pause",             INSTRUCTION_COLOR),
+            ("C           Cheat Mode",       INSTRUCTION_COLOR),
+            blank,
+            ("Pacgums",                      ACCENT),
+            ("\u2022 Pacgum          +10 pts", INSTRUCTION_COLOR),
+            ("\u2022 Super Pacgum    +50 pts", INSTRUCTION_COLOR),
+            ("\u2022 Frightens ghosts",        INSTRUCTION_COLOR),
+            ("  for [T] seconds",              INSTRUCTION_COLOR),
+            blank,
+            ("Winning",                      ACCENT),
+            ("\u2022 Complete [N] levels",   INSTRUCTION_COLOR),
+            ("\u2022 Eat every pacgum",      INSTRUCTION_COLOR),
+        ]
+
+        right_column: list[tuple[str, str]] = [
+            ("Gameplay",                            ACCENT),
+            ("\u2022 Start with 3 lives",            INSTRUCTION_COLOR),
+            ("\u2022 Move only through corridors",   INSTRUCTION_COLOR),
+            ("\u2022 Walls block movement",          INSTRUCTION_COLOR),
+            ("\u2022 Touching a ghost loses a life", INSTRUCTION_COLOR),
+            ("\u2022 Respawn in maze center",        INSTRUCTION_COLOR),
+            ("\u2022 Game Over at 0 lives",          INSTRUCTION_COLOR),
+            ("\u2022 Finish level by eating",        INSTRUCTION_COLOR),
+            ("  every pacgum",                       INSTRUCTION_COLOR),
+            blank,
+            ("Ghosts",                               ACCENT),
+            ("\u2022 Chase Pac-Man",                 INSTRUCTION_COLOR),
+            ("\u2022 Run away when edible",          INSTRUCTION_COLOR),
+            ("\u2022 Eat ghost: +200 pts",           INSTRUCTION_COLOR),
+            ("\u2022 Respawn after [R] sec",         INSTRUCTION_COLOR),
+            blank,
+            ("Cheat Mode",                           ACCENT),
+            ("\u2022 Invincibility",                 INSTRUCTION_COLOR),
+            ("\u2022 Freeze Ghosts",                 INSTRUCTION_COLOR),
+            ("\u2022 Level Skip",                    INSTRUCTION_COLOR),
+            ("\u2022 Extra Lives",                   INSTRUCTION_COLOR),
+            ("\u2022 Speed Boost",                   INSTRUCTION_COLOR),
+        ]
+
+        # ── Title ──
+        title_surf = self.title_font.render(
+            "PAC-MAN INSTRUCTIONS", True, ACCENT)
+        title_rect = title_surf.get_frect()
+        title_rect.centerx = WINDOW_WIDTH // 2
+        title_rect.top = int(WINDOW_HEIGHT * _TITLE_Y_FRAC)
+        self.surface.blit(title_surf, title_rect)
+
+        # Separator line under title
+        sep_y = int(title_rect.bottom + line_h * 0.4)
+        pygame.draw.line(
+            self.surface, ACCENT, (left_x, sep_y),
+            (WINDOW_WIDTH - left_x, sep_y), 1)
+
+        # ── Columns ──
+        draw_column(left_column,  left_x,  body_top)
+        draw_column(right_column, right_x, body_top)
+
+        # ── Footer ──
+        footer_surf = self.instruction_font.render(
+            "ESC  -  Back to Menu", True, ACCENT)
+        footer_rect = footer_surf.get_frect()
+        footer_rect.left = left_x
+        footer_rect.bottom = int(WINDOW_HEIGHT * _FOOTER_BOT_FRAC)
+        self.surface.blit(footer_surf, footer_rect)
 
     def draw(self, state: GameState) -> None:
         self.state = state
@@ -97,8 +208,10 @@ class Renderer:
 
     def _draw_gosts(self) -> None:
         for ghost in self.state.ghosts:
-            center_x = int(ghost.x * CELL_SIZE + self.offset_x + self.cell_offset)
-            center_y = int(ghost.y * CELL_SIZE + self.offset_y + self.cell_offset)
+            center_x = int(
+                ghost.x * CELL_SIZE + self.offset_x + self.cell_offset)
+            center_y = int(
+                ghost.y * CELL_SIZE + self.offset_y + self.cell_offset)
             radius = CELL_SIZE // 3
             pygame.draw.circle(
                 self.surface, ghost.colour, (center_x, center_y), radius)
