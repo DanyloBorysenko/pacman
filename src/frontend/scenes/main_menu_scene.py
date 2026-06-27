@@ -34,7 +34,7 @@ class MainMenuScene(Scene):
                 self.selected = (self.selected + 1) % len(self.items)
             if event.key == "enter":
                 func = self.run_next_scene.get(
-                    self.items[self.selected], self._game_scene)
+                    self.items[self.selected], self._exit)
                 func()
 
     def render(self, renderer: Renderer) -> None:
