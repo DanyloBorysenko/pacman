@@ -7,10 +7,13 @@ from ..renderer import Renderer
 
 
 class GameScene(Scene):
-    def __init__(self, state: GameState, logic: GameLogic) -> None:
+    def __init__(self,
+                 state: GameState,
+                 logic: GameLogic, prev_scene: Scene) -> None:
         super().__init__()
         self.logic = logic
         self.state = state
+        self.main_menu = prev_scene
 
     def update(self, dt: float) -> None:
         self.logic.update(self.state, dt)
@@ -28,11 +31,9 @@ class GameScene(Scene):
             if event.key == "right" or event.key == "d":
                 self.logic.update_direction(self.state, Direction.RIGHT)
             if event.key == "space":
-                # self.logic.apply_pause(self.state)
-                self.switch_to(PauseScene(self))
+                self.switch_to(PauseScene(self, self.main_menu))
             if event.key == "escape":
-                from .main_menu_scene import MainMenuScene
-                self.switch_to(MainMenuScene(self.logic))
+                self.switch_to(self.main_menu)
 
     def render(self, renderer: Renderer) -> None:
         renderer.draw(self.state)

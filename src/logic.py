@@ -4,8 +4,6 @@ from mazegenerator.mazegenerator import MazeGenerator
 from .backend.game_initializer import GameInitializer
 from .backend.game_state_manager import GameStateManager
 
-PACMAN_SPEED = 0.1
-
 
 class GameLogic:
     def __init__(self, generator: MazeGenerator):

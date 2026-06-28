@@ -25,7 +25,7 @@ fclean: clean
 re: fclean install
 
 lint: .venv/.installed
-	$(UV) run flake8 $(src)
+	$(UV) run flake8 $(SRC)
 	$(UV) run mypy $(src) --warn-return-any \
 		      --warn-unused-ignores \
 		      --ignore-missing-imports \

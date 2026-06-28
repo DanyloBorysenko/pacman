@@ -45,35 +45,35 @@ class Renderer:
         self.left_x = int(WINDOW_WIDTH * _COL_LEFT_FRAC)
 
     def draw_menu(self, sel_item: int, items: List[str], title: str) -> None:
-        self._draw_title(title)
+        title_rect = self._draw_title(title)
+        available_height = WINDOW_HEIGHT - title_rect.bottom
+        count = len(items)
+        if count == 0:
+            return
+        spacing = 20
+
+        item_width = WINDOW_WIDTH // 4
+        item_height = (available_height - (spacing * (count + 1))) // count
+        max_height = 60
+        item_height = min(item_height, max_height)
+        total_menu_height = (count * item_height) + ((count - 1) * spacing)
+        start_y = (title_rect.bottom +
+                   (available_height - total_menu_height) // 2)
         for ind, item in enumerate(items):
+            item_surf = pygame.Surface((item_width, item_height))
+            item_rect = item_surf.get_frect()
+            center_y = start_y + (ind * (item_height + spacing)) + (
+                item_height // 2)
+            item_rect.center = (self.center_x, center_y)
+            if sel_item == ind:
+                pygame.draw.rect(
+                    self.surface,
+                    pygame.Color(50, 50, 50), item_rect, border_radius=6
+                )
             surf = self.menu_font.render(item, True, PACK_MAN_COLOR)
             rect = surf.get_frect()
-            if sel_item == ind:
-                rect = pygame.draw.rect(
-                    self.surface, pygame.Color(50, 50, 50), rect)
-
+            rect.center = item_rect.center
             self.surface.blit(surf, rect)
-
-    # def draw_menu(self, sel_item: int, items: List[str], title: str) -> None:
-    #     title_rect = self._draw_title(title)
-    #     count = len(items)
-    #     available_height = WINDOW_HEIGHT - title_rect.bottom
-    #     item_height = (WINDOW_HEIGHT - MENU_PADDING * 2) // count
-    #     item_width = WINDOW_WIDTH // 5
-    #     for ind, item in enumerate(items):
-    #         item_surf = pygame.Surface((item_width, item_height))
-    #         item_rect = item_surf.get_frect()
-    #         item_rect.center = (
-    #             self.center_x,
-    #             MENU_PADDING + (ind * item_height) + item_height // 2)
-    #         if sel_item == ind:
-    #             pygame.draw.rect(
-    #                 self.surface, pygame.Color(50, 50, 50), item_rect)
-    #         surf = self.menu_font.render(item, True, PACK_MAN_COLOR)
-    #         rect = surf.get_frect()
-    #         rect.center = item_rect.center
-    #         self.surface.blit(surf, rect)
 
     def draw_instructions(self) -> None:
         right_x = int(WINDOW_WIDTH * _COL_RIGHT_FRAC)
@@ -158,18 +158,27 @@ class Renderer:
         footer_rect.bottom = int(WINDOW_HEIGHT * _FOOTER_BOT_FRAC)
         self.surface.blit(footer_surf, footer_rect)
 
-    def draw_highscores(self, scores: List[Tuple[str, str, str]]) -> None:
+    def draw_highscores(self, data: List[Tuple[str, str, str]]) -> None:
         title_rect = self._draw_title("Highscores")
-        count = len(scores)
+        count = len(data)
         if count == 0:
             return
+
         available_height = WINDOW_HEIGHT - title_rect.bottom
-        line_height = available_height // count
-        for ind, line in enumerate(scores):
+        spacing = 15
+        line_height = min(
+            (available_height - (spacing * (count + 1))) // count, 50)
+        total_score_height = (count * line_height) + ((count - 1) * spacing)
+        start_y = title_rect.bottom + (
+            (available_height - total_score_height) // 2)
+        for ind, line in enumerate(data):
             player, level, score = line
-            surf = self.instruction_font.render(f"{player} {level} {score}", True, "white")
+            surf = self.instruction_font.render(
+                f"{player}    {level}    {score}", True, "white"
+            )
             rect = surf.get_frect()
-            center_y = title_rect.bottom + (ind * line_height) + (line_height // 2)
+            center_y = start_y + (
+                ind * (line_height + spacing)) + (line_height // 2)
             rect.center = (self.center_x, center_y)
             self.surface.blit(surf, rect)
 
@@ -232,10 +241,12 @@ class Renderer:
                 self.surface, ghost.colour, (center_x, center_y), radius)
             eye_surf = pygame.Surface((radius // 2.5, radius // 2))
             left_eye_rect = eye_surf.get_frect()
-            left_eye_rect.center = (center_x - radius // 2, center_y - radius // 3)
+            left_eye_rect.center = (
+                center_x - radius // 2, center_y - radius // 3)
             pygame.draw.ellipse(self.surface, "white", left_eye_rect)
             right_eye_rect = eye_surf.get_frect()
-            right_eye_rect.center = (center_x + radius // 2, center_y - radius // 3)
+            right_eye_rect.center = (
+                center_x + radius // 2, center_y - radius // 3)
             pygame.draw.ellipse(self.surface, "white", right_eye_rect)
 
     def _draw_pacman(self) -> None:

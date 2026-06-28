@@ -1,7 +1,6 @@
 from .renderer import Renderer
 from src.logic import GameLogic
 from src.constants import WINDOW_WIDTH, WINDOW_HEIGHT
-from .scenes.game_scene import GameScene
 from .scenes.main_menu_scene import MainMenuScene
 from .event import InputEvent
 import time
@@ -28,12 +27,11 @@ class Controller:
         self.clock = pygame.Clock()
         self.renderer = Renderer(self.screen)
         self.current_scene = MainMenuScene(logic)
-        # self.current_scene = GameScene(logic)
 
     def run(self) -> None:
         self.running = True
         while self.running:
-            dt = self.clock.tick(60) / 1000
+            dt = self.clock.tick(120) / 1000
             for event in pygame.event.get():
                 if self._should_exit(event):
                     self.running = False

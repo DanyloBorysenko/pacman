@@ -46,7 +46,7 @@ class MainMenuScene(Scene):
 
     def _game_scene(self) -> None:
         state = self.logic.create_default_state()
-        self.switch_to(GameScene(state, self.logic))
+        self.switch_to(GameScene(state, self.logic, self))
 
     def _instruction_scene(self) -> None:
         self.switch_to(InstructionsScene(self))

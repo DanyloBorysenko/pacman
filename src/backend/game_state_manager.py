@@ -3,7 +3,7 @@ import math
 from ..state import GameState, Direction, BitMaps
 
 # Speeds are now explicitly: Grid Tiles Per Second
-PACMAN_SPEED = 1.0
+PACMAN_SPEED = 2.0
 GHOST_SPEED = 4.0
 
 
