@@ -6,3 +6,8 @@ class MenuItem(Enum):
     VIEW_HIGHSCORES = "View Highscores"
     INSTRUCTIONS = "Instructions"
     EXIT = "Exit"
+
+
+class PauseMenu(Enum):
+    CONTINUE = "Continue"
+    MAIN_MENU = "Main menu"

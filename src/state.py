@@ -71,6 +71,5 @@ class GameState:
     maze: List[List[int]]
     pacman: Pacman
     ghosts: List[Ghost]
-    paused: bool = True
     live_status: GameStats = None
     config: GameConfig = None

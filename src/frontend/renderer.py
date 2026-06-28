@@ -1,8 +1,6 @@
-from typing import List, Tuple, Dict
-from src.state import GameState, Direction, GameStats
+from typing import List, Tuple
+from src.state import GameState, Direction
 from src.constants import CELL_SIZE, WINDOW_HEIGHT, WINDOW_WIDTH
-from .scenes.models import MenuItem
-from dataclasses import asdict
 import pygame
 import math
 
@@ -15,6 +13,7 @@ MENU_FONT_SIZE = 50
 INSTRUCTION_FONT_SIZE = 20
 MENU_PADDING = 200
 PADDING = 20
+
 WALL_WIDTH = 5
 NORTH = 1
 EAST = 2
@@ -41,36 +40,49 @@ class Renderer:
         self.offset_x = 0
         self.offset_y = 0
         self.cell_offset = CELL_SIZE // 2
+        self.center_x = WINDOW_WIDTH // 2
+        self.line_h = int(WINDOW_HEIGHT * _LINE_H_FRAC)
+        self.left_x = int(WINDOW_WIDTH * _COL_LEFT_FRAC)
 
-    def draw_main_menu(self, sel_item: int, items: List[MenuItem]) -> None:
-        count = len(items)
-        item_height = (WINDOW_HEIGHT - MENU_PADDING * 2) // count
-        item_width = WINDOW_WIDTH // 5
+    def draw_menu(self, sel_item: int, items: List[str], title: str) -> None:
+        self._draw_title(title)
         for ind, item in enumerate(items):
-            item_surf = pygame.Surface((item_width, item_height))
-            item_rect = item_surf.get_frect()
-            item_rect.center = (
-                WINDOW_WIDTH // 2,
-                MENU_PADDING + (ind * item_height) + item_height // 2)
-            if sel_item == ind:
-                pygame.draw.rect(
-                    self.surface, pygame.Color(50, 50, 50), item_rect)
-            surf = self.menu_font.render(item.value, True, PACK_MAN_COLOR)
+            surf = self.menu_font.render(item, True, PACK_MAN_COLOR)
             rect = surf.get_frect()
-            rect.center = item_rect.center
+            if sel_item == ind:
+                rect = pygame.draw.rect(
+                    self.surface, pygame.Color(50, 50, 50), rect)
+
             self.surface.blit(surf, rect)
 
+    # def draw_menu(self, sel_item: int, items: List[str], title: str) -> None:
+    #     title_rect = self._draw_title(title)
+    #     count = len(items)
+    #     available_height = WINDOW_HEIGHT - title_rect.bottom
+    #     item_height = (WINDOW_HEIGHT - MENU_PADDING * 2) // count
+    #     item_width = WINDOW_WIDTH // 5
+    #     for ind, item in enumerate(items):
+    #         item_surf = pygame.Surface((item_width, item_height))
+    #         item_rect = item_surf.get_frect()
+    #         item_rect.center = (
+    #             self.center_x,
+    #             MENU_PADDING + (ind * item_height) + item_height // 2)
+    #         if sel_item == ind:
+    #             pygame.draw.rect(
+    #                 self.surface, pygame.Color(50, 50, 50), item_rect)
+    #         surf = self.menu_font.render(item, True, PACK_MAN_COLOR)
+    #         rect = surf.get_frect()
+    #         rect.center = item_rect.center
+    #         self.surface.blit(surf, rect)
+
     def draw_instructions(self) -> None:
-        line_h = int(WINDOW_HEIGHT * _LINE_H_FRAC)
-        left_x = int(WINDOW_WIDTH * _COL_LEFT_FRAC)
         right_x = int(WINDOW_WIDTH * _COL_RIGHT_FRAC)
         body_top = int(WINDOW_HEIGHT * _BODY_TOP_FRAC)
 
         # ── Helpers ──
         def blit_text(text: str, x: int, y: int,
-                      color: str = "white",
-                      font: pygame.font.Font | None = None) -> None:
-            surf = (font or self.instruction_font).render(text, True, color)
+                      color: str = "white") -> None:
+            surf = self.instruction_font.render(text, True, color)
             self.surface.blit(surf, (x, y))
 
         def draw_column(
@@ -83,7 +95,7 @@ class Renderer:
             for text, color in entries:
                 if text:
                     blit_text(text, x, y, color)
-                y += line_h
+                y += self.line_h
 
         blank = ("", INSTRUCTION_COLOR)      # empty-line sentinel
 
@@ -132,31 +144,34 @@ class Renderer:
             ("\u2022 Speed Boost",                   INSTRUCTION_COLOR),
         ]
 
-        # ── Title ──
-        title_surf = self.title_font.render(
-            "PAC-MAN INSTRUCTIONS", True, ACCENT)
-        title_rect = title_surf.get_frect()
-        title_rect.centerx = WINDOW_WIDTH // 2
-        title_rect.top = int(WINDOW_HEIGHT * _TITLE_Y_FRAC)
-        self.surface.blit(title_surf, title_rect)
-
-        # Separator line under title
-        sep_y = int(title_rect.bottom + line_h * 0.4)
-        pygame.draw.line(
-            self.surface, ACCENT, (left_x, sep_y),
-            (WINDOW_WIDTH - left_x, sep_y), 1)
+        self._draw_title("PAC-MAN INSTRUCTIONS")
 
         # ── Columns ──
-        draw_column(left_column,  left_x,  body_top)
+        draw_column(left_column,  self.left_x,  body_top)
         draw_column(right_column, right_x, body_top)
 
         # ── Footer ──
         footer_surf = self.instruction_font.render(
             "ESC  -  Back to Menu", True, ACCENT)
         footer_rect = footer_surf.get_frect()
-        footer_rect.left = left_x
+        footer_rect.left = self.left_x
         footer_rect.bottom = int(WINDOW_HEIGHT * _FOOTER_BOT_FRAC)
         self.surface.blit(footer_surf, footer_rect)
+
+    def draw_highscores(self, scores: List[Tuple[str, str, str]]) -> None:
+        title_rect = self._draw_title("Highscores")
+        count = len(scores)
+        if count == 0:
+            return
+        available_height = WINDOW_HEIGHT - title_rect.bottom
+        line_height = available_height // count
+        for ind, line in enumerate(scores):
+            player, level, score = line
+            surf = self.instruction_font.render(f"{player} {level} {score}", True, "white")
+            rect = surf.get_frect()
+            center_y = title_rect.bottom + (ind * line_height) + (line_height // 2)
+            rect.center = (self.center_x, center_y)
+            self.surface.blit(surf, rect)
 
     def draw(self, state: GameState) -> None:
         self.state = state
@@ -303,6 +318,20 @@ class Renderer:
             pygame.draw.circle(self.surface, (255, 255, 0), center_pos, 8)
         elif cell & 16:
             pygame.draw.circle(self.surface, (255, 184, 151), center_pos, 3)
+
+    def _draw_title(self, title: str) -> pygame.Rect:
+        title_surf = self.title_font.render(
+            title, True, ACCENT)
+        title_rect = title_surf.get_frect()
+        title_rect.centerx = self.center_x
+        title_rect.top = int(WINDOW_HEIGHT * _TITLE_Y_FRAC)
+        self.surface.blit(title_surf, title_rect)
+
+        # Separator line under title
+        sep_y = int(title_rect.bottom + self.line_h * 0.4)
+        return pygame.draw.line(
+            self.surface, ACCENT, (self.left_x, sep_y),
+            (WINDOW_WIDTH - self.left_x, sep_y), 1)
 
     def _cell_top_left(self, row: int, col: int) -> Tuple[int, int]:
         return (col * CELL_SIZE, row * CELL_SIZE)

@@ -1,6 +1,6 @@
-from src.state import GameState, Pacman, Direction, Ghost, GameConfig, GameStats
+from src.state import (GameState, Pacman, Direction,
+                       Ghost, GameConfig, GameStats)
 from mazegenerator.mazegenerator import MazeGenerator
-from src.constants import CELL_SIZE
 from .backend.game_initializer import GameInitializer
 from .backend.game_state_manager import GameStateManager
 
@@ -25,8 +25,6 @@ class GameLogic:
         return state
 
     def update(self, state: GameState, dt: float) -> None:
-        if state.paused:
-            return
         pacman = state.pacman
         pacman.mouth_phase += dt * 8
         self.game_manager.update(dt, pacman.direction)
@@ -36,9 +34,3 @@ class GameLogic:
 
     def apply_pause(self, state: GameState) -> None:
         state.paused = not state.paused
-
-    def _entity_cell(self, x: float, y: float) -> tuple[int, int]:
-        return (
-            int(y // CELL_SIZE),
-            int(x // CELL_SIZE),
-        )

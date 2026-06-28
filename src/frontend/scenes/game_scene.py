@@ -1,4 +1,5 @@
 from ..scene import Scene
+from .pause_scene import PauseScene
 from src.logic import GameLogic
 from src.state import Direction, GameState
 from ..event import InputEvent
@@ -27,7 +28,8 @@ class GameScene(Scene):
             if event.key == "right" or event.key == "d":
                 self.logic.update_direction(self.state, Direction.RIGHT)
             if event.key == "space":
-                self.logic.apply_pause(self.state)
+                # self.logic.apply_pause(self.state)
+                self.switch_to(PauseScene(self))
             if event.key == "escape":
                 from .main_menu_scene import MainMenuScene
                 self.switch_to(MainMenuScene(self.logic))
