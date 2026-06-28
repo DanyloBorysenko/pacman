@@ -46,6 +46,7 @@ class MainMenuScene(Scene):
 
     def _game_scene(self) -> None:
         state = self.logic.create_default_state()
+        print(f"create_default_state() was called Score: {state.live_status.current_score}")
         self.switch_to(GameScene(state, self.logic, self))
 
     def _instruction_scene(self) -> None:

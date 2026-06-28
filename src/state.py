@@ -24,7 +24,7 @@ class GameConfig(Enum):
     high_score_filename = None
     lives = 3
     pacgum = 42
-    points_per_pacgum =10
+    points_per_pacgum = 10
     points_per_super_pacgum = 50
     points_per_ghost = 200
     seed = 42
@@ -62,7 +62,7 @@ class GameStats:
     current_score: int = 0
     current_level: int = 1
     lives_remain: int = 3
-    time_left: int = None
+    time_left: int = 100
     cheat_mode: bool = False
 
 

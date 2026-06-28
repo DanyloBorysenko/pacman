@@ -15,11 +15,10 @@ class GameLogic:
             maze=self.maze,
             pacman=Pacman(0, 0, None),
             ghosts=[Ghost(0, 0, False, None, "red") for _ in range(4)],
-            live_status=GameStats,
+            live_status=GameStats(),
             config=GameConfig)
         GameInitializer(game_state=state).initialize()
         self.game_manager = GameStateManager(state)
-        # print(state.pacman.x, state.pacman.y)
         return state
 
     def update(self, state: GameState, dt: float) -> None:

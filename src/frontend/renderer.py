@@ -41,6 +41,7 @@ class Renderer:
         self.offset_y = 0
         self.cell_offset = CELL_SIZE // 2
         self.center_x = WINDOW_WIDTH // 2
+        self.center_y = WINDOW_HEIGHT // 2
         self.line_h = int(WINDOW_HEIGHT * _LINE_H_FRAC)
         self.left_x = int(WINDOW_WIDTH * _COL_LEFT_FRAC)
 
@@ -150,13 +151,7 @@ class Renderer:
         draw_column(left_column,  self.left_x,  body_top)
         draw_column(right_column, right_x, body_top)
 
-        # ── Footer ──
-        footer_surf = self.instruction_font.render(
-            "ESC  -  Back to Menu", True, ACCENT)
-        footer_rect = footer_surf.get_frect()
-        footer_rect.left = self.left_x
-        footer_rect.bottom = int(WINDOW_HEIGHT * _FOOTER_BOT_FRAC)
-        self.surface.blit(footer_surf, footer_rect)
+        self._escape_footer()
 
     def draw_highscores(self, data: List[Tuple[str, str, str]]) -> None:
         title_rect = self._draw_title("Highscores")
@@ -182,6 +177,8 @@ class Renderer:
             rect.center = (self.center_x, center_y)
             self.surface.blit(surf, rect)
 
+        self._escape_footer()
+
     def draw(self, state: GameState) -> None:
         self.state = state
         maze_width = CELL_SIZE * len(state.maze[0])
@@ -192,6 +189,54 @@ class Renderer:
         self._draw_game_stats()
         self._draw_pacman()
         self._draw_gosts()
+
+    def draw_victory(self, sel_item: int) -> None:
+        self._escape_footer()
+        surf = self.menu_font.render("VICTORY!!!", True, "green")
+        rect = surf.get_frect()
+        rect.center = (self.center_x, PADDING * 2)
+        self.surface.blit(surf, rect)
+        self._draw_question_menu(sel_item)
+
+    def draw_defeat(self, sel_item: int) -> None:
+        self._escape_footer()
+        surf = self.menu_font.render("GAME OVER!!!", True, "red")
+        rect = surf.get_frect()
+        rect.center = (self.center_x, PADDING * 2)
+        self.surface.blit(surf, rect)
+        self._draw_question_menu(sel_item)
+
+    def _draw_question_menu(self, sel_item: int) -> None:
+        surf = self.title_font.render(
+            "Would you like to save your result?", True, "white")
+        rect = surf.get_frect()
+        rect.center = (self.center_x, self.center_y - WINDOW_HEIGHT // 4)
+        self.surface.blit(surf, rect)
+
+        button_surf = pygame.Surface((WINDOW_WIDTH // 5, WINDOW_HEIGHT // 12))
+        left_rect = button_surf.get_frect()
+        left_rect.midright = (int(self.center_x - 30), self.center_y)
+        right_rect = button_surf.get_frect()
+        right_rect.midleft = (int(self.center_x + 30), self.center_y)
+        if sel_item == 0:
+            pygame.draw.rect(
+                self.surface,
+                pygame.Color(50, 50, 50), left_rect, border_radius=6
+                )
+        else:
+            pygame.draw.rect(
+                self.surface,
+                pygame.Color(50, 50, 50), right_rect, border_radius=6
+                )
+        yes_surf = self.menu_font.render("YES", True, "white")
+        yes_rect = yes_surf.get_frect()
+        yes_rect.center = left_rect.center
+        self.surface.blit(yes_surf, yes_rect)
+
+        no_surf = self.menu_font.render("NO", True, "white")
+        no_rect = no_surf.get_frect()
+        no_rect.center = right_rect.center
+        self.surface.blit(no_surf, no_rect)
 
     def _draw_game_stats(self) -> None:
         stats = self.state.live_status
@@ -343,6 +388,14 @@ class Renderer:
         return pygame.draw.line(
             self.surface, ACCENT, (self.left_x, sep_y),
             (WINDOW_WIDTH - self.left_x, sep_y), 1)
+
+    def _escape_footer(self) -> None:
+        footer_surf = self.instruction_font.render(
+            "ESC  -  Back to Menu", True, ACCENT)
+        footer_rect = footer_surf.get_frect()
+        footer_rect.left = self.left_x
+        footer_rect.bottom = int(WINDOW_HEIGHT * _FOOTER_BOT_FRAC)
+        self.surface.blit(footer_surf, footer_rect)
 
     def _cell_top_left(self, row: int, col: int) -> Tuple[int, int]:
         return (col * CELL_SIZE, row * CELL_SIZE)

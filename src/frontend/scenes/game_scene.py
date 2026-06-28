@@ -1,4 +1,5 @@
 from ..scene import Scene
+from .final_scene import FinalScene
 from .pause_scene import PauseScene
 from src.logic import GameLogic
 from src.state import Direction, GameState
@@ -16,6 +17,13 @@ class GameScene(Scene):
         self.main_menu = prev_scene
 
     def update(self, dt: float) -> None:
+        if self.state.live_status.current_score > 10:
+            self.switch_to(
+                FinalScene(
+                    self.main_menu,
+                    self.logic,
+                    self.state.live_status.current_score,
+                    False))
         self.logic.update(self.state, dt)
 
     def handle_event(self, event: InputEvent) -> None:
