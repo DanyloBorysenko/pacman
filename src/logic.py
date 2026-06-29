@@ -17,8 +17,8 @@ class GameLogic:
             ghosts=[
                 Ghost(0, 0, Direction.LEFT, False, None, "red"),
                 Ghost(0, 0, Direction.RIGHT, False, None, "red"),
-                Ghost(0, 0, Direction.UP, False, None, "red"),
-                Ghost(0, 0, Direction.DOWN, False, None, "red")],
+                Ghost(0, 0, Direction.UP, False, None, "blue"),
+                Ghost(0, 0, Direction.DOWN, False, None, "white")],
             live_status=GameStats(),
             config=GameConfig)
         GameInitializer(game_state=state).initialize()

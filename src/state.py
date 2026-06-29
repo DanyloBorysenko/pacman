@@ -1,5 +1,5 @@
-from dataclasses import dataclass
-from typing import List, Tuple
+from dataclasses import dataclass, field
+from typing import List
 from enum import Enum, IntEnum
 
 
@@ -74,3 +74,35 @@ class GameState:
     ghosts: List[Ghost]
     live_status: GameStats = None
     config: GameConfig = None
+    events: List["GameEvent"] = field(default_factory=list)
+
+
+@dataclass
+class GameEvent:
+    """Base class for all game events."""
+    pass
+
+
+@dataclass
+class PacmanDiedEvent(GameEvent):
+    pass
+
+
+@dataclass
+class GhostEatenEvent(GameEvent):
+    ghost: Ghost
+
+
+@dataclass
+class LevelCompletedEvent(GameEvent):
+    complited_level: int
+
+
+@dataclass
+class GameOverEvent(GameEvent):
+    final_score: int
+
+
+@dataclass
+class VictoryEvent(GameEvent):
+    final_score: int
