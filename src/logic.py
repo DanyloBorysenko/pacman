@@ -14,7 +14,11 @@ class GameLogic:
         state = GameState(
             maze=self.maze,
             pacman=Pacman(0, 0, None),
-            ghosts=[Ghost(0, 0, False, None, "red") for _ in range(4)],
+            ghosts=[
+                Ghost(0, 0, Direction.LEFT, False, None, "red"),
+                Ghost(0, 0, Direction.RIGHT, False, None, "red"),
+                Ghost(0, 0, Direction.UP, False, None, "red"),
+                Ghost(0, 0, Direction.DOWN, False, None, "red")],
             live_status=GameStats(),
             config=GameConfig)
         GameInitializer(game_state=state).initialize()

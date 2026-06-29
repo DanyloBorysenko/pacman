@@ -1,5 +1,5 @@
 from typing import List, Tuple
-from src.state import GameState, Direction
+from src.state import GameState, Direction, Ghost
 from src.constants import CELL_SIZE, WINDOW_HEIGHT, WINDOW_WIDTH
 import pygame
 import math
@@ -275,24 +275,109 @@ class Renderer:
             for col, cell in enumerate(line):
                 self._draw_cell(row, col, cell)
 
+    def _draw_ghost(self, ghost: Ghost) -> None:
+        center_x = int(ghost.x * CELL_SIZE + self.offset_x + self.cell_offset)
+        center_y = int(ghost.y * CELL_SIZE + self.offset_y + self.cell_offset)
+
+        radius = CELL_SIZE // 3
+
+        # ----- head -----
+        pygame.draw.circle(
+            self.surface,
+            ghost.colour,
+            (center_x, center_y - radius // 3),
+            radius,
+        )
+
+        # ----- body -----
+        body = pygame.Rect(
+            center_x - radius,
+            center_y - radius // 3,
+            radius * 2,
+            radius + radius // 3,
+        )
+        pygame.draw.rect(self.surface, ghost.colour, body)
+
+        # ----- bottom waves -----
+        wave_r = radius // 3
+        bottom = body.bottom
+
+        for x in (
+            center_x - radius + wave_r,
+            center_x,
+            center_x + radius - wave_r,
+        ):
+            pygame.draw.circle(
+                self.surface,
+                ghost.colour,
+                (x, bottom),
+                wave_r,
+            )
+
+        # ----- eyes -----
+        eye_w = radius // 2
+        eye_h = radius
+
+        left_eye = pygame.Rect(0, 0, eye_w, eye_h)
+        left_eye.center = (
+            center_x - radius // 3,
+            center_y - radius // 2,
+        )
+
+        right_eye = pygame.Rect(0, 0, eye_w, eye_h)
+        right_eye.center = (
+            center_x + radius // 3,
+            center_y - radius // 2,
+        )
+
+        pygame.draw.ellipse(self.surface, "white", left_eye)
+        pygame.draw.ellipse(self.surface, "white", right_eye)
+
+        pupil = radius // 6
+
+        dx, dy = ghost.assigned_direction.value
+
+        offset = radius // 8
+
+        pygame.draw.circle(
+            self.surface,
+            "blue",
+            (
+                left_eye.centerx + dx * offset,
+                left_eye.centery + dy * offset,
+            ),
+            pupil,
+        )
+
+        pygame.draw.circle(
+            self.surface,
+            "blue",
+            (
+                right_eye.centerx + dx * offset,
+                right_eye.centery + dy * offset,
+            ),
+            pupil,
+        )
+
     def _draw_gosts(self) -> None:
         for ghost in self.state.ghosts:
-            center_x = int(
-                ghost.x * CELL_SIZE + self.offset_x + self.cell_offset)
-            center_y = int(
-                ghost.y * CELL_SIZE + self.offset_y + self.cell_offset)
-            radius = CELL_SIZE // 3
-            pygame.draw.circle(
-                self.surface, ghost.colour, (center_x, center_y), radius)
-            eye_surf = pygame.Surface((radius // 2.5, radius // 2))
-            left_eye_rect = eye_surf.get_frect()
-            left_eye_rect.center = (
-                center_x - radius // 2, center_y - radius // 3)
-            pygame.draw.ellipse(self.surface, "white", left_eye_rect)
-            right_eye_rect = eye_surf.get_frect()
-            right_eye_rect.center = (
-                center_x + radius // 2, center_y - radius // 3)
-            pygame.draw.ellipse(self.surface, "white", right_eye_rect)
+            self._draw_ghost(ghost)
+            # center_x = int(
+            #     ghost.x * CELL_SIZE + self.offset_x + self.cell_offset)
+            # center_y = int(
+            #     ghost.y * CELL_SIZE + self.offset_y + self.cell_offset)
+            # radius = CELL_SIZE // 3
+            # pygame.draw.circle(
+            #     self.surface, ghost.colour, (center_x, center_y), radius)
+            # eye_surf = pygame.Surface((radius // 2.5, radius // 2))
+            # left_eye_rect = eye_surf.get_frect()
+            # left_eye_rect.center = (
+            #     center_x - radius // 2, center_y - radius // 3)
+            # pygame.draw.ellipse(self.surface, "white", left_eye_rect)
+            # right_eye_rect = eye_surf.get_frect()
+            # right_eye_rect.center = (
+            #     center_x + radius // 2, center_y - radius // 3)
+            # pygame.draw.ellipse(self.surface, "white", right_eye_rect)
 
     def _draw_pacman(self) -> None:
         pacman = self.state.pacman

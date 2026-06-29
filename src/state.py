@@ -52,9 +52,10 @@ class Ghost:
     # coordinate for ghost
     x: float
     y: float
-    is_edibe: bool = False # chasing or fleeing
+    assigned_direction: Direction
+    is_edibe: bool = False
     edible_since: int | None = None
-    colour: str = None # colour of the ghost when chasing
+    colour: str = None
 
 
 @dataclass

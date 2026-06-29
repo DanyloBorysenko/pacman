@@ -17,7 +17,7 @@ class GameScene(Scene):
         self.main_menu = prev_scene
 
     def update(self, dt: float) -> None:
-        if self.state.live_status.current_score > 10:
+        if self.state.live_status.lives_remain == 0:
             self.switch_to(
                 FinalScene(
                     self.main_menu,
