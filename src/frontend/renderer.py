@@ -431,11 +431,6 @@ class Renderer:
         x, y = self._cell_top_left(row, col)
         x = x + self.offset_x
         y = y + self.offset_y
-        if cell == 15:
-            pygame.draw.rect(
-                self.surface, MAZE_COLOR,
-                (x, y, CELL_SIZE, CELL_SIZE))
-            return
 
         if cell & NORTH:
             pygame.draw.line(
@@ -453,6 +448,14 @@ class Renderer:
             pygame.draw.line(
                 self.surface, MAZE_COLOR, (x, y),
                 (x, y + CELL_SIZE), WALL_WIDTH)
+        if cell == 15:
+            pygame.draw.rect(
+                self.surface, "blue",
+                (x + WALL_WIDTH // 2,
+                 y + WALL_WIDTH // 2,
+                 CELL_SIZE,
+                 CELL_SIZE))
+            return
 
         center_pos = (x + self.cell_offset, y + self.cell_offset)
         if cell & 32:
