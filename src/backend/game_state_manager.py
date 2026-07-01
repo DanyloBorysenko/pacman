@@ -16,14 +16,14 @@ class GameStateManager:
     def update_remaining_time(self, dt: float) -> None:
         if self.game_state.paused:
             return
-        
+
         self.game_state.live_status.time_left -= dt
 
         if self.game_state.live_status.time_left <= 0:
-            self.game_state.live_status.time_left= 0
             print("Time's up")
-            self.game_state.live_status.lives_remain = 0
             self._process_player_death()
+            self.game_state.live_status.time_left =\
+                self.game_state.config.level_max_time
 
     def update_pacman(self, dt: float, requested_direction: Direction) -> None:
         """The central heartbeat tick. Pass dt here from your main clock loop."""
@@ -125,41 +125,41 @@ class GameStateManager:
                 ghost.edible_since = time.time()
                 ghost.time_laps = 0
             print(f"Score: {self.game_state.live_status.current_score}")
-    
+
     def _check_for_gums(self) -> None:
         if not np.any(
-            self.game_state.maze & (
-                BitMaps.SUPER_PACGUM | BitMaps.PACGUM)):
-                self._advance_to_next_level()
+                self.game_state.maze &
+                (BitMaps.SUPER_PACGUM | BitMaps.PACGUM)):
+            self._advance_to_next_level()
 
     def _advance_to_next_level(self) -> None:
         """Handles state resets and difficulty scaling when a level is cleared."""
         state = self.game_state
-        
+
         # 1. Update level counters
         state.live_status.current_level += 1
-        
+
         # 2. Scale up difficulty (Dynamic Speed Adjustment)
         # We modify the instance variables if they are stored in config
         global PACMAN_SPEED, GHOST_SPEED
         PACMAN_SPEED *= 1.10  # Increase speed by 10% each level
         GHOST_SPEED *= 1.10
-        
+
         # 3. Request a fresh maze matrix from your generator
         # (Assuming you have access to your original generator package or initializer hook)
         # We clear out old values by overwriting the matrix array
         from src.backend.game_initializer import GameInitializer
-        
+
         # Regenerate maze structural layout lines
         # if your initializer handles this, invoke it directly:
         initializer = GameInitializer(state)
         initializer.reload_new_level_map(self.game_state) 
-        
+
         # 4. Reset Pac-Man physics markers completely
         state.pacman.xd = -1
         state.pacman.yd = -1
         state.pacman.assigned_direction = None
-        
+
         # 5. Reset all Ghosts physics and state trackers completely
         for ghost in state.ghosts:
             ghost.xd = -1
@@ -168,7 +168,7 @@ class GameStateManager:
             ghost.is_edible = False
             ghost.time_laps = 0
             ghost.colour = ghost.initial_colour
-    
+
     def update_ghosts(self, dt: float) -> None:
         """Updates all ghosts using fractional time slices and coordinates their AI changes."""
         pacman_coords = (int(self.game_state.pacman.y), int(self.game_state.pacman.x))
