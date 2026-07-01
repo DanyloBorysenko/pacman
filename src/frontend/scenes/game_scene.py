@@ -1,5 +1,5 @@
 from ..scene import Scene
-from src.logic import GameLogic
+from src.backend.logic import GameLogic
 from src.state import Direction, GameState
 from ..event import InputEvent
 from ..renderer import Renderer

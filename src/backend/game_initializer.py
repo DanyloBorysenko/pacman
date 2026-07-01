@@ -1,7 +1,6 @@
 import numpy as np
-import enum
 from random import random
-from typing import List, Tuple
+from typing import Tuple
 from ..state import GameState, BitMaps, GameStats
 
 
@@ -42,17 +41,32 @@ def find_valid_center(maze: np.ndarray) -> Tuple[int, int]:
 class GameInitializer:
     def __init__(self, game_state: GameState):
         self.game_state = game_state
-        if not isinstance(game_state.maze, np.ndarray):
-            self.game_state.maze = np.array(game_state.maze)
-        self._get_valid_center_and_corners()
+        if not isinstance(self.game_state.maze, np.ndarray):
+            self.game_state.maze = np.array(self.game_state.maze)
 
     def initialize(self) -> None:
+        self._get_valid_center_and_corners()
         self._place_pacgums()
         self._place_super_pacgums()
         self._place_ghosts()
         self._place_pacman()
         self.game_state.live_status = GameStats(
-            lives_remain=self.game_state.config.lives.value)
+            lives_remain=self.game_state.config.lives,
+            time_left=self.game_state.config.level_max_time)
+        
+    def reload_new_level_map(self, game_state: GameState) -> None:
+        from mazegenerator.mazegenerator import MazeGenerator
+        generator = MazeGenerator()
+        game_state.maze = np.array(generator.maze)
+        self.game_state = game_state
+        self._get_valid_center_and_corners()
+        self._place_pacgums()
+        self._place_super_pacgums()
+        self._place_ghosts()
+        self._place_pacman()
+        self.game_state.live_status.time_left =\
+            self.game_state.config.level_max_time
+
 
     def _get_valid_center_and_corners(self) -> None:
         self.corners = [
@@ -64,7 +78,7 @@ class GameInitializer:
         self.valid_center = find_valid_center(self.game_state.maze)
 
     def _place_pacgums(self) -> None:
-        total_pacgums = self.game_state.config.pacgum.value
+        total_pacgums = self.game_state.config.pacgum
         is_valid_corridors = (self.game_state.maze & BitMaps.WALL_MASK) < 15
 
         is_valid_corridors[self.valid_center[0], self.valid_center[1]] = False

@@ -1,5 +1,5 @@
 from .renderer import Renderer
-from src.logic import GameLogic
+from src.backend.logic import GameLogic
 from src.constants import WINDOW_WIDTH, WINDOW_HEIGHT
 from .scenes.game_scene import GameScene
 from .scenes.main_menu_scene import MainMenuScene

@@ -3,9 +3,9 @@ from src.state import (
     GameConfig, GameStats)
 from mazegenerator.mazegenerator import MazeGenerator
 from src.constants import CELL_SIZE
-from .backend.game_initializer import GameInitializer
-from .backend.game_state_manager import GameStateManager
-from .backend.ghost_movement import (
+from .game_initializer import GameInitializer
+from .game_state_manager import GameStateManager
+from .ghost_movement import (
     RandomMovement, DirectionalMovement,
     PseudoRandomMovement
 )
@@ -21,9 +21,10 @@ GHOSTS = [
 
 
 class GameLogic:
-    def __init__(self, generator: MazeGenerator):
+    def __init__(self, generator: MazeGenerator, config: GameConfig):
         self.generator = generator
         self.maze = generator.maze
+        self.config = config
 
     def create_default_state(self) -> GameState:
         state = GameState(
@@ -31,7 +32,7 @@ class GameLogic:
             pacman=Pacman(0, 0, None),
             ghosts=GHOSTS,
             live_status=GameStats,
-            config=GameConfig)
+            config=self.config)
         GameInitializer(game_state=state).initialize()
         self.game_manager = GameStateManager(state)
         # print(state.pacman.x, state.pacman.y)
@@ -42,6 +43,7 @@ class GameLogic:
             return
         pacman = state.pacman
         pacman.mouth_phase += dt * 8
+        self.game_manager.update_remaining_time(dt)
         self.game_manager.update_pacman(dt, pacman.direction)
         self.game_manager.update_ghosts(dt)
         self.game_manager.check_collisions()

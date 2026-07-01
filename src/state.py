@@ -24,20 +24,17 @@ class BitMaps(IntEnum):
     SUPER_PACGUM = 32
 
 
-class GameConfig(Enum):
-    high_score_filename = None
-    lives = 3
-    pacgum = 42
-    points_per_pacgum =10
-    points_per_super_pacgum = 50
-    points_per_ghost = 200
-    ghost_edible_time = 5
-    seed = 42
-    level_max_time = 90
-
-
-class CheatModes(Enum):
-    pass
+@dataclass
+class GameConfig:
+    high_score_filename: str = "scoreboard.json"
+    lives: int = 3
+    pacgum: int = 5
+    points_per_pacgum: int = 10
+    points_per_super_pacgum: int = 50
+    points_per_ghost: int = 200
+    ghost_edible_time: float = 5.0
+    seed: int = 42
+    level_max_time: float = 60.0
 
 
 @dataclass
@@ -77,7 +74,8 @@ class GameStats:
     current_level: int = 1
     lives_remain: int = 3
     time_left: int = None
-    cheat_mode: bool = False
+    is_edible: bool = False
+    edible_time_left: int = 0
 
 
 @dataclass
@@ -88,3 +86,7 @@ class GameState:
     paused: bool = True
     live_status: GameStats = None
     config: GameConfig = None
+
+    # Cheat Mode flags
+    create_invisibility: bool = False  #'I' 
+    skip_level: bool = False  #'L'
