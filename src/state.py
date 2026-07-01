@@ -42,6 +42,7 @@ class Pacman:
     y: float
     direction: Direction | None
     mouth_phase: float = 0.0
+    death_phase: float = 0.0
     xd: int = -1
     yd: int = -1
     assigned_direction: Direction | None = None
@@ -85,7 +86,7 @@ class GameEvent:
 
 @dataclass
 class PacmanDiedEvent(GameEvent):
-    pass
+    pacman: Pacman
 
 
 @dataclass

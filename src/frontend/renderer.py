@@ -362,70 +362,88 @@ class Renderer:
     def _draw_gosts(self) -> None:
         for ghost in self.state.ghosts:
             self._draw_ghost(ghost)
-            # center_x = int(
-            #     ghost.x * CELL_SIZE + self.offset_x + self.cell_offset)
-            # center_y = int(
-            #     ghost.y * CELL_SIZE + self.offset_y + self.cell_offset)
-            # radius = CELL_SIZE // 3
-            # pygame.draw.circle(
-            #     self.surface, ghost.colour, (center_x, center_y), radius)
-            # eye_surf = pygame.Surface((radius // 2.5, radius // 2))
-            # left_eye_rect = eye_surf.get_frect()
-            # left_eye_rect.center = (
-            #     center_x - radius // 2, center_y - radius // 3)
-            # pygame.draw.ellipse(self.surface, "white", left_eye_rect)
-            # right_eye_rect = eye_surf.get_frect()
-            # right_eye_rect.center = (
-            #     center_x + radius // 2, center_y - radius // 3)
-            # pygame.draw.ellipse(self.surface, "white", right_eye_rect)
 
     def _draw_pacman(self) -> None:
         pacman = self.state.pacman
+
         center_x = int(pacman.x * CELL_SIZE + self.offset_x + self.cell_offset)
         center_y = int(pacman.y * CELL_SIZE + self.offset_y + self.cell_offset)
         radius = CELL_SIZE // 3
+
+        # Draw body
         pygame.draw.circle(
-            self.surface, PACK_MAN_COLOR,
-            (center_x, center_y), radius)
-        direction = (pacman.direction
-                     if pacman.direction else Direction.RIGHT)
+            self.surface,
+            PACK_MAN_COLOR,
+            (center_x, center_y),
+            radius,
+        )
+
+        direction = pacman.direction or Direction.RIGHT
+
+        base_angle = {
+            Direction.RIGHT: 0,
+            Direction.DOWN: 90,
+            Direction.LEFT: 180,
+            Direction.UP: 270,
+        }[direction]
+
+        # Draw eye
         dx, dy = direction.value
         if dx != 0:
-            eye_x = center_x + (dx * (radius // 3))
-            eye_y = center_y - (radius // 3)
+            eye_x = center_x + dx * radius // 3
+            eye_y = center_y - radius // 3
         else:
-            eye_x = center_x + (radius // 3)
-            eye_y = center_y + (dy * (radius // 3))
+            eye_x = center_x + radius // 3
+            eye_y = center_y + dy * radius // 3
+
         pygame.draw.circle(
-            self.surface, BACKGROUND_COLOR, (eye_x, eye_y), radius // 5)
-        chomp_factor = abs(math.sin(pacman.mouth_phase))
+            self.surface,
+            BACKGROUND_COLOR,
+            (eye_x, eye_y),
+            radius // 5,
+        )
 
-        # Perpendicular vectors for jaw spread
-        perpendicular_x = -dy
-        perpendicular_y = dx
+        # Mouth opening (degrees)
+        if pacman.death_phase > 0:
+            if pacman.death_phase >= 0.999:
+                pygame.draw.circle(
+                    self.surface,
+                    BACKGROUND_COLOR,
+                    (center_x, center_y),
+                    radius,
+                )
+                return
+            opening = 180 * pacman.death_phase
+        else:
+            opening = 45 * abs(math.sin(pacman.mouth_phase))
 
-        # Calculate the tip of the mouth extending outward
-        mouth_tip_x = center_x + dx * (radius)
-        mouth_tip_y = center_y + dy * (radius)
+        start_angle = base_angle - opening
+        end_angle = base_angle + opening
 
-        # Apply the chomp_factor to the maximum jaw spread width
-        max_jaw_spread = radius // 2
-        current_jaw_spread = max_jaw_spread * chomp_factor
+        points = [(center_x, center_y)]
 
-        # Calculate the two shifting corners of the mouth
-        jaw1_x = mouth_tip_x + perpendicular_x * current_jaw_spread
-        jaw1_y = mouth_tip_y + perpendicular_y * current_jaw_spread
+        step = 2
 
-        jaw2_x = mouth_tip_x - perpendicular_x * current_jaw_spread
-        jaw2_y = mouth_tip_y - perpendicular_y * current_jaw_spread
+        angle = start_angle
+        while angle <= end_angle:
+            rad = math.radians(angle)
+            x = center_x + radius * math.cos(rad)
+            y = center_y + radius * math.sin(rad)
+            points.append((round(x), round(y)))
+            angle += step
 
-        # 4. Draw the animating mouth polygon
-        mouth_points = [
-            (center_x, center_y),
-            (int(jaw1_x), int(jaw1_y)),
-            (int(jaw2_x), int(jaw2_y))
-        ]
-        pygame.draw.polygon(self.surface, BACKGROUND_COLOR, mouth_points)
+        # Always include the last point exactly
+        rad = math.radians(end_angle)
+        x = center_x + radius * math.cos(rad)
+        y = center_y + radius * math.sin(rad)
+        points.append((round(x), round(y)))
+
+        if len(points) >= 3:
+            pygame.draw.polygon(
+                self.surface,
+                BACKGROUND_COLOR,
+                points,
+            )
 
     def _draw_cell(self, row: int, col: int, cell: int) -> None:
         x, y = self._cell_top_left(row, col)

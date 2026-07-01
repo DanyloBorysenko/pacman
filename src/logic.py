@@ -28,10 +28,7 @@ class GameLogic:
 
     def update(self, state: GameState, dt: float) -> None:
         pacman = state.pacman
-        pacman.mouth_phase += dt * 8
         self.game_manager.update(dt, pacman.direction)
-        if state.live_status.current_score > 50:
-            state.events.append(VictoryEvent(state.live_status.current_score))
 
     def update_direction(self, state: GameState, direction: Direction) -> None:
         state.pacman.direction = direction
