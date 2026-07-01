@@ -21,8 +21,12 @@ class Animation(ABC):
     def finished(self) -> bool:
         pass
 
+    @abstractmethod
+    def on_finish(self) -> None:
+        pass
 
-class PacmanDeathAnumation(Animation):
+
+class PacmanDeathAnimation(Animation):
     blocking = True
 
     def __init__(self, pacman: Pacman):
@@ -38,6 +42,9 @@ class PacmanDeathAnumation(Animation):
     def finished(self):
         return self.timer <= 0
 
+    def on_finish(self) -> None:
+        self.pacman.death_phase = 0.0
+
 
 class AnimationManager:
     def __init__(self):
@@ -47,11 +54,16 @@ class AnimationManager:
         self._animations.append(animation)
 
     def update(self, dt: float) -> None:
+        alive = []
+
         for animation in self._animations:
             animation.update(dt)
-        self._animations = [
-            a for a in self._animations if not a.finished
-        ]
+
+            if animation.finished:
+                animation.on_finish()
+            else:
+                alive.append(animation)
+        self._animations = alive
 
     def has_blocking(self) -> bool:
         return any([a.blocking for a in self._animations])
@@ -102,7 +114,7 @@ class GameScene(Scene):
     def _process_events(self) -> None:
         for event in self.state.events:
             if isinstance(event, PacmanDiedEvent):
-                self.anim_manager.add(PacmanDeathAnumation(self.state.pacman))
+                self.anim_manager.add(PacmanDeathAnimation(self.state.pacman))
             if isinstance(event, GameOverEvent):
                 self.switch_to(
                     FinalScene(
