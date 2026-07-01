@@ -89,4 +89,4 @@ class GameState:
 
     # Cheat Mode flags
     create_invisibility: bool = False  #'I' 
-    skip_level: bool = False  #'L'
+    # 'L' for level skip

@@ -17,7 +17,9 @@ class Controller:
             pygame.K_LEFT: "left",
             pygame.K_RIGHT: "right",
             pygame.K_SPACE: "space",
-            pygame.K_RETURN: "enter"
+            pygame.K_RETURN: "enter",
+            pygame.K_i: "i",       # Added for Invincibility cheat toggle
+            pygame.K_l: "l"        # Added for Skip Level cheat trigger
         }
         self.screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
         self.clock = pygame.Clock()
@@ -44,7 +46,6 @@ class Controller:
             self.screen.fill("black")
             self.current_scene.render(self.renderer)
             pygame.display.update()
-            time.sleep(0.05)
         pygame.quit()
 
     def _to_input_event(self,

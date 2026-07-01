@@ -29,5 +29,11 @@ class GameScene(Scene):
             if event.key == "space":
                 self.logic.apply_pause(self.state)
 
+            # --- CHEAT MODE KEY ROUTING ---
+            if event.key == "i":
+                self.logic.toggle_invincibility(self.state)
+            if event.key == "l":
+                self.logic.cheat_skip_level(self.state)
+
     def render(self, renderer: Renderer) -> None:
         renderer.draw(self.state)

@@ -129,8 +129,7 @@ class GameStateManager:
     def _check_for_gums(self) -> None:
         if not np.any(
             self.game_state.maze & (
-                BitMaps.SUPER_PACGUM | BitMaps.PACGUM)) or\
-            self.game_state.skip_level:
+                BitMaps.SUPER_PACGUM | BitMaps.PACGUM)):
                 self._advance_to_next_level()
 
     def _advance_to_next_level(self) -> None:
@@ -247,7 +246,7 @@ class GameStateManager:
 
                 # STEP A: Ghost is Dangerous
                 else:
-                    if self.game_state.cheat_invincibility:
+                    if self.game_state.create_invisibility:
                         continue
                     self._process_player_death()
                     break  # Stop checking other ghosts on this frame since player died
@@ -301,14 +300,3 @@ class GameStateManager:
                 ghost.xd = -1
                 ghost.yd = -1
         # time.sleep(1)
-
-    def toggle_invincibility(self) -> None:
-        """Swaps player invincibility status flag on the fly."""
-        state = self.game_state
-        state.cheat_invincibility = not state.cheat_invincibility
-        print(f"[CHEAT] Invincibility is now: {state.cheat_invincibility}")
-
-    def cheat_skip_level(self) -> None:
-        """Instantly forces a level transition bypass."""
-        print("[CHEAT] Skipping current level layout!")
-        self._advance_to_next_level()
