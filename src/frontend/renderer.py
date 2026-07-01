@@ -281,34 +281,45 @@ class Renderer:
 
         radius = CELL_SIZE // 3
 
+        # Temporary surface with transparency
+        size = radius * 4
+        ghost_surface = pygame.Surface((size, size), pygame.SRCALPHA)
+
+        local_x = size // 2
+        local_y = size // 2
+
         # ----- head -----
         pygame.draw.circle(
-            self.surface,
+            ghost_surface,
             ghost.colour,
-            (center_x, center_y - radius // 3),
+            (local_x, local_y - radius // 3),
             radius,
         )
 
         # ----- body -----
         body = pygame.Rect(
-            center_x - radius,
-            center_y - radius // 3,
+            local_x - radius,
+            local_y - radius // 3,
             radius * 2,
             radius + radius // 3,
         )
-        pygame.draw.rect(self.surface, ghost.colour, body)
+        pygame.draw.rect(
+            ghost_surface,
+            ghost.colour,
+            body,
+        )
 
         # ----- bottom waves -----
         wave_r = radius // 3
         bottom = body.bottom
 
         for x in (
-            center_x - radius + wave_r,
-            center_x,
-            center_x + radius - wave_r,
+            local_x - radius + wave_r,
+            local_x,
+            local_x + radius - wave_r,
         ):
             pygame.draw.circle(
-                self.surface,
+                ghost_surface,
                 ghost.colour,
                 (x, bottom),
                 wave_r,
@@ -320,27 +331,26 @@ class Renderer:
 
         left_eye = pygame.Rect(0, 0, eye_w, eye_h)
         left_eye.center = (
-            center_x - radius // 3,
-            center_y - radius // 2,
+            local_x - radius // 3,
+            local_y - radius // 2,
         )
 
         right_eye = pygame.Rect(0, 0, eye_w, eye_h)
         right_eye.center = (
-            center_x + radius // 3,
-            center_y - radius // 2,
+            local_x + radius // 3,
+            local_y - radius // 2,
         )
 
-        pygame.draw.ellipse(self.surface, "white", left_eye)
-        pygame.draw.ellipse(self.surface, "white", right_eye)
+        pygame.draw.ellipse(ghost_surface, "white", left_eye)
+        pygame.draw.ellipse(ghost_surface, "white", right_eye)
 
         pupil = radius // 6
 
         dx, dy = ghost.assigned_direction.value
-
         offset = radius // 8
 
         pygame.draw.circle(
-            self.surface,
+            ghost_surface,
             "blue",
             (
                 left_eye.centerx + dx * offset,
@@ -350,13 +360,25 @@ class Renderer:
         )
 
         pygame.draw.circle(
-            self.surface,
+            ghost_surface,
             "blue",
             (
                 right_eye.centerx + dx * offset,
                 right_eye.centery + dy * offset,
             ),
             pupil,
+        )
+
+        # Apply transparency
+        ghost_surface.set_alpha(int(255 * ghost.alpha))
+
+        # Draw on screen
+        self.surface.blit(
+            ghost_surface,
+            (
+                center_x - local_x,
+                center_y - local_y,
+            ),
         )
 
     def _draw_gosts(self) -> None:

@@ -57,6 +57,7 @@ class Ghost:
     is_edibe: bool = False
     edible_since: int | None = None
     colour: str = None
+    alpha: float = 1.0
 
 
 @dataclass

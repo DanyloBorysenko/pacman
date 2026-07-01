@@ -2,7 +2,7 @@ from ..scene import Scene
 from .final_scene import FinalScene
 from .pause_scene import PauseScene
 from src.logic import GameLogic
-from src.state import Direction, GameState, GameOverEvent, VictoryEvent, PacmanDiedEvent, Pacman
+from src.state import Direction, GameState, GameOverEvent, VictoryEvent, PacmanDiedEvent, Pacman, Ghost, GhostEatenEvent
 from ..event import InputEvent
 from ..renderer import Renderer
 from typing import List
@@ -46,6 +46,27 @@ class PacmanDeathAnimation(Animation):
         self.pacman.death_phase = 0.0
 
 
+class GhostDeathAnimation(Animation):
+    blocking = True
+
+    def __init__(self, ghost: Ghost):
+        self.ghost = ghost
+        self.total = 1.0
+        self.timer = self.total
+
+    def update(self, dt: float) -> None:
+        self.timer -= dt
+        progress = min(1.0, 1.0 - self.timer / self.total)
+        self.ghost.alpha = 1.0 - progress
+
+    @property
+    def finished(self):
+        return self.timer <= 0
+
+    def on_finish(self) -> None:
+        self.ghost.alpha = 1.0
+
+
 class AnimationManager:
     def __init__(self):
         self._animations: List[Animation] = []
@@ -87,7 +108,8 @@ class GameScene(Scene):
             self.logic.update(self.state, dt)
             if self.state.live_status.current_score > 20 and self.counter == 0:
                 # self.state.events.append(VictoryEvent(self.state.live_status.current_score))
-                self.state.events.append(PacmanDiedEvent(self.state.pacman))
+                # self.state.events.append(PacmanDiedEvent(self.state.pacman))
+                self.state.events.append(GhostEatenEvent(self.state.ghosts[0]))
                 self.counter += 1
             self._process_events()
 
@@ -115,6 +137,8 @@ class GameScene(Scene):
         for event in self.state.events:
             if isinstance(event, PacmanDiedEvent):
                 self.anim_manager.add(PacmanDeathAnimation(self.state.pacman))
+            if isinstance(event, GhostEatenEvent):
+                self.anim_manager.add(GhostDeathAnimation(event.ghost))
             if isinstance(event, GameOverEvent):
                 self.switch_to(
                     FinalScene(
