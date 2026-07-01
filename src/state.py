@@ -88,5 +88,5 @@ class GameState:
     config: GameConfig = None
 
     # Cheat Mode flags
-    create_invisibility: bool = False  #'I' 
+    cheat_invincibility: bool = False  #'I' 
     # 'L' for level skip

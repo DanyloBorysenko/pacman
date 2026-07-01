@@ -246,7 +246,7 @@ class GameStateManager:
 
                 # STEP A: Ghost is Dangerous
                 else:
-                    if self.game_state.create_invisibility:
+                    if self.game_state.cheat_invincibility:
                         continue
                     self._process_player_death()
                     break  # Stop checking other ghosts on this frame since player died
