@@ -206,6 +206,51 @@ class Renderer:
         self.surface.blit(surf, rect)
         self._draw_question_menu(sel_item)
 
+    def apply_blur(self, factor: int = 8) -> None:
+        small = pygame.transform.smoothscale(
+            self.surface, (WINDOW_WIDTH // factor, WINDOW_HEIGHT // factor))
+        blurred = pygame.transform.smoothscale(small, (WINDOW_WIDTH, WINDOW_HEIGHT))
+        self.surface.blit(blurred, (0, 0))
+
+    def draw_game_over_text(self, scale: float, alpha: int) -> None:
+        overlay = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.SRCALPHA)
+        overlay.fill((0, 0, 0, alpha))
+        self.surface.blit(overlay, (0, 0))
+
+        if scale <= 0.01:
+            return
+        base_surf = self.title_font.render("GAME OVER", True, "red")
+        w, h = base_surf.get_size()
+        scaled = pygame.transform.smoothscale(
+            base_surf, (max(1, int(w * scale)), max(1, int(h * scale))))
+        rect = scaled.get_frect()
+        rect.center = (self.center_x, self.center_y)
+        self.surface.blit(scaled, rect)
+
+    def draw_confetti(self, particles) -> None:
+        for p in particles:
+            size = p.size
+            surf = pygame.Surface((size, size), pygame.SRCALPHA)
+            pygame.draw.rect(surf, p.color, (0, 0, size, size))
+            rotated = pygame.transform.rotate(surf, p.rotation)
+            rect = rotated.get_rect(center=(p.x, p.y))
+            self.surface.blit(rotated, rect)
+
+    def draw_victory_text(self, scale: float, alpha: int) -> None:
+        overlay = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.SRCALPHA)
+        overlay.fill((0, 0, 0, alpha))
+        self.surface.blit(overlay, (0, 0))
+
+        if scale <= 0.01:
+            return
+        base_surf = self.title_font.render("VICTORY!", True, "lime")
+        w, h = base_surf.get_size()
+        scaled = pygame.transform.smoothscale(
+            base_surf, (max(1, int(w * scale)), max(1, int(h * scale))))
+        rect = scaled.get_frect()
+        rect.center = (self.center_x, self.center_y)
+        self.surface.blit(scaled, rect)
+
     def _draw_question_menu(self, sel_item: int) -> None:
         surf = self.title_font.render(
             "Would you like to save your result?", True, "white")

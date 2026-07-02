@@ -7,6 +7,9 @@ from ..event import InputEvent
 from ..renderer import Renderer
 from typing import List
 from abc import ABC, abstractmethod
+from ...constants import WINDOW_WIDTH, WINDOW_HEIGHT
+import random
+import math
 
 
 class Animation(ABC):
@@ -86,6 +89,97 @@ class GhostDeathAnimation(Animation):
             self.score_coord_x, self.score_coord_y)
 
 
+class GameOverAnimation(Animation):
+    blocking = True
+
+    def __init__(self, on_finish, grow_time: float = 0.8, hold_time: float = 1.5):
+        self.grow_time = grow_time
+        self.hold_time = hold_time
+        self.total = grow_time + hold_time
+        self.elapsed = 0.0
+        self.scale = 0.0
+        self.alpha = 0
+        self._on_finish = on_finish
+
+    def update(self, dt: float) -> None:
+        self.elapsed += dt
+        progress = min(1.0, self.elapsed / self.grow_time)
+        self.scale = progress
+        self.alpha = int(180 * progress)
+
+    @property
+    def finished(self) -> bool:
+        return self.elapsed >= self.total
+
+    def on_finish(self) -> None:
+        self._on_finish()
+
+    def draw(self, renderer: Renderer) -> None:
+        renderer.apply_blur()
+        renderer.draw_game_over_text(self.scale, self.alpha)
+
+
+class ConfettiParticle:
+    __slots__ = ("x", "y", "vx", "vy", "size", "color", "rotation", "rot_speed")
+
+    def __init__(self, x: float, y: float) -> None:
+        angle = random.uniform(0, math.tau)
+        speed = random.uniform(150, 400)
+        self.x = x
+        self.y = y
+        self.vx = math.cos(angle) * speed
+        self.vy = math.sin(angle) * speed - 200  # bias upward for the "pop"
+        self.size = random.uniform(4, 9)
+        self.color = random.choice([
+            "red", "yellow", "cyan", "magenta", "lime", "orange", "white"
+        ])
+        self.rotation = random.uniform(0, 360)
+        self.rot_speed = random.uniform(-360, 360)
+
+
+class VictoryAnimation(Animation):
+    blocking = True
+
+    GRAVITY = 500
+
+    def __init__(self, on_finish, grow_time: float = 0.6, hold_time: float = 2.5,
+                 particle_count: int = 120):
+        self.grow_time = grow_time
+        self.hold_time = hold_time
+        self.total = grow_time + hold_time
+        self.elapsed = 0.0
+        self.scale = 0.0
+        self.alpha = 0
+        self._on_finish = on_finish
+
+        cx = WINDOW_WIDTH // 2
+        cy = WINDOW_HEIGHT // 2
+        self.particles = [ConfettiParticle(cx, cy) for _ in range(particle_count)]
+
+    def update(self, dt: float) -> None:
+        self.elapsed += dt
+        progress = min(1.0, self.elapsed / self.grow_time)
+        self.scale = progress
+        self.alpha = int(120 * progress)
+
+        for p in self.particles:
+            p.vy += self.GRAVITY * dt
+            p.x += p.vx * dt
+            p.y += p.vy * dt
+            p.rotation += p.rot_speed * dt
+
+    @property
+    def finished(self) -> bool:
+        return self.elapsed >= self.total
+
+    def on_finish(self) -> None:
+        self._on_finish()
+
+    def draw(self, renderer: Renderer) -> None:
+        renderer.draw_confetti(self.particles)
+        renderer.draw_victory_text(self.scale, self.alpha)
+
+
 class AnimationManager:
     def __init__(self):
         self._animations: List[Animation] = []
@@ -130,9 +224,10 @@ class GameScene(Scene):
             self.state.pacman.mouth_phase += dt * 8
             self.logic.update(self.state, dt)
             if self.state.live_status.current_score > 20 and self.counter == 0:
-                # self.state.events.append(VictoryEvent(self.state.live_status.current_score))
+                # self.state.events.append(GameOverEvent(self.state.live_status.current_score))
+                self.state.events.append(VictoryEvent(self.state.live_status.current_score))
                 # self.state.events.append(PacmanDiedEvent(self.state.pacman))
-                self.state.events.append(GhostEatenEvent(self.state.ghosts.pop(0)))
+                # self.state.events.append(GhostEatenEvent(self.state.ghosts.pop(0)))
                 self.counter += 1
             self._process_events()
 
@@ -167,17 +262,25 @@ class GameScene(Scene):
                 self.anim_manager.add(GhostDeathAnimation(
                     event.ghost, points_per_ghost))
             if isinstance(event, GameOverEvent):
-                self.switch_to(
-                    FinalScene(
-                        self.main_menu,
-                        self.logic,
-                        self.state.live_status.current_score,
-                        False))
+                score = event.final_score
+                self.anim_manager.add(GameOverAnimation(
+                    lambda score=score: self.switch_to(
+                        FinalScene(self.main_menu, self.logic, score, False))))
+                # self.switch_to(
+                #     FinalScene(
+                #         self.main_menu,
+                #         self.logic,
+                #         self.state.live_status.current_score,
+                #         False))
             elif isinstance(event, VictoryEvent):
-                self.switch_to(
-                    FinalScene(
-                        self.main_menu,
-                        self.logic,
-                        self.state.live_status.current_score,
-                        True))
+                score = event.final_score
+                self.anim_manager.add(VictoryAnimation(
+                    lambda score=score: self.switch_to(
+                        FinalScene(self.main_menu, self.logic, score, True))))
+                # self.switch_to(
+                #     FinalScene(
+                #         self.main_menu,
+                #         self.logic,
+                #         self.state.live_status.current_score,
+                #         True))
         self.state.events.clear()
