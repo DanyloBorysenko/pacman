@@ -2,7 +2,7 @@ from ..scene import Scene
 from .final_scene import FinalScene
 from .pause_scene import PauseScene
 from src.logic import GameLogic
-from src.state import Direction, GameState, GameOverEvent, VictoryEvent, PacmanDiedEvent, Pacman, Ghost, GhostEatenEvent
+from src.state import Direction, GameState, GameOverEvent, VictoryEvent, PacmanDiedEvent, Pacman, Ghost, GhostEatenEvent, GameConfig
 from ..event import InputEvent
 from ..renderer import Renderer
 from typing import List
@@ -25,6 +25,10 @@ class Animation(ABC):
     def on_finish(self) -> None:
         pass
 
+    @abstractmethod
+    def draw(self, renderer: Renderer) -> None:
+        pass
+
 
 class PacmanDeathAnimation(Animation):
     blocking = True
@@ -45,26 +49,41 @@ class PacmanDeathAnimation(Animation):
     def on_finish(self) -> None:
         self.pacman.death_phase = 0.0
 
+    def draw(self, renderer: Renderer) -> None:
+        pass
+
 
 class GhostDeathAnimation(Animation):
-    blocking = True
+    blocking = False
 
-    def __init__(self, ghost: Ghost):
+    def __init__(self, ghost: Ghost, points_per_ghost: int) -> None:
         self.ghost = ghost
+        self.points_per_ghost = points_per_ghost
         self.total = 1.0
         self.timer = self.total
+        self.score_coord_x = self.ghost.x
+        self.score_coord_y = self.ghost.y
+        self.scores_speed = 1.0
 
     def update(self, dt: float) -> None:
         self.timer -= dt
         progress = min(1.0, 1.0 - self.timer / self.total)
         self.ghost.alpha = 1.0 - progress
+        self.score_coord_y = self.score_coord_y - dt * self.scores_speed
 
     @property
     def finished(self):
         return self.timer <= 0
 
     def on_finish(self) -> None:
-        self.ghost.alpha = 1.0
+        # self.ghost.alpha = 1.0
+        pass
+
+    def draw(self, renderer: Renderer) -> None:
+        renderer.draw_ghost(self.ghost)
+        renderer.draw_scores(
+            f"+{self.points_per_ghost}",
+            self.score_coord_x, self.score_coord_y)
 
 
 class AnimationManager:
@@ -89,6 +108,10 @@ class AnimationManager:
     def has_blocking(self) -> bool:
         return any([a.blocking for a in self._animations])
 
+    def draw(self, render: Renderer) -> None:
+        for animation in self._animations:
+            animation.draw(render)
+
 
 class GameScene(Scene):
     def __init__(self,
@@ -109,7 +132,7 @@ class GameScene(Scene):
             if self.state.live_status.current_score > 20 and self.counter == 0:
                 # self.state.events.append(VictoryEvent(self.state.live_status.current_score))
                 # self.state.events.append(PacmanDiedEvent(self.state.pacman))
-                self.state.events.append(GhostEatenEvent(self.state.ghosts[0]))
+                self.state.events.append(GhostEatenEvent(self.state.ghosts.pop(0)))
                 self.counter += 1
             self._process_events()
 
@@ -132,13 +155,17 @@ class GameScene(Scene):
 
     def render(self, renderer: Renderer) -> None:
         renderer.draw(self.state)
+        self.anim_manager.draw(renderer)
 
     def _process_events(self) -> None:
         for event in self.state.events:
             if isinstance(event, PacmanDiedEvent):
                 self.anim_manager.add(PacmanDeathAnimation(self.state.pacman))
             if isinstance(event, GhostEatenEvent):
-                self.anim_manager.add(GhostDeathAnimation(event.ghost))
+                points_per_ghost = (100 if not self.state.config
+                                    else self.state.config.points_per_ghost.value)
+                self.anim_manager.add(GhostDeathAnimation(
+                    event.ghost, points_per_ghost))
             if isinstance(event, GameOverEvent):
                 self.switch_to(
                     FinalScene(

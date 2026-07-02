@@ -20,6 +20,7 @@ class BitMaps(IntEnum):
     SUPER_PACGUM = 32
 
 
+@dataclass
 class GameConfig(Enum):
     high_score_filename = None
     lives = 3

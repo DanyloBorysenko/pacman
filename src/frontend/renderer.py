@@ -275,7 +275,15 @@ class Renderer:
             for col, cell in enumerate(line):
                 self._draw_cell(row, col, cell)
 
-    def _draw_ghost(self, ghost: Ghost) -> None:
+    def draw_scores(self, scores: str, x: float, y: float) -> None:
+        scores_surf = self.instruction_font.render(scores, True, "white")
+        scores_rect = scores_surf.get_frect()
+        center_x = x * CELL_SIZE + self.offset_x + self.cell_offset
+        center_y = y * CELL_SIZE + self.offset_y + self.cell_offset
+        scores_rect.center = (center_x, center_y)
+        self.surface.blit(scores_surf, scores_rect)
+
+    def draw_ghost(self, ghost: Ghost) -> None:
         center_x = int(ghost.x * CELL_SIZE + self.offset_x + self.cell_offset)
         center_y = int(ghost.y * CELL_SIZE + self.offset_y + self.cell_offset)
 
@@ -383,7 +391,7 @@ class Renderer:
 
     def _draw_gosts(self) -> None:
         for ghost in self.state.ghosts:
-            self._draw_ghost(ghost)
+            self.draw_ghost(ghost)
 
     def _draw_pacman(self) -> None:
         pacman = self.state.pacman
