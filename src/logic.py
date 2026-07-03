@@ -16,7 +16,7 @@ class GameLogic:
             maze=self.maze,
             pacman=Pacman(0, 0, None),
             ghosts=[
-                Ghost(0, 0, Direction.LEFT, False, None, "red"),
+                Ghost(0, 0, Direction.LEFT, True, None, "red"),
                 Ghost(0, 0, Direction.RIGHT, False, None, "red"),
                 Ghost(0, 0, Direction.UP, False, None, "blue"),
                 Ghost(0, 0, Direction.DOWN, False, None, "white")],

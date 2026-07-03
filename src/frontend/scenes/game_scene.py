@@ -2,7 +2,9 @@ from ..scene import Scene
 from .final_scene import FinalScene
 from .pause_scene import PauseScene
 from src.logic import GameLogic
-from src.state import Direction, GameState, GameOverEvent, VictoryEvent, PacmanDiedEvent, Pacman, Ghost, GhostEatenEvent, GameConfig
+from src.state import (Direction, GameState, GameOverEvent, VictoryEvent,
+                       PacmanDiedEvent, Pacman, Ghost, GhostEatenEvent,
+                       GameConfig)
 from ..event import InputEvent
 from ..renderer import Renderer
 from typing import List

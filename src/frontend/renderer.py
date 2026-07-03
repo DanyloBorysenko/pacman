@@ -237,7 +237,8 @@ class Renderer:
             self.surface.blit(rotated, rect)
 
     def draw_victory_text(self, scale: float, alpha: int) -> None:
-        overlay = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.SRCALPHA)
+        overlay = pygame.Surface(
+            (WINDOW_WIDTH, WINDOW_HEIGHT), pygame.SRCALPHA)
         overlay.fill((0, 0, 0, alpha))
         self.surface.blit(overlay, (0, 0))
 
@@ -434,9 +435,109 @@ class Renderer:
             ),
         )
 
+    def draw_edible_ghost(self, ghost: Ghost) -> None:
+        center_x = int(ghost.x * CELL_SIZE + self.offset_x + self.cell_offset)
+        center_y = int(ghost.y * CELL_SIZE + self.offset_y + self.cell_offset)
+
+        radius = CELL_SIZE // 3
+
+        # Temporary surface with transparency
+        size = radius * 4
+        ghost_surface = pygame.Surface((size, size), pygame.SRCALPHA)
+
+        local_x = size // 2
+        local_y = size // 2
+
+        # ----- head -----
+        pygame.draw.circle(
+            ghost_surface,
+            ghost.colour,
+            (local_x, local_y - radius // 3),
+            radius,
+        )
+
+        # ----- body -----
+        body = pygame.Rect(
+            local_x - radius,
+            local_y - radius // 3,
+            radius * 2,
+            radius + radius // 3,
+        )
+        pygame.draw.rect(
+            ghost_surface,
+            ghost.colour,
+            body,
+        )
+
+        # ----- bottom waves -----
+        wave_r = radius // 3
+        bottom = body.bottom
+
+        for x in (
+            local_x - radius + wave_r,
+            local_x,
+            local_x + radius - wave_r,
+        ):
+            pygame.draw.circle(
+                ghost_surface,
+                ghost.colour,
+                (x, bottom),
+                wave_r,
+            )
+
+        # ----- eyes -----
+        eye_size = radius // 5
+
+        left_eye = pygame.Rect(0, 0, eye_size, eye_size)
+        left_eye.center = (
+            local_x - radius // 3,
+            local_y - radius // 2,
+        )
+
+        right_eye = pygame.Rect(0, 0, eye_size, eye_size)
+        right_eye.center = (
+            local_x + radius // 3,
+            local_y - radius // 2,
+        )
+
+        pygame.draw.circle(ghost_surface, "white", left_eye.center, eye_size)
+        pygame.draw.circle(ghost_surface, "white", right_eye.center, eye_size)
+
+        # ----- mouth -----
+        mouth_y = left_eye.bottom + radius // 2
+        mouth_left = left_eye.left
+        mouth_right = right_eye.right
+        points = []
+        num_points = 40
+        waves = 2.5
+        amplitude = radius / 14
+
+        for i in range(num_points):
+            t = i / (num_points - 1)
+            x = mouth_left + t * (mouth_right - mouth_left)
+            y = mouth_y + math.sin(t * math.pi * waves) * amplitude
+            points.append((x, y))
+
+        pygame.draw.aalines(ghost_surface, "white", False, points)
+
+        # Apply transparency
+        ghost_surface.set_alpha(int(255 * ghost.alpha))
+
+        # Draw on screen
+        self.surface.blit(
+            ghost_surface,
+            (
+                center_x - local_x,
+                center_y - local_y,
+            ),
+        )
+
     def _draw_gosts(self) -> None:
         for ghost in self.state.ghosts:
-            self.draw_ghost(ghost)
+            if ghost.is_edibe:
+                self.draw_edible_ghost(ghost)
+            else:
+                self.draw_ghost(ghost)
 
     def _draw_pacman(self) -> None:
         pacman = self.state.pacman
