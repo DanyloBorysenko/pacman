@@ -45,7 +45,7 @@ class ExplosionParticle:
         self.dy = 0.0
         self.vx = math.cos(angle) * speed
         self.vy = math.sin(angle) * speed
-        self.size = random.uniform(3, 6)
+        self.size = random.uniform(2, 5)
         self.color = "yellow"
 
 
@@ -105,13 +105,17 @@ class PacmanDeathAnimation(Animation):
 class GhostDeathAnimation(Animation):
     blocking = False
 
-    def __init__(self, ghost: Ghost, points_per_ghost: int) -> None:
+    def __init__(
+            self,
+            ghost: Ghost,
+            death_coord: Tuple[float, float],
+            points_per_ghost: int) -> None:
         self.ghost = ghost
         self.points_per_ghost = points_per_ghost
         self.total = 1.0
         self.timer = self.total
-        self.score_coord_x = self.ghost.x
-        self.score_coord_y = self.ghost.y
+        self.score_coord_x = death_coord[0]
+        self.score_coord_y = death_coord[1]
         self.scores_speed = 1.0
 
     def update(self, dt: float) -> None:
@@ -125,8 +129,7 @@ class GhostDeathAnimation(Animation):
         return self.timer <= 0
 
     def on_finish(self) -> None:
-        # self.ghost.alpha = 1.0
-        pass
+        self.ghost.alpha = 1.0
 
     def draw(self, renderer: Renderer) -> None:
         renderer.draw_ghost(self.ghost)
@@ -355,7 +358,7 @@ class GameScene(Scene):
                 points_per_ghost = (100 if not self.state.config
                                     else self.state.config.points_per_ghost)
                 self.anim_manager.add(GhostDeathAnimation(
-                    event.ghost, points_per_ghost))
+                    event.ghost, event.death_coord, points_per_ghost))
             if isinstance(event, GameOverEvent):
                 score = event.final_score
                 self.anim_manager.add(GameOverAnimation(

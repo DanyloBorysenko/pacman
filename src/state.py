@@ -109,6 +109,7 @@ class PacmanDiedEvent(GameEvent):
 @dataclass
 class GhostEatenEvent(GameEvent):
     ghost: Ghost
+    death_coord: Tuple[float, float]
 
 
 @dataclass

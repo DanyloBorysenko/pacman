@@ -269,7 +269,7 @@ class GameStateManager:
         # 1. Award points dynamically from config
         self.game_state.live_status.current_score +=\
             self.game_state.config.points_per_ghost
-        self.game_state.events.append(GhostEatenEvent(ghost))
+        self.game_state.events.append(GhostEatenEvent(ghost, (ghost.x, ghost.y)))
 
         # 2. Reset this specific ghost's state flags
         ghost.is_edible = False
