@@ -182,6 +182,34 @@ class VictoryAnimation(Animation):
         renderer.draw_victory_text(self.scale, self.alpha)
 
 
+class GameStartAnimation(Animation):
+    blocking = True
+
+    def __init__(self, grow_time: float = 1.5, hold_time: float = 0.5):
+        self.grow_time = grow_time
+        self.hold_time = hold_time
+        self.total = grow_time + hold_time
+        self.elapsed = 0.0
+        self.scale = 0.0
+        self.alpha = 0
+
+    def update(self, dt: float) -> None:
+        self.elapsed += dt
+        progress = min(1.0, self.elapsed / self.grow_time)
+        self.scale = progress
+        self.alpha = int(180 * progress)
+
+    @property
+    def finished(self) -> bool:
+        return self.elapsed >= self.total
+
+    def on_finish(self) -> None:
+        pass
+
+    def draw(self, renderer: Renderer) -> None:
+        renderer.draw_start(self.scale, "3")
+
+
 class AnimationManager:
     def __init__(self):
         self._animations: List[Animation] = []
@@ -227,9 +255,10 @@ class GameScene(Scene):
             self.logic.update(self.state, dt)
             if self.state.live_status.current_score > 20 and self.counter == 0:
                 # self.state.events.append(GameOverEvent(self.state.live_status.current_score))
-                self.state.events.append(VictoryEvent(self.state.live_status.current_score))
+                # self.state.events.append(VictoryEvent(self.state.live_status.current_score))
                 # self.state.events.append(PacmanDiedEvent(self.state.pacman))
                 # self.state.events.append(GhostEatenEvent(self.state.ghosts.pop(0)))
+                self.anim_manager.add(GameStartAnimation())
                 self.counter += 1
             self._process_events()
 
@@ -268,12 +297,6 @@ class GameScene(Scene):
                 self.anim_manager.add(GameOverAnimation(
                     lambda score=score: self.switch_to(
                         FinalScene(self.main_menu, self.logic, score, False))))
-                # self.switch_to(
-                #     FinalScene(
-                #         self.main_menu,
-                #         self.logic,
-                #         self.state.live_status.current_score,
-                #         False))
             elif isinstance(event, VictoryEvent):
                 score = event.final_score
                 self.anim_manager.add(VictoryAnimation(

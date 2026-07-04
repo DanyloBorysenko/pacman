@@ -37,6 +37,7 @@ class Renderer:
         self.menu_font = pygame.font.Font(size=MENU_FONT_SIZE)
         self.title_font = pygame.font.Font(None, 50)
         self.instruction_font = pygame.font.SysFont("DejaVu Sans", 24)
+        self.start_game_font = pygame.font.Font(size=200)
         self.offset_x = 0
         self.offset_y = 0
         self.cell_offset = CELL_SIZE // 2
@@ -531,6 +532,17 @@ class Renderer:
                 center_y - local_y,
             ),
         )
+
+    def draw_start(self, scale: float, text: str) -> None:
+        if scale <= 0.01:
+            return
+        base_surf = self.start_game_font.render(text, True, "red")
+        w, h = base_surf.get_size()
+        scaled = pygame.transform.smoothscale(
+            base_surf, (max(1, int(w * scale)), max(1, int(h * scale))))
+        rect = scaled.get_frect()
+        rect.center = (self.center_x, self.center_y)
+        self.surface.blit(scaled, rect)
 
     def _draw_gosts(self) -> None:
         for ghost in self.state.ghosts:
