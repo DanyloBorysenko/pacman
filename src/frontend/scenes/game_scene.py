@@ -4,7 +4,7 @@ from .pause_scene import PauseScene
 from src.logic import GameLogic
 from src.state import (Direction, GameState, GameOverEvent, VictoryEvent,
                        PacmanDiedEvent, Pacman, Ghost, GhostEatenEvent,
-                       GameConfig)
+                       GameConfig, GameStartEvent)
 from ..event import InputEvent
 from ..renderer import Renderer
 from typing import List
@@ -35,27 +35,59 @@ class Animation(ABC):
         pass
 
 
+class ExplosionParticle:
+    __slots__ = ("dx", "dy", "vx", "vy", "size", "color")
+
+    def __init__(self) -> None:
+        angle = random.uniform(0, math.tau)
+        speed = random.uniform(1.5, 4.0)  # grid cells per second
+        self.dx = 0.0
+        self.dy = 0.0
+        self.vx = math.cos(angle) * speed
+        self.vy = math.sin(angle) * speed
+        self.size = random.uniform(3, 6)
+        self.color = "yellow"
+
+
 class PacmanDeathAnimation(Animation):
     blocking = True
 
-    def __init__(self, pacman: Pacman):
+    def __init__(self, pacman: Pacman, explosion_time: float = 1.5):
         self.pacman = pacman
         self.total = 1.0
         self.timer = self.total
+        self.explosion_time = explosion_time
+        self.explosion_timer = explosion_time
+        self.particles: List[ExplosionParticle] = []
+        self._exploded = False
 
     def update(self, dt: float) -> None:
-        self.timer -= dt
-        self.pacman.death_phase = 1.0 - (self.timer / self.total)
+        if self.timer > 0:
+            self.timer -= dt
+            self.pacman.death_phase = 1.0 - (self.timer / self.total)
+
+        if self.pacman.death_phase >= 0.999 and not self._exploded:
+            self._exploded = True
+            self.particles = [ExplosionParticle() for _ in range(24)]
+
+        if self._exploded:
+            self.explosion_timer -= dt
+            for p in self.particles:
+                p.dx += p.vx * dt
+                p.dy += p.vy * dt
+                p.vx *= 0.9
+                p.vy *= 0.9
 
     @property
     def finished(self):
-        return self.timer <= 0
+        return self._exploded and self.explosion_timer <= 0
 
     def on_finish(self) -> None:
         self.pacman.death_phase = 0.0
 
     def draw(self, renderer: Renderer) -> None:
-        pass
+        if self.particles:
+            renderer.draw_pacman_explosion(self.pacman, self.particles)
 
 
 class GhostDeathAnimation(Animation):
@@ -185,17 +217,26 @@ class VictoryAnimation(Animation):
 class GameStartAnimation(Animation):
     blocking = True
 
-    def __init__(self, grow_time: float = 1.5, hold_time: float = 0.5):
+    def __init__(self, grow_time: float = 0.6, hold_time: float = 0.4,
+                 texts: tuple[str, ...] = ("3", "2", "1")):
+        self.texts = texts
         self.grow_time = grow_time
         self.hold_time = hold_time
-        self.total = grow_time + hold_time
+        self.segment_time = grow_time + hold_time
+        self.total = self.segment_time * len(texts)
         self.elapsed = 0.0
         self.scale = 0.0
         self.alpha = 0
+        self.current_text = texts[0]
 
     def update(self, dt: float) -> None:
         self.elapsed += dt
-        progress = min(1.0, self.elapsed / self.grow_time)
+
+        index = min(int(self.elapsed // self.segment_time), len(self.texts) - 1)
+        self.current_text = self.texts[index]
+
+        segment_elapsed = self.elapsed - index * self.segment_time
+        progress = min(1.0, segment_elapsed / self.grow_time)
         self.scale = progress
         self.alpha = int(180 * progress)
 
@@ -207,7 +248,7 @@ class GameStartAnimation(Animation):
         pass
 
     def draw(self, renderer: Renderer) -> None:
-        renderer.draw_start(self.scale, "3")
+        renderer.draw_start(self.scale, self.current_text)
 
 
 class AnimationManager:
@@ -256,9 +297,8 @@ class GameScene(Scene):
             if self.state.live_status.current_score > 20 and self.counter == 0:
                 # self.state.events.append(GameOverEvent(self.state.live_status.current_score))
                 # self.state.events.append(VictoryEvent(self.state.live_status.current_score))
-                # self.state.events.append(PacmanDiedEvent(self.state.pacman))
+                self.state.events.append(PacmanDiedEvent(self.state.pacman))
                 # self.state.events.append(GhostEatenEvent(self.state.ghosts.pop(0)))
-                self.anim_manager.add(GameStartAnimation())
                 self.counter += 1
             self._process_events()
 
@@ -285,6 +325,8 @@ class GameScene(Scene):
 
     def _process_events(self) -> None:
         for event in self.state.events:
+            if isinstance(event, GameStartEvent):
+                self.anim_manager.add(GameStartAnimation())
             if isinstance(event, PacmanDiedEvent):
                 self.anim_manager.add(PacmanDeathAnimation(self.state.pacman))
             if isinstance(event, GhostEatenEvent):
@@ -302,10 +344,4 @@ class GameScene(Scene):
                 self.anim_manager.add(VictoryAnimation(
                     lambda score=score: self.switch_to(
                         FinalScene(self.main_menu, self.logic, score, True))))
-                # self.switch_to(
-                #     FinalScene(
-                #         self.main_menu,
-                #         self.logic,
-                #         self.state.live_status.current_score,
-                #         True))
         self.state.events.clear()

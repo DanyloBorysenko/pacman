@@ -109,3 +109,8 @@ class GameOverEvent(GameEvent):
 @dataclass
 class VictoryEvent(GameEvent):
     final_score: int
+
+
+@dataclass
+class GameStartEvent(GameEvent):
+    pass

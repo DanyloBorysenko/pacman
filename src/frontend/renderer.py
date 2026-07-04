@@ -1,6 +1,7 @@
 from typing import List, Tuple
 from src.state import GameState, Direction, Ghost
 from src.constants import CELL_SIZE, WINDOW_HEIGHT, WINDOW_WIDTH
+from ..state import Pacman
 import pygame
 import math
 
@@ -632,6 +633,14 @@ class Renderer:
                 BACKGROUND_COLOR,
                 points,
             )
+
+    def draw_pacman_explosion(self, pacman: Pacman, particles) -> None:
+        center_x = pacman.x * CELL_SIZE + self.offset_x + self.cell_offset
+        center_y = pacman.y * CELL_SIZE + self.offset_y + self.cell_offset
+        for p in particles:
+            x = int(center_x + p.dx * CELL_SIZE)
+            y = int(center_y + p.dy * CELL_SIZE)
+            pygame.draw.circle(self.surface, p.color, (x, y), max(1, int(p.size)))
 
     def _draw_cell(self, row: int, col: int, cell: int) -> None:
         x, y = self._cell_top_left(row, col)
