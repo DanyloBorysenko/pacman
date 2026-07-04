@@ -5,6 +5,8 @@ from ..renderer import Renderer
 
 
 class FinalScene(Scene):
+    MAX_NAME_LEN = 10
+
     def __init__(
             self,
             main_menu: Scene,
@@ -18,8 +20,14 @@ class FinalScene(Scene):
         self.is_victory = is_victory
         self.items = ["YES", "No"]
         self.selected = 0
+        self.entering_name = False
+        self.player_name = ""
 
     def handle_event(self, event: InputEvent) -> None:
+        if self.entering_name:
+            self._handle_name_input(event)
+            return
+
         if event.type == "keydown":
             if event.key == "escape":
                 self.switch_to(self.main_menu)

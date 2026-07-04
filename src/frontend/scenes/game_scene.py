@@ -297,8 +297,8 @@ class GameScene(Scene):
             self.logic.update(self.state, dt)
             if self.state.live_status.current_score > 20 and self.counter == 0:
                 # self.state.events.append(GameOverEvent(self.state.live_status.current_score))
-                # self.state.events.append(VictoryEvent(self.state.live_status.current_score))
-                self.state.events.append(PacmanDiedEvent(self.state.pacman))
+                self.state.events.append(VictoryEvent(self.state.live_status.current_score))
+                # self.state.events.append(PacmanDiedEvent(self.state.pacman))
                 # self.state.events.append(GhostEatenEvent(self.state.ghosts.pop(0)))
                 self.counter += 1
             self._process_events()
