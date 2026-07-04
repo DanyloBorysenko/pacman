@@ -1,10 +1,11 @@
 import os
 from typing import Dict, Any
 
+
 def parse_game_config(file_path: str) -> Dict[str, Any]:
     """
     Parses configuration values from a plaintext file, skipping lines starting with '#'.
-    
+
     :param file_path: Path to the configuration text file.
     :return: A dictionary containing the parsed configurations.
     """
@@ -57,7 +58,7 @@ def parse_game_config(file_path: str) -> Dict[str, Any]:
                         config_data[key] = int(val)
                 except ValueError:
                     print(f"[Config Type Error] Line {line_num}: Invalid value '{val}' for key '{key}'. Retaining default.")
-                    
+               
     except IOError as e:
         print(f"[Config Critical Error]: Failed to read file from disk. Details: {e}")
 

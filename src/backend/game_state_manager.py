@@ -2,7 +2,11 @@ from typing import Tuple
 import math
 import time
 import numpy as np
-from ..state import GameState, Direction, BitMaps, Ghost, GameOverEvent, GhostEatenEvent, GameStartEvent, PacmanDiedEvent, VictoryEvent
+from ..state import (
+    GameState, Direction, BitMaps, Ghost,
+    GameOverEvent, GhostEatenEvent, GameStartEvent,
+    PacmanDiedEvent, VictoryEvent
+    )
 
 # Speeds are now explicitly: Grid Tiles Per Second
 PACMAN_SPEED = 4.0
@@ -85,13 +89,17 @@ class GameStateManager:
                 pacman.yd = int(pacman.y) + requested_direction.value[1]
             elif self._is_move_allowed(curr_tile, pacman.assigned_direction):
                 # No new turn requested, continue straight ahead toward next tile line
+                # if pacman.assigned_direction is not None:
                 pacman.xd = int(pacman.x) + pacman.assigned_direction.value[0]
                 pacman.yd = int(pacman.y) + pacman.assigned_direction.value[1]
+                # else:
+                #     pacman.xd = int(pacman.x)
+                #     pacman.yd = int(pacman.y)
             else:
                 # Path dead end: Reset tracking markers back to standstill mode
                 pacman.xd = -1
                 pacman.yd = -1
-                pacman.assigned_direction = None
+                pacman.assigned_direction = Direction.UP
         else:
             # CONTINUOUS GLIDE: We haven't reached the node intersection yet, advance tracking positions
             pacman.x += direction.value[0] * step_size
@@ -135,6 +143,11 @@ class GameStateManager:
     def _advance_to_next_level(self) -> None:
         """Handles state resets and difficulty scaling when a level is cleared."""
         state = self.game_state
+        if state.live_status.current_level == self.game_state.config.max_level:
+            self.game_state.events.append(
+                VictoryEvent(self.game_state.live_status.current_score))
+
+        print("Victory is achived")
 
         # 1. Update level counters
         state.live_status.current_level += 1
@@ -158,13 +171,13 @@ class GameStateManager:
         # 4. Reset Pac-Man physics markers completely
         state.pacman.xd = -1
         state.pacman.yd = -1
-        state.pacman.assigned_direction = None
+        state.pacman.assigned_direction = self.game_state.pacman.direction
 
         # 5. Reset all Ghosts physics and state trackers completely
         for ghost in state.ghosts:
             ghost.xd = -1
             ghost.yd = -1
-            ghost.assigned_direction_vector = (0, -1) # Face North default
+            ghost.assigned_direction_vector = (0, -1)  # Face North default
             ghost.is_edible = False
             ghost.time_laps = 0
             ghost.colour = ghost.initial_colour
@@ -256,6 +269,7 @@ class GameStateManager:
         # 1. Award points dynamically from config
         self.game_state.live_status.current_score +=\
             self.game_state.config.points_per_ghost
+        self.game_state.events.append(GhostEatenEvent(ghost))
 
         # 2. Reset this specific ghost's state flags
         ghost.is_edible = False
@@ -277,6 +291,7 @@ class GameStateManager:
         # 1. Deduct life status
         self.game_state.live_status.lives_remain -= 1
         if self.game_state.live_status.lives_remain > 0:
+            print(f"PacMan x: {self.game_state.pacman.x}, y: {self.game_state.pacman.y}")
             self.game_state.events.append(
                 PacmanDiedEvent(self.game_state.pacman))
         print(f"live remains: {self.game_state.live_status.lives_remain}")

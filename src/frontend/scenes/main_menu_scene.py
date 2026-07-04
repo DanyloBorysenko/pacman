@@ -8,6 +8,7 @@ from ..event import InputEvent
 from ..renderer import Renderer
 from typing import List
 from ...state import GameStartEvent
+from ...backend.score_board_handler import ScoreBoardHandler
 
 
 class MainMenuScene(Scene):
@@ -54,18 +55,10 @@ class MainMenuScene(Scene):
         self.switch_to(InstructionsScene(self))
 
     def _highscores_scene(self) -> None:
-        scores = [
-            ("Player 1", "Level 1", "9999"),
-            ("Player 2", "Level 3", "7500"),
-            ("Player 3", "Level 1", "9999"),
-            ("Player 4", "Level 3", "7500"),
-            ("Player 5", "Level 1", "9999"),
-            ("Player 6", "Level 3", "7500"),
-            ("Player 7", "Level 1", "9999"),
-            ("Player 8", "Level 3", "7500"),
-            ("Player 9", "Level 1", "9999"),
-            ("Player 10", "Level 3", "7500")
-        ]
+        top_players = self.logic.score_board.get_player_list()
+        scores = []
+        for i, player in enumerate(top_players):
+            scores.append((i+1, player["name"], player["score"]))
         self.switch_to(HighScoresScene(self, scores))
 
     def _exit(self) -> None:

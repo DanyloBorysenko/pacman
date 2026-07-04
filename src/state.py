@@ -35,6 +35,7 @@ class GameConfig:
     ghost_edible_time: float = 5.0
     seed: int = 42
     level_max_time: float = 60.0
+    max_level: int = 1
 
 
 @dataclass
@@ -42,12 +43,12 @@ class Pacman:
     # coord for the pacman center
     x: float
     y: float
-    direction: Direction | None
+    direction: Direction = Direction.UP
     mouth_phase: float = 0.0
     death_phase: float = 0.0
     xd: int = -1
     yd: int = -1
-    assigned_direction: Direction | None = None
+    assigned_direction: Direction = Direction.UP
     start_x: int = 0
     start_y: int = 0
 

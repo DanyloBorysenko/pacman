@@ -29,8 +29,8 @@ class FinalScene(Scene):
                 self.selected = (self.selected + 1) % len(self.items)
             if event.key == "enter":
                 if self.items[self.selected] == "YES":
-                    print("Progress was saved")
-                    # self.logic.save(self.scores)
+                    # name = input("Write your name")
+                    self.logic.score_board.add_new_top_player("Player1", self.scores)
                 self.switch_to(self.main_menu)
 
     def update(self, dt: float) -> None:

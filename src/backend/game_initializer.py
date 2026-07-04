@@ -87,7 +87,8 @@ class GameInitializer:
         valid_indices = np.argwhere(is_valid_corridors)
         num_to_select = min(total_pacgums, len(valid_indices))
 
-        chosen_row_indices = np.random.choice(len(valid_indices), size=num_to_select, replace=False)
+        chosen_row_indices = np.random.choice(
+            len(valid_indices), size=num_to_select, replace=False)
         chosen_coordinates = valid_indices[chosen_row_indices]
         self.game_state.maze[chosen_coordinates[:, 0], chosen_coordinates[:, 1]] |= BitMaps.PACGUM
 
