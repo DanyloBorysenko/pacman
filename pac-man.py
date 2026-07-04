@@ -12,7 +12,7 @@ def main() -> None:
         return
     if len(sys.argv) > 2:
         print("Only single 'config.txt' file allowed")
-        return 
+        return
     config_data = parse_game_config(sys.argv[1])
     config = GameConfig(**config_data)
     gen = MazeGenerator(seed=42)

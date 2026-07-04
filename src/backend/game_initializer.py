@@ -53,7 +53,7 @@ class GameInitializer:
         self.game_state.live_status = GameStats(
             lives_remain=self.game_state.config.lives,
             time_left=self.game_state.config.level_max_time)
-        
+
     def reload_new_level_map(self, game_state: GameState) -> None:
         from mazegenerator.mazegenerator import MazeGenerator
         generator = MazeGenerator()
@@ -66,7 +66,6 @@ class GameInitializer:
         self._place_pacman()
         self.game_state.live_status.time_left =\
             self.game_state.config.level_max_time
-
 
     def _get_valid_center_and_corners(self) -> None:
         self.corners = [

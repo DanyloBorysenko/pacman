@@ -1,5 +1,5 @@
 from ..scene import Scene
-from ...logic import GameLogic
+from ...backend.logic import GameLogic
 from ..event import InputEvent
 from ..renderer import Renderer
 

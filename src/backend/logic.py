@@ -36,11 +36,10 @@ class GameLogic:
         GameInitializer(game_state=state).initialize()
         self.game_manager = GameStateManager(state)
         # print(state.pacman.x, state.pacman.y)
+        # print(self.maze)
         return state
 
     def update(self, state: GameState, dt: float) -> None:
-        if state.paused:
-            return
         pacman = state.pacman
         pacman.mouth_phase += dt * 8
         self.game_manager.update_remaining_time(dt)

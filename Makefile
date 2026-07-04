@@ -11,7 +11,7 @@ install: .venv/.installed
 	@touch $@
 
 run: .venv/.installed
-	$(PY) $(PACMAN)
+	$(PY) $(PACMAN) config.txt
 
 debug: .venv/.installed
 	$(PY) -m $(DEB) $(PACMAN)

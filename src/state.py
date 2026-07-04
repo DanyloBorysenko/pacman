@@ -61,6 +61,7 @@ class Ghost:
     assigned_direction: Direction = (0, 0)
     strategy: GhostMovementStrategy = None
     colour: str = None
+    alpha: float = 1.0
     is_edible: bool = False
     edible_since: int | None = None
     time_laps: int = 0

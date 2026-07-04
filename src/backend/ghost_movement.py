@@ -42,10 +42,14 @@ class GhostMovementStrategy(ABC):
 
         # Emergency fallback: If it's a dead end, allowing a 180 turn is mandatory
         if not valid_moves:
-            if not (val & BitMaps.NORTH): valid_moves.append(Direction.UP.value)
-            if not (val & BitMaps.EAST): valid_moves.append(Direction.RIGHT.value)
-            if not (val & BitMaps.SOUTH): valid_moves.append(Direction.DOWN.value)
-            if not (val & BitMaps.WEST): valid_moves.append(Direction.LEFT.value)
+            if not (val & BitMaps.NORTH):
+                valid_moves.append(Direction.UP.value)
+            if not (val & BitMaps.EAST):
+                valid_moves.append(Direction.RIGHT.value)
+            if not (val & BitMaps.SOUTH):
+                valid_moves.append(Direction.DOWN.value)
+            if not (val & BitMaps.WEST):
+                valid_moves.append(Direction.LEFT.value)
 
         return valid_moves if valid_moves else [(0, 0)]
 

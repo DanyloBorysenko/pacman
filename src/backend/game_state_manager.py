@@ -2,7 +2,7 @@ from typing import Tuple
 import math
 import time
 import numpy as np
-from ..state import GameState, Direction, BitMaps, Ghost
+from ..state import GameState, Direction, BitMaps, Ghost, GameOverEvent, GhostEatenEvent, GameStartEvent, PacmanDiedEvent, VictoryEvent
 
 # Speeds are now explicitly: Grid Tiles Per Second
 PACMAN_SPEED = 4.0
@@ -14,8 +14,8 @@ class GameStateManager:
         self.game_state = game_state
 
     def update_remaining_time(self, dt: float) -> None:
-        if self.game_state.paused:
-            return
+        # if self.game_state.paused:
+        #     return
 
         self.game_state.live_status.time_left -= dt
 
@@ -254,7 +254,8 @@ class GameStateManager:
     def _process_ghost_eaten(self, ghost: Ghost) -> None:
         """Handles Step B: Pac-Man devours an edible ghost."""
         # 1. Award points dynamically from config
-        self.game_state.live_status.current_score += self.game_state.config.points_per_ghost
+        self.game_state.live_status.current_score +=\
+            self.game_state.config.points_per_ghost
 
         # 2. Reset this specific ghost's state flags
         ghost.is_edible = False
@@ -275,11 +276,16 @@ class GameStateManager:
         """Handles Step A: Player loses a life to a dangerous ghost."""
         # 1. Deduct life status
         self.game_state.live_status.lives_remain -= 1
+        if self.game_state.live_status.lives_remain > 0:
+            self.game_state.events.append(
+                PacmanDiedEvent(self.game_state.pacman))
         print(f"live remains: {self.game_state.live_status.lives_remain}")
 
         # 2. Check for game over state transition
         if self.game_state.live_status.lives_remain <= 0:
             self.game_state.current_screen = "GAME_OVER"
+            self.game_state.events.append(
+                GameOverEvent(self.game_state.live_status.current_score))
             self.game_state.paused = True
         else:
             # 3. Respawn Pac-Man at the map's safe starting center
