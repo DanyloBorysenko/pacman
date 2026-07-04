@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import List, TYPE_CHECKING
+from typing import List, TYPE_CHECKING, Tuple
 from dataclasses import dataclass, field
 from enum import Enum, IntEnum
 
@@ -103,6 +103,7 @@ class GameEvent:
 @dataclass
 class PacmanDiedEvent(GameEvent):
     pacman: Pacman
+    death_coord: Tuple[float, float]
 
 
 @dataclass

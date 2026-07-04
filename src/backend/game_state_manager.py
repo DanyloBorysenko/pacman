@@ -166,7 +166,7 @@ class GameStateManager:
         # Regenerate maze structural layout lines
         # if your initializer handles this, invoke it directly:
         initializer = GameInitializer(state)
-        initializer.reload_new_level_map(self.game_state) 
+        initializer.reload_new_level_map(self.game_state)
 
         # 4. Reset Pac-Man physics markers completely
         state.pacman.xd = -1
@@ -291,17 +291,17 @@ class GameStateManager:
         # 1. Deduct life status
         self.game_state.live_status.lives_remain -= 1
         if self.game_state.live_status.lives_remain > 0:
-            print(f"PacMan x: {self.game_state.pacman.x}, y: {self.game_state.pacman.y}")
+            death_coord = (self.game_state.pacman.x, self.game_state.pacman.y)
             self.game_state.events.append(
-                PacmanDiedEvent(self.game_state.pacman))
+                PacmanDiedEvent(self.game_state.pacman, death_coord))
         print(f"live remains: {self.game_state.live_status.lives_remain}")
 
         # 2. Check for game over state transition
         if self.game_state.live_status.lives_remain <= 0:
-            self.game_state.current_screen = "GAME_OVER"
+            # self.game_state.current_screen = "GAME_OVER"
             self.game_state.events.append(
                 GameOverEvent(self.game_state.live_status.current_score))
-            self.game_state.paused = True
+            # self.game_state.paused = True
         else:
             # 3. Respawn Pac-Man at the map's safe starting center
             self.game_state.pacman.x = float(self.game_state.pacman.start_x)
@@ -310,9 +310,9 @@ class GameStateManager:
             # 4. Clear Pac-Man's GridMover destination states
             self.game_state.pacman.xd = -1
             self.game_state.pacman.yd = -1
-            self.game_state.pacman.assigned_direction = None
+            self.game_state.pacman.assigned_direction = Direction.UP
 
-            # 5. Optional Peer Tip: Reset all ghosts to their homes on death 
+            # 5. Optional Peer Tip: Reset all ghosts to their homes on death
             # to prevent instant spawn-killing when Pac-Man reappears!
             for i, ghost in enumerate(self.game_state.ghosts):
                 ghost.x = float(ghost.home_x)

@@ -30,5 +30,9 @@
     {
         "name": "Player1",
         "score": 10
+    },
+    {
+        "name": "Player1",
+        "score": 0
     }
 ]

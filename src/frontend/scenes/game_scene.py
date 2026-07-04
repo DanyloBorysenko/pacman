@@ -7,7 +7,7 @@ from src.state import (Direction, GameState, GameOverEvent, VictoryEvent,
                        GameConfig, GameStartEvent)
 from ..event import InputEvent
 from ..renderer import Renderer
-from typing import List
+from typing import List, Tuple
 from abc import ABC, abstractmethod
 from ...constants import WINDOW_WIDTH, WINDOW_HEIGHT
 import random
@@ -52,8 +52,11 @@ class ExplosionParticle:
 class PacmanDeathAnimation(Animation):
     blocking = True
 
-    def __init__(self, pacman: Pacman, explosion_time: float = 1.5):
+    def __init__(self, pacman: Pacman, death_coord: Tuple[float, float],
+                 ghosts: List[Ghost], explosion_time: float = 1.5):
         self.pacman = pacman
+        self.ghosts = ghosts
+        self.death_coord = death_coord
         self.total = 1.0
         self.timer = self.total
         self.explosion_time = explosion_time
@@ -62,6 +65,8 @@ class PacmanDeathAnimation(Animation):
         self._exploded = False
 
     def update(self, dt: float) -> None:
+        for ghost in self.ghosts:
+            ghost.alpha = 0.0
         if self.timer > 0:
             self.timer -= dt
             self.pacman.death_phase = 1.0 - (self.timer / self.total)
@@ -84,11 +89,17 @@ class PacmanDeathAnimation(Animation):
 
     def on_finish(self) -> None:
         self.pacman.death_phase = 0.0
+        for ghost in self.ghosts:
+            ghost.alpha = 1.0
 
     def draw(self, renderer: Renderer) -> None:
+        if not self._exploded:
+            renderer.draw_pacman_death(
+                self.death_coord[0],
+                self.death_coord[1], self.pacman.death_phase)
         if self.particles:
             renderer.draw_pacman_explosion(
-                self.pacman.x, self.pacman.y, self.particles)
+                self.death_coord[0], self.death_coord[1], self.particles)
 
 
 class GhostDeathAnimation(Animation):
@@ -335,7 +346,11 @@ class GameScene(Scene):
             if isinstance(event, GameStartEvent):
                 self.anim_manager.add(GameStartAnimation())
             if isinstance(event, PacmanDiedEvent):
-                self.anim_manager.add(PacmanDeathAnimation(self.state.pacman))
+                self.anim_manager.add(
+                    PacmanDeathAnimation(
+                        self.state.pacman,
+                        event.death_coord,
+                        self.state.ghosts))
             if isinstance(event, GhostEatenEvent):
                 points_per_ghost = (100 if not self.state.config
                                     else self.state.config.points_per_ghost)
