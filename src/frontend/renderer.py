@@ -1,7 +1,6 @@
 from typing import List, Tuple
-from src.state import GameState, Direction, Ghost
+from src.state import GameState, Direction, Ghost, BitMaps
 from src.constants import CELL_SIZE, WINDOW_HEIGHT, WINDOW_WIDTH
-from ..state import Pacman
 import pygame
 import math
 
@@ -16,10 +15,6 @@ MENU_PADDING = 200
 PADDING = 20
 
 WALL_WIDTH = 5
-NORTH = 1
-EAST = 2
-SOUTH = 4
-WEST = 8
 
 # ── Layout constants (all relative to surface size) ──────────────────────────
 _TITLE_Y_FRAC = 0.04   # title top edge as fraction of height
@@ -634,9 +629,9 @@ class Renderer:
                 points,
             )
 
-    def draw_pacman_explosion(self, pacman: Pacman, particles) -> None:
-        center_x = pacman.x * CELL_SIZE + self.offset_x + self.cell_offset
-        center_y = pacman.y * CELL_SIZE + self.offset_y + self.cell_offset
+    def draw_pacman_explosion(self, x: float, y: float, particles) -> None:
+        center_x = x * CELL_SIZE + self.offset_x + self.cell_offset
+        center_y = y * CELL_SIZE + self.offset_y + self.cell_offset
         for p in particles:
             x = int(center_x + p.dx * CELL_SIZE)
             y = int(center_y + p.dy * CELL_SIZE)
@@ -647,23 +642,23 @@ class Renderer:
         x = x + self.offset_x
         y = y + self.offset_y
 
-        if cell & NORTH:
+        if cell & BitMaps.NORTH:
             pygame.draw.line(
                 self.surface, MAZE_COLOR,
                 (x, y), (x + CELL_SIZE, y), WALL_WIDTH)
-        if cell & EAST:
+        if cell & BitMaps.EAST:
             pygame.draw.line(
                 self.surface, MAZE_COLOR, (x + CELL_SIZE, y),
                 (x + CELL_SIZE, y + CELL_SIZE), WALL_WIDTH)
-        if cell & SOUTH:
+        if cell & BitMaps.SOUTH:
             pygame.draw.line(
                 self.surface, MAZE_COLOR, (x, y + CELL_SIZE),
                 (x + CELL_SIZE, y + CELL_SIZE), WALL_WIDTH)
-        if cell & WEST:
+        if cell & BitMaps.WEST:
             pygame.draw.line(
                 self.surface, MAZE_COLOR, (x, y),
                 (x, y + CELL_SIZE), WALL_WIDTH)
-        if cell == 15:
+        if cell == BitMaps.WALL_MASK.value:
             pygame.draw.rect(
                 self.surface, "blue",
                 (x + WALL_WIDTH // 2,
@@ -673,9 +668,9 @@ class Renderer:
             return
 
         center_pos = (x + self.cell_offset, y + self.cell_offset)
-        if cell & 32:
+        if cell & BitMaps.SUPER_PACGUM.value:
             pygame.draw.circle(self.surface, (255, 255, 0), center_pos, 8)
-        elif cell & 16:
+        elif cell & BitMaps.PACGUM.value:
             pygame.draw.circle(self.surface, (255, 184, 151), center_pos, 3)
 
     def _draw_title(self, title: str) -> pygame.Rect:

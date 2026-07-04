@@ -1,5 +1,6 @@
 UV := uv
 PY := $(UV) run python3
+PACMAN := pac-man.py
 SRC := src
 DEB := pdb
 
@@ -10,10 +11,10 @@ install: .venv/.installed
 	@touch $@
 
 run: .venv/.installed
-	$(PY) -m $(SRC)
+	$(PY) $(PACMAN)
 
 debug: .venv/.installed
-	$(PY) -m $(DEB) -m $(SRC)
+	$(PY) -m $(DEB) $(PACMAN)
 
 clean: .venv/.installed
 	find . -type d -name "__pycache__" -exec rm -rf {} +
@@ -26,7 +27,7 @@ re: fclean install
 
 lint: .venv/.installed
 	$(UV) run flake8 $(SRC)
-	$(UV) run mypy $(src) --warn-return-any \
+	$(UV) run mypy $(SRC) --warn-return-any \
 		      --warn-unused-ignores \
 		      --ignore-missing-imports \
 		      --disallow-untyped-defs \

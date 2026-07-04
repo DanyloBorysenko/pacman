@@ -40,7 +40,7 @@ class ExplosionParticle:
 
     def __init__(self) -> None:
         angle = random.uniform(0, math.tau)
-        speed = random.uniform(1.5, 4.0)  # grid cells per second
+        speed = random.uniform(1.0, 3.5)  # grid cells per second
         self.dx = 0.0
         self.dy = 0.0
         self.vx = math.cos(angle) * speed
@@ -87,7 +87,8 @@ class PacmanDeathAnimation(Animation):
 
     def draw(self, renderer: Renderer) -> None:
         if self.particles:
-            renderer.draw_pacman_explosion(self.pacman, self.particles)
+            renderer.draw_pacman_explosion(
+                self.pacman.x, self.pacman.y, self.particles)
 
 
 class GhostDeathAnimation(Animation):
