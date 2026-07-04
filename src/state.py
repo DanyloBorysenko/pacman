@@ -1,6 +1,6 @@
 from __future__ import annotations
-from dataclasses import dataclass
-from typing import List, Tuple, TYPE_CHECKING, Tuple
+from typing import List, TYPE_CHECKING
+from dataclasses import dataclass, field
 from enum import Enum, IntEnum
 
 if TYPE_CHECKING:
@@ -44,6 +44,7 @@ class Pacman:
     y: float
     direction: Direction | None
     mouth_phase: float = 0.0
+    death_phase: float = 0.0
     xd: int = -1
     yd: int = -1
     assigned_direction: Direction | None = None
@@ -83,10 +84,45 @@ class GameState:
     maze: List[List[int]]
     pacman: Pacman
     ghosts: List[Ghost]
-    paused: bool = True
     live_status: GameStats = None
     config: GameConfig = None
-
     # Cheat Mode flags
-    cheat_invincibility: bool = False  #'I' 
+    cheat_invincibility: bool = False  #'I'
     # 'L' for level skip
+    events: List["GameEvent"] = field(default_factory=list)
+
+
+@dataclass
+class GameEvent:
+    """Base class for all game events."""
+    pass
+
+
+@dataclass
+class PacmanDiedEvent(GameEvent):
+    pacman: Pacman
+
+
+@dataclass
+class GhostEatenEvent(GameEvent):
+    ghost: Ghost
+
+
+@dataclass
+class LevelCompletedEvent(GameEvent):
+    complited_level: int
+
+
+@dataclass
+class GameOverEvent(GameEvent):
+    final_score: int
+
+
+@dataclass
+class VictoryEvent(GameEvent):
+    final_score: int
+
+
+@dataclass
+class GameStartEvent(GameEvent):
+    pass
