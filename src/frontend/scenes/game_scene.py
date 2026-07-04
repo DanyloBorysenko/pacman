@@ -1,7 +1,7 @@
 from ..scene import Scene
+from src.backend.logic import GameLogic
 from .final_scene import FinalScene
 from .pause_scene import PauseScene
-from src.logic import GameLogic
 from src.state import (Direction, GameState, GameOverEvent, VictoryEvent,
                        PacmanDiedEvent, Pacman, Ghost, GhostEatenEvent,
                        GameConfig, GameStartEvent)
@@ -288,19 +288,19 @@ class GameScene(Scene):
         self.state = state
         self.anim_manager = AnimationManager()
         self.main_menu = prev_scene
-        self.counter = 0
+        # self.counter = 0
 
     def update(self, dt: float) -> None:
         self.anim_manager.update(dt)
         if not self.anim_manager.has_blocking():
             self.state.pacman.mouth_phase += dt * 8
             self.logic.update(self.state, dt)
-            if self.state.live_status.current_score > 20 and self.counter == 0:
-                # self.state.events.append(GameOverEvent(self.state.live_status.current_score))
-                self.state.events.append(VictoryEvent(self.state.live_status.current_score))
-                # self.state.events.append(PacmanDiedEvent(self.state.pacman))
-                # self.state.events.append(GhostEatenEvent(self.state.ghosts.pop(0)))
-                self.counter += 1
+            # if self.state.live_status.current_score > 20 and self.counter == 0:
+            #     # self.state.events.append(GameOverEvent(self.state.live_status.current_score))
+            #     # self.state.events.append(VictoryEvent(self.state.live_status.current_score))
+            #     self.state.events.append(PacmanDiedEvent(self.state.pacman))
+            #     # self.state.events.append(GhostEatenEvent(self.state.ghosts.pop(0)))
+                # self.counter += 1
             self._process_events()
 
     def handle_event(self, event: InputEvent) -> None:
@@ -320,6 +320,12 @@ class GameScene(Scene):
             if event.key == "escape":
                 self.switch_to(self.main_menu)
 
+            # --- CHEAT MODE KEY ROUTING ---
+            if event.key == "i":
+                self.logic.toggle_invincibility(self.state)
+            if event.key == "l":
+                self.logic.cheat_skip_level(self.state)
+
     def render(self, renderer: Renderer) -> None:
         renderer.draw(self.state)
         self.anim_manager.draw(renderer)
@@ -332,7 +338,7 @@ class GameScene(Scene):
                 self.anim_manager.add(PacmanDeathAnimation(self.state.pacman))
             if isinstance(event, GhostEatenEvent):
                 points_per_ghost = (100 if not self.state.config
-                                    else self.state.config.points_per_ghost.value)
+                                    else self.state.config.points_per_ghost)
                 self.anim_manager.add(GhostDeathAnimation(
                     event.ghost, points_per_ghost))
             if isinstance(event, GameOverEvent):

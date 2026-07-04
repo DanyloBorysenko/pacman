@@ -1,12 +1,10 @@
 from ..scene import Scene
-from ...logic import GameLogic
+from ...backend.logic import GameLogic
 from ..event import InputEvent
 from ..renderer import Renderer
 
 
 class FinalScene(Scene):
-    MAX_NAME_LEN = 10
-
     def __init__(
             self,
             main_menu: Scene,
@@ -20,14 +18,8 @@ class FinalScene(Scene):
         self.is_victory = is_victory
         self.items = ["YES", "No"]
         self.selected = 0
-        self.entering_name = False
-        self.player_name = ""
 
     def handle_event(self, event: InputEvent) -> None:
-        if self.entering_name:
-            self._handle_name_input(event)
-            return
-
         if event.type == "keydown":
             if event.key == "escape":
                 self.switch_to(self.main_menu)
@@ -37,8 +29,8 @@ class FinalScene(Scene):
                 self.selected = (self.selected + 1) % len(self.items)
             if event.key == "enter":
                 if self.items[self.selected] == "YES":
-                    print("Progress was saved")
-                    # self.logic.save(self.scores)
+                    # name = input("Write your name")
+                    self.logic.score_board.add_new_top_player("Player1", self.scores)
                 self.switch_to(self.main_menu)
 
     def update(self, dt: float) -> None:

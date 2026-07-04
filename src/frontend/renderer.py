@@ -291,7 +291,7 @@ class Renderer:
             f"Score:  {stats.current_score}",
             f"Level:  {stats.current_level}",
             f"Lives:  {stats.lives_remain}",
-            f"Cheat mode:  {'On' if stats.cheat_mode else 'Off'}",
+            # f"Cheat mode:  {'On' if stats.cheat_mode else 'Off'}",
         ]
         start_y = center_y - ((len(items) - 1) * spacing) // 2
 
@@ -397,7 +397,7 @@ class Renderer:
 
         pupil = radius // 6
 
-        dx, dy = ghost.assigned_direction.value
+        dx, dy = ghost.assigned_direction
         offset = radius // 8
 
         pygame.draw.circle(
@@ -542,7 +542,7 @@ class Renderer:
 
     def _draw_gosts(self) -> None:
         for ghost in self.state.ghosts:
-            if ghost.is_edibe:
+            if ghost.is_edible:
                 self.draw_edible_ghost(ghost)
             else:
                 self.draw_ghost(ghost)

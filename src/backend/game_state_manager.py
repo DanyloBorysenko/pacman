@@ -1,17 +1,35 @@
 from typing import Tuple
 import math
-from ..state import GameState, Direction, BitMaps
+import time
+import numpy as np
+from ..state import (
+    GameState, Direction, BitMaps, Ghost,
+    GameOverEvent, GhostEatenEvent, GameStartEvent,
+    PacmanDiedEvent, VictoryEvent
+    )
 
 # Speeds are now explicitly: Grid Tiles Per Second
-PACMAN_SPEED = 2.0
-GHOST_SPEED = 4.0
+PACMAN_SPEED = 4.0
+GHOST_SPEED = 3.5
 
 
 class GameStateManager:
     def __init__(self, game_state: GameState):
         self.game_state = game_state
 
-    def update(self, dt: float, requested_direction: Direction) -> None:
+    def update_remaining_time(self, dt: float) -> None:
+        # if self.game_state.paused:
+        #     return
+
+        self.game_state.live_status.time_left -= dt
+
+        if self.game_state.live_status.time_left <= 0:
+            print("Time's up")
+            self._process_player_death()
+            self.game_state.live_status.time_left =\
+                self.game_state.config.level_max_time
+
+    def update_pacman(self, dt: float, requested_direction: Direction) -> None:
         """The central heartbeat tick. Pass dt here from your main clock loop."""
         pacman = self.game_state.pacman
 
@@ -33,7 +51,10 @@ class GameStateManager:
         # 2. Process real-time fractional displacement progress using dt
         self._move_towards_target(dt, requested_direction)
 
-    def _move_towards_target(self, dt: float, requested_direction: Direction) -> None:
+    def _move_towards_target(
+            self, dt: float,
+            requested_direction: Direction
+            ) -> None:
         pacman = self.game_state.pacman
         direction = pacman.assigned_direction
 
@@ -56,6 +77,7 @@ class GameStateManager:
 
             # Arrived! Process consumption rules on this newly claimed tile coordinate
             self._consume_items(int(pacman.y), int(pacman.x))
+            self._check_for_gums()
 
             # Evaluate where to route next based on the user's latest steering inputs
             curr_tile = self.game_state.maze[int(pacman.y), int(pacman.x)]
@@ -67,13 +89,17 @@ class GameStateManager:
                 pacman.yd = int(pacman.y) + requested_direction.value[1]
             elif self._is_move_allowed(curr_tile, pacman.assigned_direction):
                 # No new turn requested, continue straight ahead toward next tile line
+                # if pacman.assigned_direction is not None:
                 pacman.xd = int(pacman.x) + pacman.assigned_direction.value[0]
                 pacman.yd = int(pacman.y) + pacman.assigned_direction.value[1]
+                # else:
+                #     pacman.xd = int(pacman.x)
+                #     pacman.yd = int(pacman.y)
             else:
                 # Path dead end: Reset tracking markers back to standstill mode
                 pacman.xd = -1
                 pacman.yd = -1
-                pacman.assigned_direction = None
+                pacman.assigned_direction = Direction.UP
         else:
             # CONTINUOUS GLIDE: We haven't reached the node intersection yet, advance tracking positions
             pacman.x += direction.value[0] * step_size
@@ -95,8 +121,203 @@ class GameStateManager:
         current_tile = self.game_state.maze[y, x]
 
         if current_tile & BitMaps.PACGUM:
-            self.game_state.live_status.current_score += self.game_state.config.points_per_pacgum.value
+            self.game_state.live_status.current_score += self.game_state.config.points_per_pacgum
             self.game_state.maze[y, x] &= ~BitMaps.PACGUM
+            print(f"Score: {self.game_state.live_status.current_score}")
         elif current_tile & BitMaps.SUPER_PACGUM:
-            self.game_state.live_status.current_score += self.game_state.config.points_per_super_pacgum.value
+            self.game_state.live_status.current_score += self.game_state.config.points_per_super_pacgum
             self.game_state.maze[y, x] &= ~BitMaps.SUPER_PACGUM
+            for ghost in self.game_state.ghosts:
+                ghost.is_edible = True
+                ghost.colour = "blue"
+                ghost.edible_since = time.time()
+                ghost.time_laps = 0
+            print(f"Score: {self.game_state.live_status.current_score}")
+
+    def _check_for_gums(self) -> None:
+        if not np.any(
+                self.game_state.maze &
+                (BitMaps.SUPER_PACGUM | BitMaps.PACGUM)):
+            self._advance_to_next_level()
+
+    def _advance_to_next_level(self) -> None:
+        """Handles state resets and difficulty scaling when a level is cleared."""
+        state = self.game_state
+        if state.live_status.current_level == self.game_state.config.max_level:
+            self.game_state.events.append(
+                VictoryEvent(self.game_state.live_status.current_score))
+
+        print("Victory is achived")
+
+        # 1. Update level counters
+        state.live_status.current_level += 1
+
+        # 2. Scale up difficulty (Dynamic Speed Adjustment)
+        # We modify the instance variables if they are stored in config
+        global PACMAN_SPEED, GHOST_SPEED
+        PACMAN_SPEED *= 1.10  # Increase speed by 10% each level
+        GHOST_SPEED *= 1.10
+
+        # 3. Request a fresh maze matrix from your generator
+        # (Assuming you have access to your original generator package or initializer hook)
+        # We clear out old values by overwriting the matrix array
+        from src.backend.game_initializer import GameInitializer
+
+        # Regenerate maze structural layout lines
+        # if your initializer handles this, invoke it directly:
+        initializer = GameInitializer(state)
+        initializer.reload_new_level_map(self.game_state) 
+
+        # 4. Reset Pac-Man physics markers completely
+        state.pacman.xd = -1
+        state.pacman.yd = -1
+        state.pacman.assigned_direction = self.game_state.pacman.direction
+
+        # 5. Reset all Ghosts physics and state trackers completely
+        for ghost in state.ghosts:
+            ghost.xd = -1
+            ghost.yd = -1
+            ghost.assigned_direction_vector = (0, -1)  # Face North default
+            ghost.is_edible = False
+            ghost.time_laps = 0
+            ghost.colour = ghost.initial_colour
+
+    def update_ghosts(self, dt: float) -> None:
+        """Updates all ghosts using fractional time slices and coordinates their AI changes."""
+        pacman_coords = (int(self.game_state.pacman.y), int(self.game_state.pacman.x))
+
+        for ghost in self.game_state.ghosts:
+            if ghost.is_edible:
+                # print(f"Ghost edible, time laps: {ghost.time_laps}")
+                ghost.time_laps += dt
+                if ghost.time_laps >= self.game_state.config.ghost_edible_time:
+                    ghost.is_edible = False
+                    ghost.time_laps = 0
+                    ghost.colour = ghost.initial_colour
+
+            # 1. Bootstrapping: Initialize targets if they are fresh out of spawn (-1 baseline setup)
+            if ghost.xd == -1 and ghost.yd == -1:
+                curr_x = int(ghost.x)
+                curr_y = int(ghost.y)
+                curr_coords = (curr_y, curr_x)
+
+                # Fetch direction vector from the ghost's movement
+                dx, dy = ghost.strategy.get_next_move(
+                    curr_coords, self.game_state.maze,
+                    pacman_coords, ghost.assigned_direction,
+                    ghost.is_edible)
+                ghost.assigned_direction = (dx, dy)
+                ghost.xd = curr_x + dx
+                ghost.yd = curr_y + dy
+
+            # 2. Track distance to target
+            dgx = ghost.xd - ghost.x
+            dgy = ghost.yd - ghost.y
+            distance_to_target = math.sqrt(dgx**2 + dgy**2)
+
+            # Ghosts can have different speeds based on configuration or states (e.g. slowed down when frightened)
+            step_size = GHOST_SPEED * dt
+
+            # 3. CHECK ARRIVAL
+            if step_size >= distance_to_target:
+                # Snap ghost perfectly to tile junction intersection
+                ghost.x = float(ghost.xd)
+                ghost.y = float(ghost.yd)
+
+                # We have landed! Ask the AI strategy for the next step vector
+                curr_coords = (int(ghost.y), int(ghost.x))
+                dx, dy = ghost.strategy.get_next_move(
+                    curr_coords, self.game_state.maze, pacman_coords,
+                    ghost.assigned_direction, ghost.is_edible)
+
+                # Update assignments for the next track step segment
+                ghost.assigned_direction = (dx, dy)
+                ghost.xd = int(ghost.x) + dx
+                ghost.yd = int(ghost.y) + dy
+            else:
+                # 4. CONTINUOUS GLIDE
+                vec = ghost.assigned_direction
+                if vec:
+                    ghost.x += vec[0] * step_size
+                    ghost.y += vec[1] * step_size
+
+    def check_collisions(self) -> None:
+        """Evaluates proximity between Pac-Man and all ghosts, triggering state updates."""
+        pacman = self.game_state.pacman
+
+        for i, ghost in enumerate(self.game_state.ghosts):
+            # 1. Calculate distance between Pac-Man and the current ghost
+            distance = math.sqrt((pacman.x - ghost.x)**2 + (pacman.y - ghost.y)**2)
+
+            # 2. Threshold collision check (closer than half a tile)
+            if distance < 0.5:
+
+                # STEP B: Ghost is Frightened (Edible)
+                if ghost.is_edible:
+                    print(f"ghost is eaten, time laps: {ghost.time_laps}")
+                    self._process_ghost_eaten(ghost)
+
+                # STEP A: Ghost is Dangerous
+                else:
+                    if self.game_state.cheat_invincibility:
+                        continue
+                    self._process_player_death()
+                    break  # Stop checking other ghosts on this frame since player died
+
+    def _process_ghost_eaten(self, ghost: Ghost) -> None:
+        """Handles Step B: Pac-Man devours an edible ghost."""
+        # 1. Award points dynamically from config
+        self.game_state.live_status.current_score +=\
+            self.game_state.config.points_per_ghost
+        self.game_state.events.append(GhostEatenEvent(ghost))
+
+        # 2. Reset this specific ghost's state flags
+        ghost.is_edible = False
+        ghost.time_laps = 0
+        ghost.colour = ghost.initial_colour
+
+        # 3. Teleport the ghost back to its starting coordinate layout
+        # (Assuming your state handles individual home corners)
+        ghost.x = float(ghost.home_x)
+        ghost.y = float(ghost.home_y)
+
+        # 4. Reset its GridMover targets so it doesn't try to glide back outwards sideways
+        ghost.xd = -1
+        ghost.yd = -1
+        # time.sleep(1)
+
+    def _process_player_death(self) -> None:
+        """Handles Step A: Player loses a life to a dangerous ghost."""
+        # 1. Deduct life status
+        self.game_state.live_status.lives_remain -= 1
+        if self.game_state.live_status.lives_remain > 0:
+            print(f"PacMan x: {self.game_state.pacman.x}, y: {self.game_state.pacman.y}")
+            self.game_state.events.append(
+                PacmanDiedEvent(self.game_state.pacman))
+        print(f"live remains: {self.game_state.live_status.lives_remain}")
+
+        # 2. Check for game over state transition
+        if self.game_state.live_status.lives_remain <= 0:
+            self.game_state.current_screen = "GAME_OVER"
+            self.game_state.events.append(
+                GameOverEvent(self.game_state.live_status.current_score))
+            self.game_state.paused = True
+        else:
+            # 3. Respawn Pac-Man at the map's safe starting center
+            self.game_state.pacman.x = float(self.game_state.pacman.start_x)
+            self.game_state.pacman.y = float(self.game_state.pacman.start_y)
+
+            # 4. Clear Pac-Man's GridMover destination states
+            self.game_state.pacman.xd = -1
+            self.game_state.pacman.yd = -1
+            self.game_state.pacman.assigned_direction = None
+
+            # 5. Optional Peer Tip: Reset all ghosts to their homes on death 
+            # to prevent instant spawn-killing when Pac-Man reappears!
+            for i, ghost in enumerate(self.game_state.ghosts):
+                ghost.x = float(ghost.home_x)
+                ghost.y = float(ghost.home_y)
+                ghost.is_edible = False
+                ghost.xd = -1
+                ghost.yd = -1
+        # time.sleep(1)
