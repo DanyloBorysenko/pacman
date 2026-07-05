@@ -7,8 +7,6 @@ from .highscores_scene import HighScoresScene
 from ..event import InputEvent
 from ..renderer import Renderer
 from typing import List
-from ...state import GameStartEvent
-from ...backend.score_board_handler import ScoreBoardHandler
 
 
 class MainMenuScene(Scene):

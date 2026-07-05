@@ -63,7 +63,6 @@ class GameLogic:
         if direction is None:
             direction = Direction.UP
         state.pacman.direction = direction
-        print(f"pacman direction after: {state.pacman.direction}")
 
     def apply_pause(self, state: GameState) -> None:
         state.paused = not state.paused

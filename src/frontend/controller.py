@@ -1,10 +1,8 @@
 from .renderer import Renderer
 from src.backend.logic import GameLogic
 from src.constants import WINDOW_WIDTH, WINDOW_HEIGHT
-from .scenes.game_scene import GameScene
 from .scenes.main_menu_scene import MainMenuScene
 from .event import InputEvent
-import time
 import pygame
 
 
@@ -18,6 +16,7 @@ class Controller:
             pygame.K_RIGHT: "right",
             pygame.K_SPACE: "space",
             pygame.K_RETURN: "enter",
+            pygame.K_ESCAPE: "escape",
             pygame.K_w: "w",
             pygame.K_s: "s",
             pygame.K_a: "a",
@@ -36,9 +35,7 @@ class Controller:
         while self.running:
             dt = self.clock.tick(60) / 1000
             for event in pygame.event.get():
-                if (event.type == pygame.QUIT or
-                    (event.type == pygame.KEYDOWN and
-                     event.key == pygame.K_ESCAPE)):
+                if event.type == pygame.QUIT:
                     self.running = False
                 inp_event = self._to_input_event(event)
                 if inp_event is not None:

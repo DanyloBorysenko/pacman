@@ -12,4 +12,4 @@ points_per_ghost = 200
 ghost_edible_time = 5.0
 seed = 42
 level_max_time = 90.0
-max_level = 2
+# max_level = 2
