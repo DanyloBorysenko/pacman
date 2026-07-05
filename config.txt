@@ -13,3 +13,5 @@ ghost_edible_time = 5.0
 seed = 42
 level_max_time = 90.0
 max_level = 3
+pacman_speed = 4.0
+ghost_speed = 3.5

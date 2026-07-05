@@ -19,7 +19,10 @@ def parse_game_config(file_path: str) -> Dict[str, Any]:
         "points_per_ghost": 200,
         "ghost_edible_time": 5.0,
         "seed": 42,
-        "level_max_time": 60.0
+        "level_max_time": 60.0,
+        "max_level": 2,
+        "pacman_speed": 4.0,
+        "ghost_speed": 3.2
     }
 
     if not os.path.exists(file_path):
