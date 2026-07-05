@@ -59,9 +59,11 @@ class GameLogic:
         self.game_manager.check_collisions()
 
     def update_direction(self, state: GameState, direction: Direction) -> None:
+        print(f"pacman direction before: {state.pacman.direction}")
         if direction is None:
             direction = Direction.UP
         state.pacman.direction = direction
+        print(f"pacman direction after: {state.pacman.direction}")
 
     def apply_pause(self, state: GameState) -> None:
         state.paused = not state.paused

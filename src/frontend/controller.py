@@ -18,6 +18,10 @@ class Controller:
             pygame.K_RIGHT: "right",
             pygame.K_SPACE: "space",
             pygame.K_RETURN: "enter",
+            pygame.K_w: "w",
+            pygame.K_s: "s",
+            pygame.K_a: "a",
+            pygame.K_d: "d",
             pygame.K_i: "i",       # Added for Invincibility cheat toggle
             pygame.K_l: "l"        # Added for Skip Level cheat trigger
         }

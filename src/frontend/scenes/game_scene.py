@@ -322,6 +322,7 @@ class GameScene(Scene):
             return
         if event.type == "keydown":
             if event.key == "up" or event.key == "w":
+                print("Pressed")
                 self.logic.update_direction(self.state, Direction.UP)
             if event.key == "down" or event.key == "s":
                 self.logic.update_direction(self.state, Direction.DOWN)
