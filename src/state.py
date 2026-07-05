@@ -93,8 +93,8 @@ class GameState:
     live_status: GameStats = None
     config: GameConfig = None
     # Cheat Mode flags
-    cheat_invincibility: bool = False  #'I'
-    # 'L' for level skip
+    cheat_invincibility: bool = False
+    cheat_freeze: bool = False
     events: List["GameEvent"] = field(default_factory=list)
 
 

@@ -67,15 +67,19 @@ class GameLogic:
     def apply_pause(self, state: GameState) -> None:
         state.paused = not state.paused
 
-    def toggle_invincibility(self, state: GameState) -> None:
-        """Swaps player invincibility status flag on the fly."""
-        state.cheat_invincibility = not state.cheat_invincibility
-        print(f"[CHEAT] Invincibility is now: {state.cheat_invincibility}")
+    def activate_cheat_mode(self, state: GameState, key: str) -> None:
+        if key == "i":
+            state.cheat_invincibility = not state.cheat_invincibility
+            print(f"[CHEAT] Invincibility is now: {state.cheat_invincibility}")
+        if key == "l":
+            print("[CHEAT] Skipping current level layout!")
+            self.game_manager._advance_to_next_level()
+        if key == "e":
+            state.live_status.lives_remain += 1
+        if key == "f":
+            state.cheat_freeze = not state.cheat_freeze
 
-    def cheat_skip_level(self, state: GameState) -> None:
-        """Instantly forces a level transition bypass."""
-        print("[CHEAT] Skipping current level layout!")
-        self.game_manager._advance_to_next_level()
+    
 
     def _entity_cell(self, x: float, y: float) -> tuple[int, int]:
         return (

@@ -127,15 +127,3 @@ class GameInitializer:
             self.valid_center[0], self.valid_center[1]
         self.game_state.pacman.start_x = self.valid_center[1]
         self.game_state.pacman.start_y = self.valid_center[0]
-
-
-if __name__ == "__main__":
-    from mazegenerator.mazegenerator import MazeGenerator
-    from .maze_renderer import generate_maze
-
-    gen = MazeGenerator(size=(10, 15), seed=42)
-    maze = np.array(gen.maze)
-    maze[1, 1] |= BitMaps.PACGUM
-    maze[1, 8] |= BitMaps.SUPER_PACGUM
-    print(maze)
-    generate_maze(raw_maze=maze)

@@ -22,7 +22,9 @@ class Controller:
             pygame.K_a: "a",
             pygame.K_d: "d",
             pygame.K_i: "i",       # Added for Invincibility cheat toggle
-            pygame.K_l: "l"        # Added for Skip Level cheat trigger
+            pygame.K_l: "l",       # Added for Skip Level cheat trigger
+            pygame.K_e: "e",       # Added for extra life
+            pygame.K_f: "f"        # Added for ghost freeze
         }
         self.screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
         self.clock = pygame.Clock()

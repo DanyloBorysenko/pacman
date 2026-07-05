@@ -173,6 +173,8 @@ class GameStateManager:
 
     def update_ghosts(self, dt: float) -> None:
         """Updates all ghosts using fractional time slices and coordinates their AI changes."""
+        if self.game_state.cheat_freeze:
+            return
         pacman_coords = (int(self.game_state.pacman.y), int(self.game_state.pacman.x))
 
         for ghost in self.game_state.ghosts:

@@ -340,9 +340,13 @@ class GameScene(Scene):
 
             # --- CHEAT MODE KEY ROUTING ---
             if event.key == "i":
-                self.logic.toggle_invincibility(self.state)
+                self.logic.activate_cheat_mode(self.state, event.key)
             if event.key == "l":
-                self.logic.cheat_skip_level(self.state)
+                self.logic.activate_cheat_mode(self.state, event.key)
+            if event.key == "e":
+                self.logic.activate_cheat_mode(self.state, event.key)
+            if event.key == "f":
+                self.logic.activate_cheat_mode(self.state, event.key)
 
     def render(self, renderer: Renderer) -> None:
         renderer.draw(self.state)
