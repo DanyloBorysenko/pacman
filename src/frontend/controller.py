@@ -35,7 +35,7 @@ class Controller:
         while self.running:
             dt = self.clock.tick(60) / 1000
             for event in pygame.event.get():
-                if event.type == pygame.QUIT:
+                if self._should_exit(event):
                     self.running = False
                 inp_event = self._to_input_event(event)
                 if inp_event is not None:
@@ -58,3 +58,12 @@ class Controller:
             key = self.events_keys_dict.get(pygame_event.key, None)
             input_event = InputEvent(type="keydown", key=key)
         return input_event
+
+    def _should_exit(self, event: pygame.event.Event) -> bool:
+        if (event.type == pygame.QUIT):
+            return True
+        if (event.type == pygame.KEYDOWN
+           and event.key == pygame.K_ESCAPE
+           and isinstance(self.current_scene, MainMenuScene)):
+            return True
+        return False

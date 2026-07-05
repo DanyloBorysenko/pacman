@@ -10,6 +10,7 @@ from ..renderer import Renderer
 from typing import List, Tuple
 from abc import ABC, abstractmethod
 from ...constants import WINDOW_WIDTH, WINDOW_HEIGHT
+from dataclasses import replace
 import random
 import math
 
@@ -110,7 +111,10 @@ class GhostDeathAnimation(Animation):
             ghost: Ghost,
             death_coord: Tuple[float, float],
             points_per_ghost: int) -> None:
-        self.ghost = ghost
+        self.ghost = replace(ghost)
+        self.death_coord = death_coord
+        self.ghost.x = self.death_coord[0]
+        self.ghost.y = self.death_coord[1]
         self.points_per_ghost = points_per_ghost
         self.total = 1.0
         self.timer = self.total
