@@ -52,7 +52,9 @@ class GameInitializer:
         self._place_pacman()
         self.game_state.live_status = GameStats(
             lives_remain=self.game_state.config.lives,
-            time_left=self.game_state.config.level_max_time)
+            time_left=self.game_state.config.level_max_time,
+            pacman_curr_spd=self.game_state.config.pacman_speed,
+            ghost_curr_speed=self.game_state.config.ghost_speed)
 
     def reload_new_level_map(self, game_state: GameState) -> None:
         from mazegenerator.mazegenerator import MazeGenerator

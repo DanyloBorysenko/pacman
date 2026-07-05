@@ -35,7 +35,9 @@ class GameConfig:
     ghost_edible_time: float = 5.0
     seed: int = 42
     level_max_time: float = 60.0
-    max_level: int = 1
+    max_level: int = 10
+    pacman_speed: float = 4.0
+    ghost_speed:float = 3.2
 
 
 @dataclass
@@ -79,6 +81,8 @@ class GameStats:
     time_left: int = None
     is_edible: bool = False
     edible_time_left: int = 0
+    pacman_curr_spd: float = 0
+    ghost_curr_speed: float = 0
 
 
 @dataclass

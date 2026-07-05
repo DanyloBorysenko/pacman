@@ -8,10 +8,6 @@ from ..state import (
     PacmanDiedEvent, VictoryEvent
     )
 
-# Speeds are now explicitly: Grid Tiles Per Second
-PACMAN_SPEED = 4.0
-GHOST_SPEED = 3.5
-
 
 class GameStateManager:
     def __init__(self, game_state: GameState):
@@ -67,7 +63,7 @@ class GameStateManager:
         distance_to_target = math.sqrt(dx**2 + dy**2)
 
         # Determine how large of a step Pac-Man can physically take over this temporal frame
-        step_size = PACMAN_SPEED * dt
+        step_size = self.game_state.live_status.pacman_curr_spd * dt
 
         # CHECK ARRIVAL: If our step covers or passes the target distance
         if step_size >= distance_to_target:
@@ -89,12 +85,8 @@ class GameStateManager:
                 pacman.yd = int(pacman.y) + requested_direction.value[1]
             elif self._is_move_allowed(curr_tile, pacman.assigned_direction):
                 # No new turn requested, continue straight ahead toward next tile line
-                # if pacman.assigned_direction is not None:
                 pacman.xd = int(pacman.x) + pacman.assigned_direction.value[0]
                 pacman.yd = int(pacman.y) + pacman.assigned_direction.value[1]
-                # else:
-                #     pacman.xd = int(pacman.x)
-                #     pacman.yd = int(pacman.y)
             else:
                 # Path dead end: Reset tracking markers back to standstill mode
                 pacman.xd = -1
@@ -153,10 +145,8 @@ class GameStateManager:
         state.live_status.current_level += 1
 
         # 2. Scale up difficulty (Dynamic Speed Adjustment)
-        # We modify the instance variables if they are stored in config
-        global PACMAN_SPEED, GHOST_SPEED
-        PACMAN_SPEED *= 1.10  # Increase speed by 10% each level
-        GHOST_SPEED *= 1.10
+        self.game_state.live_status.pacman_curr_spd  *= 1.10  # Increase speed by 10% each level
+        self.game_state.live_status.ghost_curr_speed  *= 1.10
 
         # 3. Request a fresh maze matrix from your generator
         # (Assuming you have access to your original generator package or initializer hook)
@@ -216,7 +206,7 @@ class GameStateManager:
             distance_to_target = math.sqrt(dgx**2 + dgy**2)
 
             # Ghosts can have different speeds based on configuration or states (e.g. slowed down when frightened)
-            step_size = GHOST_SPEED * dt
+            step_size = self.game_state.live_status.ghost_curr_speed * dt
 
             # 3. CHECK ARRIVAL
             if step_size >= distance_to_target:
