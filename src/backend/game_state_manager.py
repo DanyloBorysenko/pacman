@@ -135,33 +135,32 @@ class GameStateManager:
     def _advance_to_next_level(self) -> None:
         """Handles state resets and difficulty scaling when a level is cleared."""
         state = self.game_state
-        if state.live_status.current_level == self.game_state.config.max_level:
-            self.game_state.events.append(
-                VictoryEvent(self.game_state.live_status.current_score))
+        if state.live_status.current_level == state.config.max_level:
+            state.events.append(
+                VictoryEvent(state.live_status.current_score))
+            print("Victory is achived")
+        else:
+            # 1. Update level counters
+            state.live_status.current_level += 1
 
-        print("Victory is achived")
+            # 2. Scale up difficulty (Dynamic Speed Adjustment)
+            self.game_state.live_status.pacman_curr_spd  *= 1.10  # Increase speed by 10% each level
+            self.game_state.live_status.ghost_curr_speed  *= 1.10
 
-        # 1. Update level counters
-        state.live_status.current_level += 1
+            # 3. Request a fresh maze matrix from your generator
+            # (Assuming you have access to your original generator package or initializer hook)
+            # We clear out old values by overwriting the matrix array
+            from src.backend.game_initializer import GameInitializer
 
-        # 2. Scale up difficulty (Dynamic Speed Adjustment)
-        self.game_state.live_status.pacman_curr_spd  *= 1.10  # Increase speed by 10% each level
-        self.game_state.live_status.ghost_curr_speed  *= 1.10
+            # Regenerate maze structural layout lines
+            # if your initializer handles this, invoke it directly:
+            initializer = GameInitializer(state)
+            initializer.reload_new_level_map(self.game_state)
 
-        # 3. Request a fresh maze matrix from your generator
-        # (Assuming you have access to your original generator package or initializer hook)
-        # We clear out old values by overwriting the matrix array
-        from src.backend.game_initializer import GameInitializer
-
-        # Regenerate maze structural layout lines
-        # if your initializer handles this, invoke it directly:
-        initializer = GameInitializer(state)
-        initializer.reload_new_level_map(self.game_state)
-
-        # 4. Reset Pac-Man physics markers completely
-        state.pacman.xd = -1
-        state.pacman.yd = -1
-        state.pacman.assigned_direction = self.game_state.pacman.direction
+            # 4. Reset Pac-Man physics markers completely
+            state.pacman.xd = -1
+            state.pacman.yd = -1
+            state.pacman.assigned_direction = self.game_state.pacman.direction
 
         # 5. Reset all Ghosts physics and state trackers completely
         for ghost in state.ghosts:
