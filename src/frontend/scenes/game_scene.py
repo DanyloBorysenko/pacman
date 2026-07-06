@@ -104,7 +104,7 @@ class PacmanDeathAnimation(Animation):
 
 
 class GhostDeathAnimation(Animation):
-    blocking = True
+    blocking = False
 
     def __init__(
             self,

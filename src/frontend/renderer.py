@@ -1,5 +1,5 @@
 from typing import List, Tuple
-from src.state import GameState, Direction, Ghost, BitMaps
+from src.state import GameState, Direction, Ghost, BitMaps, GameConfig
 from src.constants import CELL_SIZE, WINDOW_HEIGHT, WINDOW_WIDTH
 import pygame
 import math
@@ -32,7 +32,7 @@ class Renderer:
         self.surface = surface
         self.menu_font = pygame.font.Font(size=MENU_FONT_SIZE)
         self.title_font = pygame.font.Font(None, 50)
-        self.instruction_font = pygame.font.SysFont("DejaVu Sans", 24)
+        self.instruction_font = pygame.font.SysFont("DejaVu Sans", 20)
         self.start_game_font = pygame.font.Font(size=200)
         self.offset_x = 0
         self.offset_y = 0
@@ -73,7 +73,7 @@ class Renderer:
             rect.center = item_rect.center
             self.surface.blit(surf, rect)
 
-    def draw_instructions(self) -> None:
+    def draw_instructions(self, config: GameConfig) -> None:
         right_x = int(WINDOW_WIDTH * _COL_RIGHT_FRAC)
         body_top = int(WINDOW_HEIGHT * _BODY_TOP_FRAC)
 
@@ -104,42 +104,43 @@ class Renderer:
             ("\u2190 / A    Move Left",      INSTRUCTION_COLOR),
             ("\u2192 / D    Move Right",     INSTRUCTION_COLOR),
             ("Space      Pause",             INSTRUCTION_COLOR),
-            ("C           Cheat Mode",       INSTRUCTION_COLOR),
+            ("I         Invincibility",       INSTRUCTION_COLOR),
+            ("L         Skip level",       INSTRUCTION_COLOR),
             blank,
             ("Pacgums",                      ACCENT),
-            ("\u2022 Pacgum          +10 pts", INSTRUCTION_COLOR),
-            ("\u2022 Super Pacgum    +50 pts", INSTRUCTION_COLOR),
-            ("\u2022 Frightens ghosts",        INSTRUCTION_COLOR),
-            ("  for [T] seconds",              INSTRUCTION_COLOR),
+            (f"\u2022 Pacgum          +{config.points_per_pacgum} pts", INSTRUCTION_COLOR),
+            (f"\u2022 Super Pacgum    +{config.points_per_super_pacgum} pts", INSTRUCTION_COLOR),
+            blank,
+            ("Ghosts",                      ACCENT),
+            (f"\u2022 Ghost          +{config.points_per_ghost} pts", INSTRUCTION_COLOR),
+            (f"\u2022 Frightens ghosts for {config.ghost_edible_time} seconds", INSTRUCTION_COLOR),
             blank,
             ("Winning",                      ACCENT),
-            ("\u2022 Complete [N] levels",   INSTRUCTION_COLOR),
+            (f"\u2022 Complete {config.max_level} levels",   INSTRUCTION_COLOR),
             ("\u2022 Eat every pacgum",      INSTRUCTION_COLOR),
         ]
 
         right_column: list[tuple[str, str]] = [
             ("Gameplay",                            ACCENT),
-            ("\u2022 Start with 3 lives",            INSTRUCTION_COLOR),
+            (f"\u2022 Start with {config.lives} lives",            INSTRUCTION_COLOR),
             ("\u2022 Move only through corridors",   INSTRUCTION_COLOR),
             ("\u2022 Walls block movement",          INSTRUCTION_COLOR),
             ("\u2022 Touching a ghost loses a life", INSTRUCTION_COLOR),
             ("\u2022 Respawn in maze center",        INSTRUCTION_COLOR),
             ("\u2022 Game Over at 0 lives",          INSTRUCTION_COLOR),
-            ("\u2022 Finish level by eating",        INSTRUCTION_COLOR),
-            ("  every pacgum",                       INSTRUCTION_COLOR),
+            ("\u2022 Finish level by eating every pacgum", INSTRUCTION_COLOR),
             blank,
             ("Ghosts",                               ACCENT),
             ("\u2022 Chase Pac-Man",                 INSTRUCTION_COLOR),
             ("\u2022 Run away when edible",          INSTRUCTION_COLOR),
-            ("\u2022 Eat ghost: +200 pts",           INSTRUCTION_COLOR),
-            ("\u2022 Respawn after [R] sec",         INSTRUCTION_COLOR),
+            # ("\u2022 Respawn after [R] sec",         INSTRUCTION_COLOR),
             blank,
             ("Cheat Mode",                           ACCENT),
             ("\u2022 Invincibility",                 INSTRUCTION_COLOR),
-            ("\u2022 Freeze Ghosts",                 INSTRUCTION_COLOR),
+            # ("\u2022 Freeze Ghosts",                 INSTRUCTION_COLOR),
             ("\u2022 Level Skip",                    INSTRUCTION_COLOR),
-            ("\u2022 Extra Lives",                   INSTRUCTION_COLOR),
-            ("\u2022 Speed Boost",                   INSTRUCTION_COLOR),
+            # ("\u2022 Extra Lives",                   INSTRUCTION_COLOR),
+            # ("\u2022 Speed Boost",                   INSTRUCTION_COLOR),
         ]
 
         self._draw_title("PAC-MAN INSTRUCTIONS")
@@ -206,11 +207,13 @@ class Renderer:
     def apply_blur(self, factor: int = 8) -> None:
         small = pygame.transform.smoothscale(
             self.surface, (WINDOW_WIDTH // factor, WINDOW_HEIGHT // factor))
-        blurred = pygame.transform.smoothscale(small, (WINDOW_WIDTH, WINDOW_HEIGHT))
+        blurred = pygame.transform.smoothscale(
+            small, (WINDOW_WIDTH, WINDOW_HEIGHT))
         self.surface.blit(blurred, (0, 0))
 
     def draw_game_over_text(self, scale: float, alpha: int) -> None:
-        overlay = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.SRCALPHA)
+        overlay = pygame.Surface((
+            WINDOW_WIDTH, WINDOW_HEIGHT), pygame.SRCALPHA)
         overlay.fill((0, 0, 0, alpha))
         self.surface.blit(overlay, (0, 0))
 
@@ -281,6 +284,27 @@ class Renderer:
         no_rect.center = right_rect.center
         self.surface.blit(no_surf, no_rect)
 
+    def draw_name_input(self, name: str) -> None:
+        box_w, box_h = 400, 70
+        box = pygame.Rect(0, 0, box_w, box_h)
+        box.center = (self.center_x, self.center_y + WINDOW_HEIGHT // 4)
+
+        pygame.draw.rect(
+            self.surface, pygame.Color(30, 30, 30), box, border_radius=8)
+        pygame.draw.rect(self.surface, ACCENT, box, width=2, border_radius=8)
+        name_size = box_h // 2
+        surf = pygame.font.Font(size=box_h // 2).render(name, True, "red")
+        text_rect = surf.get_frect()
+        text_rect.center = box.center
+        self.surface.blit(surf, text_rect)
+
+        info_surf = pygame.font.Font(size=name_size).render(
+            "Please write your name", True, (50, 50, 50))
+        info_rect = info_surf.get_frect()
+        info_rect.bottom = box.top - 5
+        info_rect.centerx = box.centerx
+        self.surface.blit(info_surf, info_rect)
+
     def _draw_game_stats(self) -> None:
         stats = self.state.live_status
 
@@ -291,7 +315,8 @@ class Renderer:
             f"Score:  {stats.current_score}",
             f"Level:  {stats.current_level}",
             f"Lives:  {stats.lives_remain}",
-            # f"Cheat mode:  {'On' if stats.cheat_mode else 'Off'}",
+            f"Invincibility: {'On' if (
+                self.state.cheat_invincibility) else 'Off'}"
         ]
         start_y = center_y - ((len(items) - 1) * spacing) // 2
 
@@ -556,7 +581,8 @@ class Renderer:
         center_y = int(pacman.y * CELL_SIZE + self.offset_y + self.cell_offset)
         radius = CELL_SIZE // 3
 
-        pygame.draw.circle(self.surface, PACK_MAN_COLOR, (center_x, center_y), radius)
+        pygame.draw.circle(
+            self.surface, PACK_MAN_COLOR, (center_x, center_y), radius)
 
         direction = pacman.direction or Direction.RIGHT
         base_angle = {
@@ -574,7 +600,8 @@ class Renderer:
             eye_x = center_x + radius // 3
             eye_y = center_y + dy * radius // 3
 
-        pygame.draw.circle(self.surface, BACKGROUND_COLOR, (eye_x, eye_y), radius // 5)
+        pygame.draw.circle(
+            self.surface, BACKGROUND_COLOR, (eye_x, eye_y), radius // 5)
 
         opening = 45 * abs(math.sin(pacman.mouth_phase))
         start_angle = base_angle - opening
@@ -600,7 +627,8 @@ class Renderer:
         if len(points) >= 3:
             pygame.draw.polygon(self.surface, BACKGROUND_COLOR, points)
 
-    def draw_pacman_death(self, x: float, y: float, death_phase: float) -> None:
+    def draw_pacman_death(
+            self, x: float, y: float, death_phase: float) -> None:
         center_x = int(x * CELL_SIZE + self.offset_x + self.cell_offset)
         center_y = int(y * CELL_SIZE + self.offset_y + self.cell_offset)
         radius = CELL_SIZE // 3
@@ -612,7 +640,8 @@ class Renderer:
         start_angle = -opening
         end_angle = opening
 
-        pygame.draw.circle(self.surface, PACK_MAN_COLOR, (center_x, center_y), radius)
+        pygame.draw.circle(
+            self.surface, PACK_MAN_COLOR, (center_x, center_y), radius)
 
         points = [(center_x, center_y)]
         step = 2
@@ -640,7 +669,8 @@ class Renderer:
         for p in particles:
             x = int(center_x + p.dx * CELL_SIZE)
             y = int(center_y + p.dy * CELL_SIZE)
-            pygame.draw.circle(self.surface, p.color, (x, y), max(1, int(p.size)))
+            pygame.draw.circle(
+                self.surface, p.color, (x, y), max(1, int(p.size)))
 
     def _draw_cell(self, row: int, col: int, cell: int) -> None:
         x, y = self._cell_top_left(row, col)

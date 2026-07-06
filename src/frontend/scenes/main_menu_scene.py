@@ -50,7 +50,7 @@ class MainMenuScene(Scene):
         self.switch_to(GameScene(state, self.logic, self))
 
     def _instruction_scene(self) -> None:
-        self.switch_to(InstructionsScene(self))
+        self.switch_to(InstructionsScene(self, self.logic.config))
 
     def _highscores_scene(self) -> None:
         top_players = self.logic.score_board.get_player_list()
