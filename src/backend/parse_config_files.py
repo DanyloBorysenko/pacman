@@ -12,6 +12,8 @@ def parse_game_config(file_path: str) -> Dict[str, Any]:
     # Define default configurations as our baseline
     config_data: Dict[str, Any] = {
         "high_score_filename": "scoreboard.json",
+        "maze_width": 10,
+        "maze_height": 15,
         "lives": 3,
         "pacgum": 5,
         "points_per_pacgum": 10,
@@ -55,7 +57,10 @@ def parse_game_config(file_path: str) -> Dict[str, Any]:
                 try:
                     if key == "high_score_filename":
                         config_data[key] = val
-                    elif key in ["ghost_edible_time", "level_max_time"]:
+                    elif key in ["ghost_edible_time",
+                                 "level_max_time",
+                                 "pacman_speed",
+                                 "ghost_speed"]:
                         config_data[key] = float(val)
                     else:
                         config_data[key] = int(val)

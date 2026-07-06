@@ -12,8 +12,6 @@ from .ghost_movement import (
     PseudoRandomMovement
 )
 
-PACMAN_SPEED = 1
-
 
 class GameLogic:
     def __init__(self, generator: MazeGenerator, config: GameConfig):
@@ -39,7 +37,7 @@ class GameLogic:
             Ghost(
                 colour="red", strategy=DirectionalMovement(),
                 initial_colour="red"),
-            Ghost(colour="pink", strategy=PseudoRandomMovement(),
+            Ghost(colour="pink", strategy=PseudoRandomMovement(0.7),
                   initial_colour="pink"),
             Ghost(colour="orange", strategy=PseudoRandomMovement(0.9),
                   initial_colour="orange"),
@@ -78,11 +76,3 @@ class GameLogic:
             state.live_status.lives_remain += 1
         if key == "f":
             state.cheat_freeze = not state.cheat_freeze
-
-    
-
-    def _entity_cell(self, x: float, y: float) -> tuple[int, int]:
-        return (
-            int(y // CELL_SIZE),
-            int(x // CELL_SIZE),
-        )

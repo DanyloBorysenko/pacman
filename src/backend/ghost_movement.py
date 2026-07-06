@@ -23,6 +23,7 @@ class GhostMovementStrategy(ABC):
                               maze: np.ndarray,
                               current_dir: Tuple[int, int] = (0, 0)) -> List[Tuple[int, int]]:
         """Helper utility shared by all ghosts to scan unblocked paths, banning 180s."""
+        # print(current_pos)
         y, x = current_pos
         val = maze[y, x]
         valid_moves = []

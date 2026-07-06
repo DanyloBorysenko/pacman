@@ -27,6 +27,8 @@ class BitMaps(IntEnum):
 @dataclass
 class GameConfig:
     high_score_filename: str = "scoreboard.json"
+    maze_width: int = 15
+    maze_height: int = 20
     lives: int = 3
     pacgum: int = 5
     points_per_pacgum: int = 10

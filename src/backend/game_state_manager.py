@@ -171,26 +171,33 @@ class GameStateManager:
             ghost.time_laps = 0
             ghost.colour = ghost.initial_colour
 
+    def set_ghost_edible_time_laps(self, ghost: Ghost, dt: float):
+        # print(f"Ghost edible, time laps: {ghost.time_laps}")
+        ghost.time_laps += dt
+        if ghost.time_laps >= self.game_state.config.ghost_edible_time:
+            ghost.is_edible = False
+            ghost.time_laps = 0
+            ghost.colour = ghost.initial_colour
+    
     def update_ghosts(self, dt: float) -> None:
         """Updates all ghosts using fractional time slices and coordinates their AI changes."""
         if self.game_state.cheat_freeze:
+            for ghost in self.game_state.ghosts:
+                if ghost.is_edible:
+                    self.set_ghost_edible_time_laps(ghost, dt)
             return
         pacman_coords = (int(self.game_state.pacman.y), int(self.game_state.pacman.x))
 
         for ghost in self.game_state.ghosts:
             if ghost.is_edible:
-                # print(f"Ghost edible, time laps: {ghost.time_laps}")
-                ghost.time_laps += dt
-                if ghost.time_laps >= self.game_state.config.ghost_edible_time:
-                    ghost.is_edible = False
-                    ghost.time_laps = 0
-                    ghost.colour = ghost.initial_colour
+                self.set_ghost_edible_time_laps(ghost, dt)
 
             # 1. Bootstrapping: Initialize targets if they are fresh out of spawn (-1 baseline setup)
             if ghost.xd == -1 and ghost.yd == -1:
                 curr_x = int(ghost.x)
                 curr_y = int(ghost.y)
                 curr_coords = (curr_y, curr_x)
+                print(f"ghost initial coordinate: {curr_x}, {curr_y}")
 
                 # Fetch direction vector from the ghost's movement
                 dx, dy = ghost.strategy.get_next_move(

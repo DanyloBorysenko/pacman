@@ -58,7 +58,10 @@ class GameInitializer:
 
     def reload_new_level_map(self, game_state: GameState) -> None:
         from mazegenerator.mazegenerator import MazeGenerator
-        generator = MazeGenerator()
+        generator = MazeGenerator(
+            size=(self.game_state.config.maze_width,
+                  self.game_state.config.maze_height))
+
         game_state.maze = np.array(generator.maze)
         self.game_state = game_state
         self._get_valid_center_and_corners()
@@ -100,20 +103,20 @@ class GameInitializer:
             self.game_state.maze[y, x] |= BitMaps.SUPER_PACGUM
 
     def _place_ghosts(self) -> None:
-        self.game_state.ghosts[0].x, self.game_state.ghosts[0].y = 0, 0
-        self.game_state.ghosts[1].x, self.game_state.ghosts[1].y =\
+        self.game_state.ghosts[0].y, self.game_state.ghosts[0].x = 0, 0
+        self.game_state.ghosts[1].y, self.game_state.ghosts[1].x =\
             0, self.game_state.maze.shape[1] - 1
-        self.game_state.ghosts[2].x, self.game_state.ghosts[2].y =\
+        self.game_state.ghosts[2].y, self.game_state.ghosts[2].x =\
             self.game_state.maze.shape[0] - 1, 0
-        self.game_state.ghosts[3].x, self.game_state.ghosts[3].y =\
+        self.game_state.ghosts[3].y, self.game_state.ghosts[3].x =\
             self.game_state.maze.shape[0] - 1,\
             self.game_state.maze.shape[1] - 1
-        self.game_state.ghosts[0].home_x, self.game_state.ghosts[0].home_y = 0, 0
-        self.game_state.ghosts[1].home_x, self.game_state.ghosts[1].home_y =\
+        self.game_state.ghosts[0].home_y, self.game_state.ghosts[0].home_x = 0, 0
+        self.game_state.ghosts[1].home_y, self.game_state.ghosts[1].home_x =\
             0, self.game_state.maze.shape[1] - 1
-        self.game_state.ghosts[2].home_x, self.game_state.ghosts[2].home_y =\
+        self.game_state.ghosts[2].home_y, self.game_state.ghosts[2].home_x =\
             self.game_state.maze.shape[0] - 1, 0
-        self.game_state.ghosts[3].home_x, self.game_state.ghosts[3].home_y =\
+        self.game_state.ghosts[3].home_y, self.game_state.ghosts[3].home_x =\
             self.game_state.maze.shape[0] - 1,\
             self.game_state.maze.shape[1] - 1
 
