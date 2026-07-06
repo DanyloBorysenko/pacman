@@ -34,6 +34,8 @@ class Renderer:
         self.title_font = pygame.font.Font(None, 50)
         self.instruction_font = pygame.font.SysFont("DejaVu Sans", 20)
         self.start_game_font = pygame.font.Font(size=200)
+        self.top_players_tittle_font = pygame.font.Font(size=MENU_FONT_SIZE // 2)
+        self.top_players_font = pygame.font.Font(size=MENU_FONT_SIZE // 3)
         self.offset_x = 0
         self.offset_y = 0
         self.cell_offset = CELL_SIZE // 2
@@ -42,8 +44,12 @@ class Renderer:
         self.line_h = int(WINDOW_HEIGHT * _LINE_H_FRAC)
         self.left_x = int(WINDOW_WIDTH * _COL_LEFT_FRAC)
 
-    def draw_menu(self, sel_item: int, items: List[str], title: str) -> None:
+    def draw_menu(self,
+                  sel_item: int,
+                  items: List[str],
+                  title: str) -> None:
         title_rect = self._draw_title(title)
+        self.menu_title_bottom = title_rect.bottom
         available_height = WINDOW_HEIGHT - title_rect.bottom
         count = len(items)
         if count == 0:
@@ -72,6 +78,26 @@ class Renderer:
             rect = surf.get_frect()
             rect.center = item_rect.center
             self.surface.blit(surf, rect)
+
+    def draw_top_players(self,
+                         data: List[Tuple[str, str, str]]) -> None:
+        top_players_surf = self.top_players_tittle_font.render(
+            "Top 10 players:", True, (150, 150, 150))
+        top_players_rect = top_players_surf.get_frect()
+        top_players_rect.topleft = (self.left_x, self.menu_title_bottom + 20)
+        self.surface.blit(top_players_surf, top_players_rect)
+        spacing = 5
+        current_y = top_players_rect.bottom + spacing * 2
+        for line in data:
+            place, name, score = line
+            player_surf = self.top_players_font.render(
+                f"{place}    {name}    {score}", True, (150, 150, 150)
+            )
+            player_rect = player_surf.get_frect()
+            player_rect.left = top_players_rect.left
+            player_rect.top = current_y
+            self.surface.blit(player_surf, player_rect)
+            current_y += player_rect.height + spacing
 
     def draw_instructions(self, config: GameConfig) -> None:
         right_x = int(WINDOW_WIDTH * _COL_RIGHT_FRAC)
@@ -165,9 +191,9 @@ class Renderer:
         start_y = title_rect.bottom + (
             (available_height - total_score_height) // 2)
         for ind, line in enumerate(data):
-            player, level, score = line
+            place, name, score = line
             surf = self.instruction_font.render(
-                f"{player}    {level}    {score}", True, "white"
+                f"{place}    {name}    {score}", True, "white"
             )
             rect = surf.get_frect()
             center_y = start_y + (
@@ -293,7 +319,7 @@ class Renderer:
             self.surface, pygame.Color(30, 30, 30), box, border_radius=8)
         pygame.draw.rect(self.surface, ACCENT, box, width=2, border_radius=8)
         name_size = box_h // 2
-        surf = pygame.font.Font(size=box_h // 2).render(name, True, "red")
+        surf = pygame.font.Font(size=box_h // 2).render(name, True, "white")
         text_rect = surf.get_frect()
         text_rect.center = box.center
         self.surface.blit(surf, text_rect)

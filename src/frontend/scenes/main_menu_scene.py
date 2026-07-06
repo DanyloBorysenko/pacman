@@ -42,11 +42,15 @@ class MainMenuScene(Scene):
                 func()
 
     def render(self, renderer: Renderer) -> None:
-        return renderer.draw_menu(self.selected, self.items, "Main menu")
+        renderer.draw_menu(self.selected, self.items, "Main menu")
+        top_players = self.logic.score_board.get_player_list()
+        scores = []
+        for i, player in enumerate(top_players):
+            scores.append((i+1, player["name"], player["score"]))
+        renderer.draw_top_players(scores)
 
     def _game_scene(self) -> None:
         state = self.logic.create_default_state()
-        # state.events.append(GameStartEvent())
         self.switch_to(GameScene(state, self.logic, self))
 
     def _instruction_scene(self) -> None:
