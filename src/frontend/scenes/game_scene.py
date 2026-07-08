@@ -306,7 +306,6 @@ class GameScene(Scene):
         self.state = state
         self.anim_manager = AnimationManager()
         self.main_menu = prev_scene
-        # self.counter = 0
 
     def update(self, dt: float) -> None:
         self.anim_manager.update(dt)

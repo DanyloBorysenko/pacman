@@ -1,6 +1,7 @@
 from typing import List, Tuple
 from src.state import GameState, Direction, Ghost, BitMaps, GameConfig
 from src.constants import CELL_SIZE, WINDOW_HEIGHT, WINDOW_WIDTH
+from dataclasses import replace
 import pygame
 import math
 
@@ -13,6 +14,8 @@ MENU_FONT_SIZE = 50
 INSTRUCTION_FONT_SIZE = 20
 MENU_PADDING = 200
 PADDING = 20
+
+BLINK_WINDOW = 2.0
 
 WALL_WIDTH = 5
 
@@ -224,10 +227,17 @@ class Renderer:
 
     def draw_defeat(self, sel_item: int) -> None:
         self._escape_footer()
-        surf = self.menu_font.render("GAME OVER!!!", True, "red")
+        surf = self.menu_font.render("Defeat", True, "red")
         rect = surf.get_frect()
         rect.center = (self.center_x, PADDING * 2)
         self.surface.blit(surf, rect)
+
+        score_surf = self.title_font.render(
+            f"SCORE: {self.state.live_status.current_score}", True, "white")
+        score_rect = score_surf.get_frect()
+        score_rect.top = rect.bottom + PADDING
+        score_rect.centerx = rect.centerx
+        self.surface.blit(score_surf, score_rect)
         self._draw_question_menu(sel_item)
 
     def apply_blur(self, factor: int = 8) -> None:
@@ -592,11 +602,21 @@ class Renderer:
         self.surface.blit(scaled, rect)
 
     def _draw_gosts(self) -> None:
+        config = self.state.config
         for ghost in self.state.ghosts:
-            if ghost.is_edible:
-                self.draw_edible_ghost(ghost)
-            else:
+            if not ghost.is_edible:
                 self.draw_ghost(ghost)
+                continue
+            remaining = config.ghost_edible_time - ghost.time_laps
+            period = 0.2
+            if remaining <= BLINK_WINDOW:
+                if int(ghost.time_laps / period) % 2 == 0:
+                    self.draw_edible_ghost(ghost)
+                else:
+                    flash = replace(ghost, colour=ghost.initial_colour)
+                    self.draw_ghost(flash)
+            else:
+                self.draw_edible_ghost(ghost)
 
     def _draw_pacman(self) -> None:
         pacman = self.state.pacman
