@@ -66,7 +66,7 @@ class Ghost:
     xd: int = -1
     yd: int = -1
     assigned_direction: Tuple[int, int] = (0, 0)
-    strategy: GhostMovementStrategy = RandomMovement()
+    strategy: GhostMovementStrategy | None = None
     colour: str | None = None
     alpha: float = 1.0
     is_edible: bool = False

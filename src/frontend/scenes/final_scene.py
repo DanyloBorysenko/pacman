@@ -30,7 +30,7 @@ class FinalScene(Scene):
             if event.key == "enter":
                 if self.items[self.selected] == "YES":
                     # name = input("Write your name")
-                    self.logic.score_board.add_new_top_player("Player1", self.scores)
+                    self.logic.score_board.add_new_player("Player1", self.scores)
                 self.switch_to(self.main_menu)
 
     def update(self, dt: float) -> None:
