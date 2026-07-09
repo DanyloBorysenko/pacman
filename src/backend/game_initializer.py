@@ -1,5 +1,4 @@
 import numpy as np
-from random import random
 from typing import Tuple
 from ..state import GameState, BitMaps, GameStats
 
@@ -18,7 +17,8 @@ def find_valid_center(maze: np.ndarray) -> Tuple[int, int]:
     for radius in range(max(height, width)):
         for dy in range(-radius, radius + 1):
             for dx in range(-radius, radius + 1):
-                # We only look at coordinates exactly at the current radius boundary
+                # We only look at coordinates exactly at
+                # the current radius boundary
                 if abs(dy) + abs(dx) == radius:
                     test_y = ideal_y + dy
                     test_x = ideal_x + dx
@@ -77,7 +77,8 @@ class GameInitializer:
             (0, 0),
             (0, self.game_state.maze.shape[1] - 1),
             (self.game_state.maze.shape[0] - 1, 0),
-            (self.game_state.maze.shape[0] - 1, self.game_state.maze.shape[1] - 1),
+            (self.game_state.maze.shape[0] - 1,
+                self.game_state.maze.shape[1] - 1),
             ]
         self.valid_center = find_valid_center(self.game_state.maze)
 
@@ -95,7 +96,9 @@ class GameInitializer:
         chosen_row_indices = np.random.choice(
             len(valid_indices), size=num_to_select, replace=False)
         chosen_coordinates = valid_indices[chosen_row_indices]
-        self.game_state.maze[chosen_coordinates[:, 0], chosen_coordinates[:, 1]] |= BitMaps.PACGUM
+        self.game_state.maze[
+            chosen_coordinates[:, 0], chosen_coordinates[:, 1]] |=\
+            BitMaps.PACGUM
 
     def _place_super_pacgums(self) -> None:
         for y, x in self.corners:
@@ -109,21 +112,23 @@ class GameInitializer:
         self.game_state.ghosts[2].y, self.game_state.ghosts[2].x =\
             self.game_state.maze.shape[0] - 1, 0
         self.game_state.ghosts[3].y, self.game_state.ghosts[3].x =\
-            self.game_state.maze.shape[0] - 1,\
+            self.game_state.maze.shape[0] - 1, \
             self.game_state.maze.shape[1] - 1
-        self.game_state.ghosts[0].home_y, self.game_state.ghosts[0].home_x = 0, 0
+        self.game_state.ghosts[0].home_y, \
+            self.game_state.ghosts[0].home_x = 0, 0
         self.game_state.ghosts[1].home_y, self.game_state.ghosts[1].home_x =\
             0, self.game_state.maze.shape[1] - 1
         self.game_state.ghosts[2].home_y, self.game_state.ghosts[2].home_x =\
             self.game_state.maze.shape[0] - 1, 0
         self.game_state.ghosts[3].home_y, self.game_state.ghosts[3].home_x =\
-            self.game_state.maze.shape[0] - 1,\
+            self.game_state.maze.shape[0] - 1, \
             self.game_state.maze.shape[1] - 1
 
-    def _get_valid_center(self) -> None:
-        yc, xc = self.game_state.maze.shape[0] // 2, self.game_state.maze.shape[1] // 2
-        if self.game_state.maze[yc, xc] < 15:
-            return yc, xc
+    # def _get_valid_center(self) -> None:
+    #     yc, xc = self.game_state.maze.shape[0] // 2, \
+    #         self.game_state.maze.shape[1] // 2
+    #     if self.game_state.maze[yc, xc] < 15:
+    #         return yc, xc
 
     def _place_pacman(self) -> None:
         self.game_state.pacman.y, self.game_state.pacman.x =\

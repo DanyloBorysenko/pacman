@@ -1,9 +1,9 @@
 from typing import List
+import numpy as np
 from src.state import (
     GameState, Pacman, Direction, Ghost,
     GameConfig, GameStats, GameStartEvent)
 from mazegenerator.mazegenerator import MazeGenerator
-from src.constants import CELL_SIZE
 from ..backend.score_board_handler import ScoreBoardHandler
 from .game_initializer import GameInitializer
 from .game_state_manager import GameStateManager
@@ -22,10 +22,10 @@ class GameLogic:
 
     def create_default_state(self) -> GameState:
         state = GameState(
-            maze=self.maze,
+            maze=np.array(self.maze),
             pacman=Pacman(0, 0),
             ghosts=self._initialize_ghost(),
-            live_status=GameStats,
+            live_status=GameStats(),
             config=self.config)
         GameInitializer(game_state=state).initialize()
         self.game_manager = GameStateManager(state)
@@ -57,13 +57,13 @@ class GameLogic:
         self.game_manager.check_collisions()
 
     def update_direction(self, state: GameState, direction: Direction) -> None:
-        print(f"pacman direction before: {state.pacman.direction}")
+        # print(f"pacman direction before: {state.pacman.direction}")
         if direction is None:
             direction = Direction.UP
         state.pacman.direction = direction
 
-    def apply_pause(self, state: GameState) -> None:
-        state.paused = not state.paused
+    # def apply_pause(self, state: GameState) -> None:
+    #     state.paused = not state.paused
 
     def activate_cheat_mode(self, state: GameState, key: str) -> None:
         if key == "i":
@@ -73,6 +73,8 @@ class GameLogic:
             print("[CHEAT] Skipping current level layout!")
             self.game_manager._advance_to_next_level()
         if key == "e":
+            print("[CHEAT] Increased number of life by 1.")
             state.live_status.lives_remain += 1
         if key == "f":
             state.cheat_freeze = not state.cheat_freeze
+            print(f"[CHEAT] Ghost freezing is now: {state.cheat_freeze}")

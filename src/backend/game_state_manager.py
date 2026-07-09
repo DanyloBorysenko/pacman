@@ -1,10 +1,8 @@
-from typing import Tuple
 import math
-import time
 import numpy as np
 from ..state import (
     GameState, Direction, BitMaps, Ghost,
-    GameOverEvent, GhostEatenEvent, GameStartEvent,
+    GameOverEvent, GhostEatenEvent,
     PacmanDiedEvent, VictoryEvent
     )
 
@@ -18,7 +16,6 @@ class GameStateManager:
         #     return
 
         self.game_state.live_status.time_left -= dt
-
         if self.game_state.live_status.time_left <= 0:
             # print("Time's up")
             self._process_player_death()
@@ -148,14 +145,14 @@ class GameStateManager:
         if state.live_status.current_level == state.config.max_level:
             state.events.append(
                 VictoryEvent(state.live_status.current_score))
-            print("Victory is achived")
+            # print("Victory is achived")
         else:
             # 1. Update level counters
             state.live_status.current_level += 1
 
             # 2. Scale up difficulty (Dynamic Speed Adjustment)
-            self.game_state.live_status.pacman_curr_spd  *= 1.10
-            self.game_state.live_status.ghost_curr_speed  *= 1.10
+            self.game_state.live_status.pacman_curr_spd *= 1.10
+            self.game_state.live_status.ghost_curr_speed *= 1.10
 
             # 3. Request a fresh maze matrix from your generator
             from src.backend.game_initializer import GameInitializer
@@ -174,12 +171,12 @@ class GameStateManager:
         for ghost in state.ghosts:
             ghost.xd = -1
             ghost.yd = -1
-            ghost.assigned_direction_vector = (0, -1)  # Face North default
+            ghost.assigned_direction = (0, -1)  # UP
             ghost.is_edible = False
             ghost.time_laps = 0
             ghost.colour = ghost.initial_colour
 
-    def set_ghost_edible_time_laps(self, ghost: Ghost, dt: float):
+    def set_ghost_edible_time_laps(self, ghost: Ghost, dt: float) -> None:
         # print(f"Ghost edible, time laps: {ghost.time_laps}")
         ghost.time_laps += dt
         if ghost.time_laps >= self.game_state.config.ghost_edible_time:
@@ -187,12 +184,14 @@ class GameStateManager:
             ghost.time_laps = 0
             ghost.colour = ghost.initial_colour
 
-    def set_ghost_reappearance_time_laps(self, ghost: Ghost, dt: float):
+    def set_ghost_reappearance_time_laps(
+            self, ghost: Ghost, dt: float) -> None:
         # print(f"Ghost edible, time laps: {ghost.time_laps}")
         ghost.time_since_death += dt
         if ghost.time_since_death >=\
                 self.game_state.config.ghost_reappear_time:
-            print(f"{ghost.colour} reappeared after {ghost.time_since_death} s at x: {ghost.x}, y: {ghost.y}")
+            print(f"{ghost.colour} reappeared after "
+                  f"{ghost.time_since_death} s at x: {ghost.x}, y: {ghost.y}")
             ghost.is_dead = False
             ghost.time_since_death = 0
 
@@ -272,7 +271,8 @@ class GameStateManager:
 
         for i, ghost in enumerate(self.game_state.ghosts):
             # 1. Calculate distance between Pac-Man and the current ghost
-            distance = math.sqrt((pacman.x - ghost.x)**2 + (pacman.y - ghost.y)**2)
+            distance = math.sqrt(
+                (pacman.x - ghost.x)**2 + (pacman.y - ghost.y)**2)
 
             # 2. Threshold collision check (closer than half a tile)
             if distance < 0.5:
@@ -294,7 +294,8 @@ class GameStateManager:
         # 1. Award points dynamically from config
         self.game_state.live_status.current_score +=\
             self.game_state.config.points_per_ghost
-        self.game_state.events.append(GhostEatenEvent(ghost, (ghost.x, ghost.y)))
+        self.game_state.events.append(
+            GhostEatenEvent(ghost, (ghost.x, ghost.y)))
 
         # 2. Reset this specific ghost's state flags
         ghost.is_edible = False

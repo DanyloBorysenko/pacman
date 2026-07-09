@@ -2,9 +2,10 @@ from __future__ import annotations
 from typing import List, TYPE_CHECKING, Tuple
 from dataclasses import dataclass, field
 from enum import Enum, IntEnum
+import numpy as np
 
 if TYPE_CHECKING:
-    from .backend.ghost_movement import GhostMovementStrategy
+    from .backend.ghost_movement import GhostMovementStrategy, RandomMovement
 
 
 class Direction(Enum):
@@ -60,22 +61,21 @@ class Pacman:
 
 @dataclass
 class Ghost:
-    x: float = 0.0   # Floating point actual location
+    x: float = 0.0
     y: float = 0.0
-    xd: int = -1   # Int Target column destination
-    yd: int = -1   # Int Target row destination
-    assigned_direction: Direction = (0, 0)
-    strategy: GhostMovementStrategy = None
-    colour: str = None
+    xd: int = -1
+    yd: int = -1
+    assigned_direction: Tuple[int, int] = (0, 0)
+    strategy: GhostMovementStrategy = RandomMovement()
+    colour: str | None = None
     alpha: float = 1.0
     is_edible: bool = False
-    # edible_since: int | None = None
     time_laps: float = 0.0
     is_dead: bool = False
     time_since_death: float = 0.0
     home_x: int = 0
     home_y: int = 0
-    initial_colour: str = None
+    initial_colour: str | None = None
 
 
 @dataclass
@@ -83,7 +83,7 @@ class GameStats:
     current_score: int = 0
     current_level: int = 1
     lives_remain: int = 3
-    time_left: int = None
+    time_left: float = 90.0
     is_edible: bool = False
     edible_time_left: int = 0
     pacman_curr_spd: float = 0
@@ -92,11 +92,11 @@ class GameStats:
 
 @dataclass
 class GameState:
-    maze: List[List[int]]
+    maze: np.ndarray
     pacman: Pacman
     ghosts: List[Ghost]
-    live_status: GameStats = None
-    config: GameConfig = None
+    live_status: GameStats
+    config: GameConfig
     # Cheat Mode flags
     cheat_invincibility: bool = False
     cheat_freeze: bool = False
