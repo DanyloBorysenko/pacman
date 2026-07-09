@@ -35,11 +35,12 @@ class GameConfig:
     points_per_super_pacgum: int = 50
     points_per_ghost: int = 200
     ghost_edible_time: float = 5.0
+    ghost_reappear_time: float = 5.0
     seed: int = 42
     level_max_time: float = 60.0
     max_level: int = 10
     pacman_speed: float = 4.0
-    ghost_speed:float = 3.2
+    ghost_speed: float = 3.2
 
 
 @dataclass
@@ -68,8 +69,10 @@ class Ghost:
     colour: str = None
     alpha: float = 1.0
     is_edible: bool = False
-    edible_since: int | None = None
-    time_laps: int = 0
+    # edible_since: int | None = None
+    time_laps: float = 0.0
+    is_dead: bool = False
+    time_since_death: float = 0.0
     home_x: int = 0
     home_y: int = 0
     initial_colour: str = None
