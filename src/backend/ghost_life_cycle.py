@@ -1,8 +1,9 @@
-from ..state import GameState, Ghost
+from ..state import GameState
+
 
 class GhostLifecycleManager:
     """Manages timers, state changes, and edibility tracking for ghosts."""
-    
+
     def __init__(self, game_state: GameState):
         self.game_state = game_state
 
@@ -18,6 +19,7 @@ class GhostLifecycleManager:
 
             if ghost.is_dead:
                 ghost.time_since_death += dt
-                if ghost.time_since_death >= self.game_state.config.ghost_reappear_time:
+                if ghost.time_since_death >=\
+                        self.game_state.config.ghost_reappear_time:
                     ghost.is_dead = False
                     ghost.time_since_death = 0

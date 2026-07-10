@@ -4,16 +4,17 @@ from ..state import Direction, GameState
 
 
 class GridMover:
-    """Handles pure directional target-seeking mechanics for grid-based entities."""
-    
+    """Handles pure directional target-seeking mechanics for
+    grid-based entities."""
+
     @staticmethod
     def advance_towards_target(
-        current_x: float, 
-        current_y: float, 
-        target_xd: int, 
-        target_yd: int, 
+        current_x: float,
+        current_y: float,
+        target_xd: int,
+        target_yd: int,
         direction: Optional[Tuple[int, int]], 
-        speed: float, 
+        speed: float,
         dt: float
     ) -> Tuple[float, float, bool]:
         """
@@ -30,7 +31,7 @@ class GridMover:
 
         if step_size >= distance_to_target:
             return float(target_xd), float(target_yd), True
-            
+
         new_x = current_x + direction[0] * step_size
         new_y = current_y + direction[1] * step_size
         return new_x, new_y, False
@@ -48,7 +49,7 @@ class PacmanMovementController:
         Returns (arrived_at_new_tile, tile_coordinates_if_arrived).
         """
         pacman = self.game_state.pacman
-        
+
         # 1. Bootstrap target assignments if unassigned
         if pacman.xd == -1 and pacman.yd == -1:
             if requested_direction is None:
@@ -71,8 +72,9 @@ class PacmanMovementController:
         # 3. Handle junction arrival and queue next paths
         if arrived and pacman.assigned_direction:
             arrival_coords = (int(pacman.y), int(pacman.x))
-            
-            if requested_direction and self._is_move_allowed(requested_direction):
+
+            if requested_direction and self._is_move_allowed(
+                    requested_direction):
                 pacman.assigned_direction = requested_direction
                 pacman.xd = int(pacman.x) + requested_direction.value[0]
                 pacman.yd = int(pacman.y) + requested_direction.value[1]
@@ -82,14 +84,15 @@ class PacmanMovementController:
             else:
                 pacman.xd, pacman.yd = -1, -1
                 pacman.assigned_direction = Direction.UP
-                
+
             return True, arrival_coords
 
         return False, None
 
     def _is_move_allowed(self, direction: Direction) -> bool:
         from ..state import BitMaps
-        curr_tile = self.game_state.maze[int(self.game_state.pacman.y), int(self.game_state.pacman.x)]
+        curr_tile = self.game_state.maze[
+            int(self.game_state.pacman.y), int(self.game_state.pacman.x)]
         mapping = {
             Direction.RIGHT: BitMaps.EAST, Direction.LEFT: BitMaps.WEST,
             Direction.UP: BitMaps.NORTH, Direction.DOWN: BitMaps.SOUTH
@@ -105,7 +108,8 @@ class GhostMovementController:
         if self.game_state.cheat_freeze:
             return
 
-        pacman_coords = (int(self.game_state.pacman.y), int(self.game_state.pacman.x))
+        pacman_coords = (int(self.game_state.pacman.y),
+                         int(self.game_state.pacman.x))
 
         for ghost in self.game_state.ghosts:
             if ghost.is_dead:
@@ -113,6 +117,7 @@ class GhostMovementController:
 
             # 1. Bootstrap: Target initialization
             if ghost.xd == -1 and ghost.yd == -1:
+                # print(ghost.assigned_direction, ghost.strategy)
                 dx, dy = ghost.strategy.get_next_move(
                     (int(ghost.y), int(ghost.x)), self.game_state.maze,
                     pacman_coords, ghost.assigned_direction, ghost.is_edible
@@ -124,7 +129,8 @@ class GhostMovementController:
             # 2. Advance positions via core Mover component
             new_x, new_y, arrived = GridMover.advance_towards_target(
                 ghost.x, ghost.y, ghost.xd, ghost.yd,
-                ghost.assigned_direction, self.game_state.live_status.ghost_curr_speed, dt
+                ghost.assigned_direction,
+                self.game_state.live_status.ghost_curr_speed, dt
             )
             ghost.x, ghost.y = new_x, new_y
 

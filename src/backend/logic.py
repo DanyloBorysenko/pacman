@@ -1,16 +1,13 @@
 from typing import List
 import numpy as np
-from src.state import (
+from ..state import (
     GameState, Pacman, Direction, Ghost,
     GameConfig, GameStats, GameStartEvent)
 from mazegenerator.mazegenerator import MazeGenerator
 from ..backend.score_board_handler import ScoreBoardHandler
 from .game_initializer import GameInitializer
 from .game_state_manager import GameStateManager
-from .ghost_movement_logic import (
-    RandomMovement, DirectionalMovement,
-    PseudoRandomMovement
-)
+from .ghost_movement_logic import PseudoRandomMovement
 
 
 class GameLogic:
@@ -34,14 +31,13 @@ class GameLogic:
 
     def _initialize_ghost(self) -> List[Ghost]:
         return [
-            Ghost(
-                colour="red", strategy=DirectionalMovement(),
-                initial_colour="red"),
-            Ghost(colour="pink", strategy=PseudoRandomMovement(0.7),
+            Ghost(colour="red", strategy=PseudoRandomMovement(0.95),
+                  initial_colour="red"),
+            Ghost(colour="pink", strategy=PseudoRandomMovement(0.3),
                   initial_colour="pink"),
-            Ghost(colour="orange", strategy=PseudoRandomMovement(0.9),
+            Ghost(colour="orange", strategy=PseudoRandomMovement(0.5),
                   initial_colour="orange"),
-            Ghost(colour="green", strategy=RandomMovement(),
+            Ghost(colour="green", strategy=PseudoRandomMovement(0.9),
                   initial_colour="green"),
         ]
 
@@ -71,7 +67,8 @@ class GameLogic:
             print(f"[CHEAT] Invincibility is now: {state.cheat_invincibility}")
         if key == "l":
             print("[CHEAT] Skipping current level layout!")
-            self.game_manager._advance_to_next_level()
+            self.game_manager.level_clearance_action.advance_to_next_level(
+                state)
         if key == "e":
             print("[CHEAT] Increased number of life by 1.")
             state.live_status.lives_remain += 1
