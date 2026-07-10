@@ -86,30 +86,31 @@ class DirectionalMovement(GhostMovementStrategy):
             ) -> Tuple[int, int]:
         valid_moves = self._get_valid_directions(
             current_pos, maze, current_dir)
+        random_move_selection = 0.25
         y, x = current_pos
         target_y, target_x = pacman_pos
 
         best_move = valid_moves[0]
         min_distance = float('inf')
         max_distance = 0.0
+        if (random.random() > random_move_selection):
+            for dx, dy in valid_moves:
+                # Simulate where this step would put the ghost
+                next_x = x + dx
+                next_y = y + dy
 
-        for dx, dy in valid_moves:
-            # Simulate where this step would put the ghost
-            next_x = x + dx
-            next_y = y + dy
+                dist = abs(next_x - target_x) + abs(next_y - target_y)
 
-            # Distance formula to target
-            # dist = math.sqrt((next_x - target_x)**2 + (next_y - target_y)**2)
-            dist = abs(next_x - target_x) + abs(next_y - target_y)
-
-            if ghost_edible:
-                if dist > max_distance:
-                    max_distance = dist
-                    best_move = (dx, dy)
-            else:
-                if dist < min_distance:
-                    min_distance = dist
-                    best_move = (dx, dy)
+                if ghost_edible:
+                    if dist > max_distance:
+                        max_distance = dist
+                        best_move = (dx, dy)
+                else:
+                    if dist < min_distance:
+                        min_distance = dist
+                        best_move = (dx, dy)
+        else:
+            best_move = random.shuffle(valid_moves)
 
         return best_move
 

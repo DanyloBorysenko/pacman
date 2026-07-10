@@ -7,7 +7,7 @@ from mazegenerator.mazegenerator import MazeGenerator
 from ..backend.score_board_handler import ScoreBoardHandler
 from .game_initializer import GameInitializer
 from .game_state_manager import GameStateManager
-from .ghost_movement import (
+from .ghost_movement_logic import (
     RandomMovement, DirectionalMovement,
     PseudoRandomMovement
 )

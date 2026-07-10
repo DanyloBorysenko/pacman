@@ -4,6 +4,7 @@ from src.constants import WINDOW_WIDTH, WINDOW_HEIGHT
 from .scenes.main_menu_scene import MainMenuScene
 from .event import InputEvent
 import pygame
+import pygame_textinput
 
 
 class Controller:
@@ -30,18 +31,25 @@ class Controller:
         self.clock = pygame.Clock()
         self.renderer = Renderer(self.screen)
         self.current_scene = MainMenuScene(logic)
-        # self.current_scene = GameScene(logic)
+        self.text_input = pygame_textinput.TextInputManager(
+            validator=lambda name: len(name) <= 10)
 
     def run(self) -> None:
         self.running = True
         while self.running:
+            raw_events = pygame.event.get()
+            wants_text = getattr(self.current_scene, "wants_text_input", False)
+            if wants_text:
+                self.text_input.update(raw_events)
             dt = self.clock.tick(60) / 1000
-            for event in pygame.event.get():
+            for event in raw_events:
                 if self._should_exit(event):
                     self.running = False
                 inp_event = self._to_input_event(event)
                 if inp_event is not None:
                     self.current_scene.handle_event(inp_event)
+            if wants_text:
+                self.current_scene.set_text_input(self.text_input.value)
             self.current_scene.update(dt)
             next_scene = self.current_scene.next_scene
             if next_scene:
