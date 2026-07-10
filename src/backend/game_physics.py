@@ -117,14 +117,9 @@ class GhostMovementController:
 
             # 1. Bootstrap: Target initialization
             if ghost.xd == -1 and ghost.yd == -1:
-                # print(ghost.assigned_direction, ghost.strategy)
-                dx, dy = ghost.strategy.get_next_move(
-                    (int(ghost.y), int(ghost.x)), self.game_state.maze,
-                    pacman_coords, ghost.assigned_direction, ghost.is_edible
-                )
-                ghost.assigned_direction = (dx, dy)
-                ghost.xd = int(ghost.x) + dx
-                ghost.yd = int(ghost.y) + dy
+                ghost.xd = int(ghost.x)
+                ghost.yd = int(ghost.y)
+                ghost.assigned_direction = (0, 0)
 
             # 2. Advance positions via core Mover component
             new_x, new_y, arrived = GridMover.advance_towards_target(
