@@ -318,8 +318,9 @@ class GameScene(Scene):
 
         # Game Audio Volume
         self.sound_intro.set_volume(0.5)
-        self.sound_pacman_munch.set_volume(0.2)
+        self.sound_pacman_munch.set_volume(0.4)
         self.sound_ghost_eating.set_volume(0.7)
+        self.sound_ghost_chasing.set_volume(0.4)
         self.sound_death.set_volume(0.6)
 
         self.siren_playing = False
@@ -337,16 +338,25 @@ class GameScene(Scene):
                 # self.counter += 1
             any_ghost_edible = any(g.is_edible for g in self.state.ghosts)
             if any_ghost_edible and not self.siren_playing:
-                self.sound_ghost_chasing.play(loops=-1) # -1 loops infinitely
+                self.sound_ghost_chasing.stop()
+                self.sound_ghost_fleeing.play(loops=-1) # -1 loops infinitely
                 self.siren_playing = True
             elif not any_ghost_edible and self.siren_playing:
-                self.sound_ghost_chasing.stop()
+                self.sound_ghost_fleeing.stop()
+                self.sound_ghost_chasing.play(loops=-1)
                 self.siren_playing = False
+            self.sound_ghost_chasing.play()
+
             self._process_events()
+
+    def start_audio(self):
+        """Executed automatically via Controller hook when entering gameplay."""
+        self.sound_intro.play()
 
     def stop_audio(self):
         """Executed automatically via Controller hook when exiting to main menu."""
-        self.sound_siren.stop()
+        self.sound_ghost_chasing.stop()
+        self.sound_ghost_fleeing.stop()
         self.siren_playing = False
 
     def handle_event(self, event: InputEvent) -> None:

@@ -53,7 +53,15 @@ class Controller:
             self.current_scene.update(dt)
             next_scene = self.current_scene.next_scene
             if next_scene:
+                if hasattr(self.current_scene, "stop_audio"):
+                    self.current_scene.stop_audio()
+                self.text_input.value = ""
+
                 self.current_scene = next_scene
+
+                if hasattr(self.current_scene, "start_audio"):
+                    self.current_scene.start_audio()
+
             self.screen.fill("black")
             self.current_scene.render(self.renderer)
             pygame.display.update()
