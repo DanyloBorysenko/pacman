@@ -2,9 +2,9 @@ from ..scene import Scene
 from src.backend.logic import GameLogic
 from .final_scene import FinalScene
 from .pause_scene import PauseScene
-from src.state import (Direction, GameState, GameOverEvent, VictoryEvent,
+from ...state import (Direction, GameState, GameOverEvent, VictoryEvent,
                        PacmanDiedEvent, Pacman, Ghost, GhostEatenEvent,
-                       GameConfig, GameStartEvent)
+                       GameAudioFile, GameStartEvent, GumEatenEvent)
 from ..event import InputEvent
 from ..renderer import Renderer
 from typing import List, Tuple
@@ -13,6 +13,7 @@ from ...constants import WINDOW_WIDTH, WINDOW_HEIGHT
 from dataclasses import replace
 import random
 import math
+import pygame
 
 
 class Animation(ABC):
@@ -307,6 +308,22 @@ class GameScene(Scene):
         self.anim_manager = AnimationManager()
         self.main_menu = prev_scene
 
+        # Game Audio file
+        self.sound_intro = pygame.mixer.Sound(GameAudioFile.INTRO.value)
+        self.sound_pacman_munch = pygame.mixer.Sound(GameAudioFile.PACMAN_MUNCH.value)
+        self.sound_ghost_eating = pygame.mixer.Sound(GameAudioFile.GHOST_EATING.value)
+        self.sound_ghost_chasing = pygame.mixer.Sound(GameAudioFile.GHOST_CHASING.value)
+        self.sound_ghost_fleeing = pygame.mixer.Sound(GameAudioFile.GHOST_FLEEING.value)
+        self.sound_death = pygame.mixer.Sound(GameAudioFile.DEATH.value)
+
+        # Game Audio Volume
+        self.sound_intro.set_volume(0.5)
+        self.sound_pacman_munch.set_volume(0.2)
+        self.sound_ghost_eating.set_volume(0.7)
+        self.sound_death.set_volume(0.6)
+
+        self.siren_playing = False
+
     def update(self, dt: float) -> None:
         self.anim_manager.update(dt)
         if not self.anim_manager.has_blocking():
@@ -318,7 +335,19 @@ class GameScene(Scene):
             #     self.state.events.append(PacmanDiedEvent(self.state.pacman))
             #     # self.state.events.append(GhostEatenEvent(self.state.ghosts.pop(0)))
                 # self.counter += 1
+            any_ghost_edible = any(g.is_edible for g in self.state.ghosts)
+            if any_ghost_edible and not self.siren_playing:
+                self.sound_ghost_chasing.play(loops=-1) # -1 loops infinitely
+                self.siren_playing = True
+            elif not any_ghost_edible and self.siren_playing:
+                self.sound_ghost_chasing.stop()
+                self.siren_playing = False
             self._process_events()
+
+    def stop_audio(self):
+        """Executed automatically via Controller hook when exiting to main menu."""
+        self.sound_siren.stop()
+        self.siren_playing = False
 
     def handle_event(self, event: InputEvent) -> None:
         if event.type == "quit":
@@ -353,19 +382,24 @@ class GameScene(Scene):
 
     def _process_events(self) -> None:
         for event in self.state.events:
+            if isinstance(event, GumEatenEvent):
+                self.sound_pacman_munch.play()
             if isinstance(event, GameStartEvent):
                 self.anim_manager.add(GameStartAnimation())
+                self.sound_intro.play()
             if isinstance(event, PacmanDiedEvent):
                 self.anim_manager.add(
                     PacmanDeathAnimation(
                         self.state.pacman,
                         event.death_coord,
                         self.state.ghosts))
+                self.sound_death.play()
             if isinstance(event, GhostEatenEvent):
                 points_per_ghost = (100 if not self.state.config
                                     else self.state.config.points_per_ghost)
                 self.anim_manager.add(GhostDeathAnimation(
                     event.ghost, event.death_coord, points_per_ghost))
+                self.sound_ghost_eating.play()
             if isinstance(event, GameOverEvent):
                 score = event.final_score
                 self.anim_manager.add(GameOverAnimation(

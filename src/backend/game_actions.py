@@ -2,7 +2,8 @@ from abc import ABC, abstractmethod
 import numpy as np
 from ..state import (
     GameState, BitMaps, VictoryEvent, Ghost,
-    PacmanDiedEvent, Direction, GameOverEvent
+    PacmanDiedEvent, Direction, GameOverEvent,
+    GumEatenEvent
 )
 
 
@@ -23,10 +24,12 @@ class ConsumeItemsAction(GameAction):
         if current_tile & BitMaps.PACGUM:
             state.live_status.current_score += state.config.points_per_pacgum
             state.maze[y, x] &= ~BitMaps.PACGUM
+            state.events.append(GumEatenEvent())
         elif current_tile & BitMaps.SUPER_PACGUM:
             state.live_status.current_score += \
                 state.config.points_per_super_pacgum
             state.maze[y, x] &= ~BitMaps.SUPER_PACGUM
+            state.events.append(GumEatenEvent())
             for ghost in state.ghosts:
                 ghost.is_edible = True
                 ghost.colour = "blue"

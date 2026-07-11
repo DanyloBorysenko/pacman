@@ -5,7 +5,25 @@ from enum import Enum, IntEnum
 import numpy as np
 
 if TYPE_CHECKING:
-    from .backend.ghost_movement import GhostMovementStrategy, RandomMovement
+    from .backend.ghost_movement_logic import GhostMovementStrategy
+
+
+class GameConstants(Enum):
+    CELL_SIZE = 50
+    WINDOW_WIDTH = 1700
+    WINDOW_HEIGHT = 900
+    NUMBER_OF_GHOSTS = 4
+    GUM_SIZE = 2
+    SUPER_GUM_SIZE = 5
+
+
+class GameAudioFile(Enum):
+    INTRO = "assets/audio/pacman_ringtone.mp3"
+    PACMAN_MUNCH = "assets/audio/pacman_chomp.wav"
+    GHOST_EATING = "assets/audio/pacman_eatghost.wav"
+    GHOST_CHASING = "assets/audio/ghost _normal_move.mp3"
+    GHOST_FLEEING = "assets/audio/ghost _spurt_move.mp3"
+    DEATH = "assets/audio/pacman_death.wav"
 
 
 class Direction(Enum):
@@ -138,4 +156,9 @@ class VictoryEvent(GameEvent):
 
 @dataclass
 class GameStartEvent(GameEvent):
+    pass
+
+
+@dataclass
+class GumEatenEvent(GameEvent):
     pass
