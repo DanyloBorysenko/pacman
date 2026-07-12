@@ -6,10 +6,7 @@ from typing import List, Dict, Any
 class ScoreBoardHandler:
     def __init__(self, path: str) -> None:
         self.file_path = path
-        # Local cache array storing up to 10 player dict blocks:
-        # [{"name": "AAA", "score": 5000}]
         self.top_scores: List[Dict[str, Any]] = []
-        # Automatically load existing history on instantiation
         self.load_top_players()
 
     def load_top_players(self) -> None:
@@ -33,17 +30,6 @@ class ScoreBoardHandler:
             self.load_top_players()
         return self.top_scores[:10] \
             if len(self.top_scores) > 10 else self.top_scores
-
-    # def is_in_top_scored(self, score: int) -> bool:
-    #     """
-    #     Determines if a newly finished game
-    #     score qualifies for the leaderboard.
-    #     Returns True if the board has room (< 10 entries)
-    #     OR if it beats the lowest top score.
-    #     """
-    #     if len(self.top_scores) < 10:
-    #         return True
-    #     return score > self.top_scores[-1]['score']
 
     def add_new_player(self, player_name: str, score: int) -> None:
         """

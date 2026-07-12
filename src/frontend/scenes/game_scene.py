@@ -317,16 +317,38 @@ class GameScene(Scene):
         self.sound_death = pygame.mixer.Sound(GameAudioFile.DEATH.value)
 
         # Game Audio Volume
-        self.sound_intro.set_volume(0.5)
-        self.sound_pacman_munch.set_volume(0.4)
+        self.sound_intro.set_volume(0.3)
+        self.sound_pacman_munch.set_volume(0.5)
         self.sound_ghost_eating.set_volume(0.7)
-        self.sound_ghost_chasing.set_volume(0.4)
+        self.sound_ghost_chasing.set_volume(0.2)
         self.sound_death.set_volume(0.6)
 
         self.siren_playing = False
+        self.intro_playing = True
 
     def update(self, dt: float) -> None:
+        self._process_events()
         self.anim_manager.update(dt)
+
+        if self.intro_playing:
+            if not self.anim_manager.has_blocking():
+                self.intro_playing = False
+                self.sound_ghost_chasing.play(loops=-1)
+
+        if not self.intro_playing:
+            any_ghost_edible = any(g.is_edible for g in self.state.ghosts)
+            if any_ghost_edible and not self.siren_playing:
+                self.sound_ghost_chasing.stop()
+                self.sound_ghost_fleeing.play(loops=-1)
+                self.siren_playing = True
+            elif not any_ghost_edible and self.siren_playing:
+                self.sound_ghost_fleeing.stop()
+                self.sound_ghost_chasing.play(loops=-1)
+                self.siren_playing = False
+            # elif not any_ghost_edible and not self.siren_playing:
+            #     self.sound_ghost_chasing.play(loops=-1)
+            #     self.siren_playing = True
+
         if not self.anim_manager.has_blocking():
             self.state.pacman.mouth_phase += dt * 8
             self.logic.update(self.state, dt)
@@ -336,25 +358,16 @@ class GameScene(Scene):
             #     self.state.events.append(PacmanDiedEvent(self.state.pacman))
             #     # self.state.events.append(GhostEatenEvent(self.state.ghosts.pop(0)))
                 # self.counter += 1
-            any_ghost_edible = any(g.is_edible for g in self.state.ghosts)
-            if any_ghost_edible and not self.siren_playing:
-                self.sound_ghost_chasing.stop()
-                self.sound_ghost_fleeing.play(loops=-1) # -1 loops infinitely
-                self.siren_playing = True
-            elif not any_ghost_edible and self.siren_playing:
-                self.sound_ghost_fleeing.stop()
-                self.sound_ghost_chasing.play(loops=-1)
-                self.siren_playing = False
-            self.sound_ghost_chasing.play()
 
-            self._process_events()
 
     def start_audio(self):
         """Executed automatically via Controller hook when entering gameplay."""
         self.sound_intro.play()
+        # self.sound_ghost_chasing.play(loops=-1)
 
     def stop_audio(self):
         """Executed automatically via Controller hook when exiting to main menu."""
+        self.sound_intro.stop()
         self.sound_ghost_chasing.stop()
         self.sound_ghost_fleeing.stop()
         self.siren_playing = False

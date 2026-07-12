@@ -18,11 +18,12 @@ class GameConstants(Enum):
 
 
 class GameAudioFile(Enum):
+    BACKGROUND = "assets/audio/pacmans-start.wav"
     INTRO = "assets/audio/pacman_ringtone.mp3"
-    PACMAN_MUNCH = "assets/audio/pacman_chomp.wav"
-    GHOST_EATING = "assets/audio/pacman_eatghost.wav"
-    GHOST_CHASING = "assets/audio/ghost _normal_move.mp3"
-    GHOST_FLEEING = "assets/audio/ghost _spurt_move.mp3"
+    PACMAN_MUNCH = "assets/audio/wakka.wav"
+    GHOST_EATING = "assets/audio/ghost-eaten.wav"
+    GHOST_CHASING = "assets/audio/siren.wav"
+    GHOST_FLEEING = "assets/audio/ghost-retreat.wav"
     DEATH = "assets/audio/pacman_death.wav"
 
 

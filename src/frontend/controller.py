@@ -3,6 +3,7 @@ from src.backend.logic import GameLogic
 from src.constants import WINDOW_WIDTH, WINDOW_HEIGHT
 from .scenes.main_menu_scene import MainMenuScene
 from .event import InputEvent
+from ..state import GameAudioFile
 import pygame
 import pygame_textinput
 
@@ -34,8 +35,12 @@ class Controller:
         self.text_input = pygame_textinput.TextInputManager(
             validator=lambda name: len(name) <= 10)
 
+        self.background_sound = pygame.mixer.Sound(GameAudioFile.BACKGROUND.value)
+        self.background_sound.set_volume(0.2)
+
     def run(self) -> None:
         self.running = True
+        self.background_sound.play(loops=-1)
         while self.running:
             raw_events = pygame.event.get()
             wants_text = getattr(self.current_scene, "wants_text_input", False)
@@ -55,11 +60,13 @@ class Controller:
             if next_scene:
                 if hasattr(self.current_scene, "stop_audio"):
                     self.current_scene.stop_audio()
+                    self.background_sound.play(loops=-1)
                 self.text_input.value = ""
 
                 self.current_scene = next_scene
 
                 if hasattr(self.current_scene, "start_audio"):
+                    self.background_sound.stop()
                     self.current_scene.start_audio()
 
             self.screen.fill("black")
