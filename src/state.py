@@ -1,7 +1,30 @@
 from __future__ import annotations
-from typing import List, TYPE_CHECKING
+from typing import List, TYPE_CHECKING, Tuple
 from dataclasses import dataclass, field
 from enum import Enum, IntEnum
+import numpy as np
+
+if TYPE_CHECKING:
+    from .backend.ghost_movement_logic import GhostMovementStrategy
+
+
+class GameConstants(Enum):
+    CELL_SIZE = 50
+    WINDOW_WIDTH = 1700
+    WINDOW_HEIGHT = 900
+    NUMBER_OF_GHOSTS = 4
+    GUM_SIZE = 2
+    SUPER_GUM_SIZE = 5
+
+
+class GameAudioFile(Enum):
+    BACKGROUND = "assets/audio/pacmans-start.wav"
+    INTRO = "assets/audio/pacman_ringtone.mp3"
+    PACMAN_MUNCH = "assets/audio/wakka.wav"
+    GHOST_EATING = "assets/audio/ghost-eaten.wav"
+    GHOST_CHASING = "assets/audio/siren.wav"
+    GHOST_FLEEING = "assets/audio/ghost-retreat.wav"
+    DEATH = "assets/audio/pacman_death.wav"
 
 if TYPE_CHECKING:
     from .backend.ghost_movement import GhostMovementStrategy
@@ -27,15 +50,20 @@ class BitMaps(IntEnum):
 @dataclass
 class GameConfig:
     high_score_filename: str = "scoreboard.json"
+    maze_width: int = 15
+    maze_height: int = 20
     lives: int = 3
     pacgum: int = 5
     points_per_pacgum: int = 10
     points_per_super_pacgum: int = 50
     points_per_ghost: int = 200
     ghost_edible_time: float = 5.0
+    ghost_reappear_time: float = 5.0
     seed: int = 42
     level_max_time: float = 60.0
-    max_level: int = 1
+    max_level: int = 10
+    pacman_speed: float = 4.0
+    ghost_speed: float = 3.2
 
 
 @dataclass
@@ -55,20 +83,21 @@ class Pacman:
 
 @dataclass
 class Ghost:
-    x: float = 0.0   # Floating point actual location
+    x: float = 0.0
     y: float = 0.0
-    xd: int = -1   # Int Target column destination
-    yd: int = -1   # Int Target row destination
-    assigned_direction: Direction = (0, 0)
-    strategy: GhostMovementStrategy = None
-    colour: str = None
+    xd: int = -1
+    yd: int = -1
+    assigned_direction: Tuple[int, int] = (0, 0)
+    strategy: GhostMovementStrategy | None = None
+    colour: str | None = None
     alpha: float = 1.0
     is_edible: bool = False
-    edible_since: int | None = None
-    time_laps: int = 0
+    time_laps: float = 0.0
+    is_dead: bool = False
+    time_since_death: float = 0.0
     home_x: int = 0
     home_y: int = 0
-    initial_colour: str = None
+    initial_colour: str | None = None
 
 
 @dataclass
@@ -76,21 +105,23 @@ class GameStats:
     current_score: int = 0
     current_level: int = 1
     lives_remain: int = 3
-    time_left: int = None
+    time_left: float = 90.0
     is_edible: bool = False
     edible_time_left: int = 0
+    pacman_curr_spd: float = 0
+    ghost_curr_speed: float = 0
 
 
 @dataclass
 class GameState:
-    maze: List[List[int]]
+    maze: np.ndarray
     pacman: Pacman
     ghosts: List[Ghost]
-    live_status: GameStats = None
-    config: GameConfig = None
+    live_status: GameStats
+    config: GameConfig
     # Cheat Mode flags
-    cheat_invincibility: bool = False  #'I'
-    # 'L' for level skip
+    cheat_invincibility: bool = False
+    cheat_freeze: bool = False
     events: List["GameEvent"] = field(default_factory=list)
 
 
@@ -103,11 +134,13 @@ class GameEvent:
 @dataclass
 class PacmanDiedEvent(GameEvent):
     pacman: Pacman
+    death_coord: Tuple[float, float]
 
 
 @dataclass
 class GhostEatenEvent(GameEvent):
     ghost: Ghost
+    death_coord: Tuple[float, float]
 
 
 @dataclass
@@ -127,4 +160,9 @@ class VictoryEvent(GameEvent):
 
 @dataclass
 class GameStartEvent(GameEvent):
+    pass
+
+
+@dataclass
+class GumEatenEvent(GameEvent):
     pass

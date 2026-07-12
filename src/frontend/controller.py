@@ -4,8 +4,9 @@ from src.constants import WINDOW_WIDTH, WINDOW_HEIGHT
 from .scenes.game_scene import GameScene
 from .scenes.main_menu_scene import MainMenuScene
 from .event import InputEvent
-import time
+from ..state import GameAudioFile
 import pygame
+import pygame_textinput
 
 
 class Controller:
@@ -18,31 +19,74 @@ class Controller:
             pygame.K_RIGHT: "right",
             pygame.K_SPACE: "space",
             pygame.K_RETURN: "enter",
+<<<<<<< HEAD
             pygame.K_i: "i",       # Added for Invincibility cheat toggle
             pygame.K_l: "l"        # Added for Skip Level cheat trigger
+=======
+            pygame.K_ESCAPE: "escape",
+            pygame.K_w: "w",
+            pygame.K_s: "s",
+            pygame.K_a: "a",
+            pygame.K_d: "d",
+            pygame.K_i: "i",       # Added for Invincibility cheat toggle
+            pygame.K_l: "l",       # Added for Skip Level cheat trigger
+            pygame.K_e: "e",       # Added for extra life
+            pygame.K_f: "f"        # Added for ghost freeze
+>>>>>>> origin/backend_v0.2_refactor
         }
         self.screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
         self.clock = pygame.Clock()
         self.renderer = Renderer(self.screen)
         self.current_scene = MainMenuScene(logic)
+<<<<<<< HEAD
         # self.current_scene = GameScene(logic)
+=======
+        self.text_input = pygame_textinput.TextInputManager(
+            validator=lambda name: len(name) <= 10)
+
+        self.background_sound = pygame.mixer.Sound(GameAudioFile.BACKGROUND.value)
+        self.background_sound.set_volume(0.2)
+>>>>>>> origin/backend_v0.2_refactor
 
     def run(self) -> None:
         self.running = True
+        self.background_sound.play(loops=-1)
         while self.running:
+<<<<<<< HEAD
             dt = self.clock.tick(60) / 1000
             for event in pygame.event.get():
                 if (event.type == pygame.QUIT or
                     (event.type == pygame.KEYDOWN and
                      event.key == pygame.K_ESCAPE)):
+=======
+            raw_events = pygame.event.get()
+            wants_text = getattr(self.current_scene, "wants_text_input", False)
+            if wants_text:
+                self.text_input.update(raw_events)
+            dt = self.clock.tick(60) / 1000
+            for event in raw_events:
+                if self._should_exit(event):
+>>>>>>> origin/backend_v0.2_refactor
                     self.running = False
                 inp_event = self._to_input_event(event)
                 if inp_event is not None:
                     self.current_scene.handle_event(inp_event)
+            if wants_text:
+                self.current_scene.set_text_input(self.text_input.value)
             self.current_scene.update(dt)
             next_scene = self.current_scene.next_scene
             if next_scene:
+                if hasattr(self.current_scene, "stop_audio"):
+                    self.current_scene.stop_audio()
+                    self.background_sound.play(loops=-1)
+                self.text_input.value = ""
+
                 self.current_scene = next_scene
+
+                if hasattr(self.current_scene, "start_audio"):
+                    self.background_sound.stop()
+                    self.current_scene.start_audio()
+
             self.screen.fill("black")
             self.current_scene.render(self.renderer)
             pygame.display.update()

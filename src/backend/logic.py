@@ -1,18 +1,13 @@
 from typing import List
-from src.state import (
+import numpy as np
+from ..state import (
     GameState, Pacman, Direction, Ghost,
     GameConfig, GameStats, GameStartEvent)
 from mazegenerator.mazegenerator import MazeGenerator
-from src.constants import CELL_SIZE
 from ..backend.score_board_handler import ScoreBoardHandler
 from .game_initializer import GameInitializer
 from .game_state_manager import GameStateManager
-from .ghost_movement import (
-    RandomMovement, DirectionalMovement,
-    PseudoRandomMovement
-)
-
-PACMAN_SPEED = 1
+from .ghost_movement_logic import PseudoRandomMovement
 
 
 class GameLogic:
@@ -24,10 +19,10 @@ class GameLogic:
 
     def create_default_state(self) -> GameState:
         state = GameState(
-            maze=self.maze,
+            maze=np.array(self.maze),
             pacman=Pacman(0, 0),
             ghosts=self._initialize_ghost(),
-            live_status=GameStats,
+            live_status=GameStats(),
             config=self.config)
         GameInitializer(game_state=state).initialize()
         self.game_manager = GameStateManager(state)
@@ -36,14 +31,13 @@ class GameLogic:
 
     def _initialize_ghost(self) -> List[Ghost]:
         return [
-            Ghost(
-                colour="red", strategy=DirectionalMovement(),
-                initial_colour="red"),
-            Ghost(colour="pink", strategy=PseudoRandomMovement(),
+            Ghost(colour="red", strategy=PseudoRandomMovement(0.95),
+                  initial_colour="red"),
+            Ghost(colour="pink", strategy=PseudoRandomMovement(0.3),
                   initial_colour="pink"),
-            Ghost(colour="orange", strategy=PseudoRandomMovement(0.9),
+            Ghost(colour="orange", strategy=PseudoRandomMovement(0.5),
                   initial_colour="orange"),
-            Ghost(colour="green", strategy=RandomMovement(),
+            Ghost(colour="green", strategy=PseudoRandomMovement(0.9),
                   initial_colour="green"),
         ]
 
@@ -59,25 +53,25 @@ class GameLogic:
         self.game_manager.check_collisions()
 
     def update_direction(self, state: GameState, direction: Direction) -> None:
+        # print(f"pacman direction before: {state.pacman.direction}")
         if direction is None:
             direction = Direction.UP
         state.pacman.direction = direction
 
-    def apply_pause(self, state: GameState) -> None:
-        state.paused = not state.paused
+    # def apply_pause(self, state: GameState) -> None:
+    #     state.paused = not state.paused
 
-    def toggle_invincibility(self, state: GameState) -> None:
-        """Swaps player invincibility status flag on the fly."""
-        state.cheat_invincibility = not state.cheat_invincibility
-        print(f"[CHEAT] Invincibility is now: {state.cheat_invincibility}")
-
-    def cheat_skip_level(self, state: GameState) -> None:
-        """Instantly forces a level transition bypass."""
-        print("[CHEAT] Skipping current level layout!")
-        self.game_manager._advance_to_next_level()
-
-    def _entity_cell(self, x: float, y: float) -> tuple[int, int]:
-        return (
-            int(y // CELL_SIZE),
-            int(x // CELL_SIZE),
-        )
+    def activate_cheat_mode(self, state: GameState, key: str) -> None:
+        if key == "i":
+            state.cheat_invincibility = not state.cheat_invincibility
+            print(f"[CHEAT] Invincibility is now: {state.cheat_invincibility}")
+        if key == "l":
+            print("[CHEAT] Skipping current level layout!")
+            self.game_manager.level_clearance_action.advance_to_next_level(
+                state)
+        if key == "e":
+            print("[CHEAT] Increased number of life by 1.")
+            state.live_status.lives_remain += 1
+        if key == "f":
+            state.cheat_freeze = not state.cheat_freeze
+            print(f"[CHEAT] Ghost freezing is now: {state.cheat_freeze}")

@@ -15,7 +15,12 @@ def main() -> None:
         return
     config_data = parse_game_config(sys.argv[1])
     config = GameConfig(**config_data)
+<<<<<<< HEAD
     gen = MazeGenerator(size=(5, 5), seed=42)
+=======
+    gen = MazeGenerator(
+        size=(config.maze_width, config.maze_height), seed=42)
+>>>>>>> origin/backend_v0.2_refactor
     logic = GameLogic(gen, config)
     controller = Controller(logic)
     controller.run()

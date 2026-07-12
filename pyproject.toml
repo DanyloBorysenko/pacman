@@ -10,7 +10,11 @@ dependencies = [
     "mypy>=2.1.0",
     "numpy>=2.4.6",
     "pygame-ce>=2.5.7",
+    "pygame-textinput>=1.0.1",
 ]
+
+[tool.uv]
+override-dependencies = ["pygame; sys_platform == 'never'"]
 
 [tool.uv.sources]
 mazegenerator = { path = "mazegenerator-2.0.1-py3-none-any.whl" }
