@@ -41,16 +41,10 @@ class FinalScene(Scene):
                 self.selected = (self.selected + 1) % len(self.items)
             if event.key == "enter":
                 if self.items[self.selected] == "YES":
-<<<<<<< HEAD
-                    # name = input("Write your name")
-                    self.logic.score_board.add_new_top_player("Player1", self.scores)
-                self.switch_to(self.main_menu)
-=======
                     self.entering_name = True
                     self.wants_text_input = True
                 else:
                     self.switch_to(self.main_menu)
->>>>>>> origin/backend_v0.2_refactor
 
     def update(self, dt: float) -> None:
         pass

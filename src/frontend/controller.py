@@ -19,10 +19,6 @@ class Controller:
             pygame.K_RIGHT: "right",
             pygame.K_SPACE: "space",
             pygame.K_RETURN: "enter",
-<<<<<<< HEAD
-            pygame.K_i: "i",       # Added for Invincibility cheat toggle
-            pygame.K_l: "l"        # Added for Skip Level cheat trigger
-=======
             pygame.K_ESCAPE: "escape",
             pygame.K_w: "w",
             pygame.K_s: "s",
@@ -32,33 +28,21 @@ class Controller:
             pygame.K_l: "l",       # Added for Skip Level cheat trigger
             pygame.K_e: "e",       # Added for extra life
             pygame.K_f: "f"        # Added for ghost freeze
->>>>>>> origin/backend_v0.2_refactor
         }
         self.screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
         self.clock = pygame.Clock()
         self.renderer = Renderer(self.screen)
         self.current_scene = MainMenuScene(logic)
-<<<<<<< HEAD
-        # self.current_scene = GameScene(logic)
-=======
         self.text_input = pygame_textinput.TextInputManager(
             validator=lambda name: len(name) <= 10)
 
         self.background_sound = pygame.mixer.Sound(GameAudioFile.BACKGROUND.value)
         self.background_sound.set_volume(0.2)
->>>>>>> origin/backend_v0.2_refactor
 
     def run(self) -> None:
         self.running = True
         self.background_sound.play(loops=-1)
         while self.running:
-<<<<<<< HEAD
-            dt = self.clock.tick(60) / 1000
-            for event in pygame.event.get():
-                if (event.type == pygame.QUIT or
-                    (event.type == pygame.KEYDOWN and
-                     event.key == pygame.K_ESCAPE)):
-=======
             raw_events = pygame.event.get()
             wants_text = getattr(self.current_scene, "wants_text_input", False)
             if wants_text:
@@ -66,7 +50,6 @@ class Controller:
             dt = self.clock.tick(60) / 1000
             for event in raw_events:
                 if self._should_exit(event):
->>>>>>> origin/backend_v0.2_refactor
                     self.running = False
                 inp_event = self._to_input_event(event)
                 if inp_event is not None:
@@ -101,3 +84,12 @@ class Controller:
             key = self.events_keys_dict.get(pygame_event.key, None)
             input_event = InputEvent(type="keydown", key=key)
         return input_event
+
+    def _should_exit(self, event: pygame.event.Event) -> bool:
+        if (event.type == pygame.QUIT):
+            return True
+        if (event.type == pygame.KEYDOWN
+           and event.key == pygame.K_ESCAPE
+           and isinstance(self.current_scene, MainMenuScene)):
+            return True
+        return False

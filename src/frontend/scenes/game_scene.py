@@ -2,11 +2,8 @@ from ..scene import Scene
 from src.backend.logic import GameLogic
 from .final_scene import FinalScene
 from .pause_scene import PauseScene
-<<<<<<< HEAD
-from src.state import (Direction, GameState, GameOverEvent, VictoryEvent,
-=======
+
 from ...state import (Direction, GameState, GameOverEvent, VictoryEvent,
->>>>>>> origin/backend_v0.2_refactor
                        PacmanDiedEvent, Pacman, Ghost, GhostEatenEvent,
                        GameAudioFile, GameStartEvent, GumEatenEvent)
 from ..event import InputEvent
@@ -200,7 +197,8 @@ class VictoryAnimation(Animation):
 
     GRAVITY = 500
 
-    def __init__(self, on_finish, grow_time: float = 0.6, hold_time: float = 2.5,
+    def __init__(self,
+                 on_finish, grow_time: float = 0.6, hold_time: float = 2.5,
                  particle_count: int = 120):
         self.grow_time = grow_time
         self.hold_time = hold_time
@@ -212,7 +210,8 @@ class VictoryAnimation(Animation):
 
         cx = WINDOW_WIDTH // 2
         cy = WINDOW_HEIGHT // 2
-        self.particles = [ConfettiParticle(cx, cy) for _ in range(particle_count)]
+        self.particles = [ConfettiParticle(cx, cy) for _ in range(
+            particle_count)]
 
     def update(self, dt: float) -> None:
         self.elapsed += dt
@@ -311,16 +310,18 @@ class GameScene(Scene):
         self.state = state
         self.anim_manager = AnimationManager()
         self.main_menu = prev_scene
-<<<<<<< HEAD
         # self.counter = 0
-=======
 
         # Game Audio file
         self.sound_intro = pygame.mixer.Sound(GameAudioFile.INTRO.value)
-        self.sound_pacman_munch = pygame.mixer.Sound(GameAudioFile.PACMAN_MUNCH.value)
-        self.sound_ghost_eating = pygame.mixer.Sound(GameAudioFile.GHOST_EATING.value)
-        self.sound_ghost_chasing = pygame.mixer.Sound(GameAudioFile.GHOST_CHASING.value)
-        self.sound_ghost_fleeing = pygame.mixer.Sound(GameAudioFile.GHOST_FLEEING.value)
+        self.sound_pacman_munch = pygame.mixer.Sound(
+            GameAudioFile.PACMAN_MUNCH.value)
+        self.sound_ghost_eating = pygame.mixer.Sound(
+            GameAudioFile.GHOST_EATING.value)
+        self.sound_ghost_chasing = pygame.mixer.Sound(
+            GameAudioFile.GHOST_CHASING.value)
+        self.sound_ghost_fleeing = pygame.mixer.Sound(
+            GameAudioFile.GHOST_FLEEING.value)
         self.sound_death = pygame.mixer.Sound(GameAudioFile.DEATH.value)
 
         # Game Audio Volume
@@ -332,7 +333,7 @@ class GameScene(Scene):
 
         self.siren_playing = False
         self.intro_playing = True
->>>>>>> origin/backend_v0.2_refactor
+
 
     def update(self, dt: float) -> None:
         self._process_events()
@@ -366,9 +367,7 @@ class GameScene(Scene):
             #     self.state.events.append(PacmanDiedEvent(self.state.pacman))
             #     # self.state.events.append(GhostEatenEvent(self.state.ghosts.pop(0)))
                 # self.counter += 1
-<<<<<<< HEAD
             self._process_events()
-=======
 
 
     def start_audio(self):
@@ -382,7 +381,6 @@ class GameScene(Scene):
         self.sound_ghost_chasing.stop()
         self.sound_ghost_fleeing.stop()
         self.siren_playing = False
->>>>>>> origin/backend_v0.2_refactor
 
     def handle_event(self, event: InputEvent) -> None:
         if event.type == "quit":
@@ -403,11 +401,6 @@ class GameScene(Scene):
 
             # --- CHEAT MODE KEY ROUTING ---
             if event.key == "i":
-<<<<<<< HEAD
-                self.logic.toggle_invincibility(self.state)
-            if event.key == "l":
-                self.logic.cheat_skip_level(self.state)
-=======
                 self.logic.activate_cheat_mode(self.state, event.key)
             if event.key == "l":
                 self.logic.activate_cheat_mode(self.state, event.key)
@@ -415,7 +408,6 @@ class GameScene(Scene):
                 self.logic.activate_cheat_mode(self.state, event.key)
             if event.key == "f":
                 self.logic.activate_cheat_mode(self.state, event.key)
->>>>>>> origin/backend_v0.2_refactor
 
     def render(self, renderer: Renderer) -> None:
         renderer.draw(self.state)

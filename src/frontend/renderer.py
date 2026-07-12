@@ -37,7 +37,8 @@ class Renderer:
         self.title_font = pygame.font.Font(None, 50)
         self.instruction_font = pygame.font.SysFont("DejaVu Sans", 20)
         self.start_game_font = pygame.font.Font(size=200)
-        self.top_players_tittle_font = pygame.font.Font(size=MENU_FONT_SIZE // 2)
+        self.top_players_tittle_font = pygame.font.Font(
+            size=MENU_FONT_SIZE // 2)
         self.top_players_font = pygame.font.Font(size=MENU_FONT_SIZE // 3)
         self.offset_x = 0
         self.offset_y = 0
@@ -133,8 +134,10 @@ class Renderer:
             ("\u2190 / A    Move Left",      INSTRUCTION_COLOR),
             ("\u2192 / D    Move Right",     INSTRUCTION_COLOR),
             ("Space      Pause",             INSTRUCTION_COLOR),
-            ("I         Invincibility",       INSTRUCTION_COLOR),
-            ("L         Skip level",       INSTRUCTION_COLOR),
+            ("I         Invincibility",      INSTRUCTION_COLOR),
+            ("L         Skip level",         INSTRUCTION_COLOR),
+            ("F         Ghost freeze",       INSTRUCTION_COLOR),
+            ("E         Extra life",         INSTRUCTION_COLOR),
             blank,
             ("Pacgums",                      ACCENT),
             (f"\u2022 Pacgum          +{config.points_per_pacgum} pts", INSTRUCTION_COLOR),
@@ -142,11 +145,7 @@ class Renderer:
             blank,
             ("Ghosts",                      ACCENT),
             (f"\u2022 Ghost          +{config.points_per_ghost} pts", INSTRUCTION_COLOR),
-            (f"\u2022 Frightens ghosts for {config.ghost_edible_time} seconds", INSTRUCTION_COLOR),
-            blank,
-            ("Winning",                      ACCENT),
-            (f"\u2022 Complete {config.max_level} levels",   INSTRUCTION_COLOR),
-            ("\u2022 Eat every pacgum",      INSTRUCTION_COLOR),
+            (f"\u2022 Frightens ghosts for {config.ghost_edible_time} seconds", INSTRUCTION_COLOR)
         ]
 
         right_column: list[tuple[str, str]] = [
@@ -162,14 +161,15 @@ class Renderer:
             ("Ghosts",                               ACCENT),
             ("\u2022 Chase Pac-Man",                 INSTRUCTION_COLOR),
             ("\u2022 Run away when edible",          INSTRUCTION_COLOR),
-            # ("\u2022 Respawn after [R] sec",         INSTRUCTION_COLOR),
+            (f"\u2022 Respawn after {config.ghost_reappear_time} sec", INSTRUCTION_COLOR),
             blank,
             ("Cheat Mode",                           ACCENT),
             ("\u2022 Invincibility",                 INSTRUCTION_COLOR),
-            # ("\u2022 Freeze Ghosts",                 INSTRUCTION_COLOR),
             ("\u2022 Level Skip",                    INSTRUCTION_COLOR),
-            # ("\u2022 Extra Lives",                   INSTRUCTION_COLOR),
-            # ("\u2022 Speed Boost",                   INSTRUCTION_COLOR),
+            blank,
+            ("Winning",                      ACCENT),
+            (f"\u2022 Complete {config.max_level} levels", INSTRUCTION_COLOR),
+            ("\u2022 Eat every pacgum",      INSTRUCTION_COLOR),
         ]
 
         self._draw_title("PAC-MAN INSTRUCTIONS")
@@ -180,28 +180,81 @@ class Renderer:
 
         self._escape_footer()
 
-    def draw_highscores(self, data: List[Tuple[str, str, str]]) -> None:
+    def draw_highscores(
+        self,
+        data: List[Tuple[str, str, str]],
+        scroll: int = 0) -> None:
         title_rect = self._draw_title("Highscores")
-        count = len(data)
-        if count == 0:
+
+        if not data:
+            self._escape_footer()
             return
 
-        available_height = WINDOW_HEIGHT - title_rect.bottom
-        spacing = 15
-        line_height = min(
-            (available_height - (spacing * (count + 1))) // count, 50)
-        total_score_height = (count * line_height) + ((count - 1) * spacing)
+        font = self.top_players_tittle_font
+        font_height = font.get_height()
+
+        vertical_spacing = 6
+        horizontal_margin = 20
+
+        available_height = (
+            WINDOW_HEIGHT
+            - title_rect.bottom
+            - 50
+        )
+
+        rows = max(
+            1,
+            available_height // (font_height + vertical_spacing)
+        )
+
+        # Fixed number of columns per page.
+        columns = 4
+        page_size = rows * columns
+
+        max_page = max(0, (len(data) - 1) // page_size)
+        scroll = max(0, min(scroll, max_page))
+
+        start = scroll * page_size
+        page = data[start:start + page_size]
+
+        # The last page may contain fewer than 4 columns.
+        page_columns = max(1, (len(page) + rows - 1) // rows)
+
+        usable_width = WINDOW_WIDTH - horizontal_margin * 2
+        column_width = usable_width // page_columns
+
+        start_x = horizontal_margin
+
+        total_height = (
+            rows * font_height +
+            (rows - 1) * vertical_spacing
+        )
+
         start_y = title_rect.bottom + (
-            (available_height - total_score_height) // 2)
-        for ind, line in enumerate(data):
-            place, name, score = line
-            surf = self.instruction_font.render(
-                f"{place}    {name}    {score}", True, "white"
+            available_height - total_height
+        ) // 2
+
+        for index, (place, name, score) in enumerate(page):
+
+            column = index // rows
+            row = index % rows
+
+            text = f"{int(place):>3}. {name[:10]:<10} {int(score):>6}"
+
+            surf = font.render(text, True, "white")
+            rect = surf.get_rect()
+
+            rect.x = (
+                start_x
+                + column * column_width
+                + 5
             )
-            rect = surf.get_frect()
-            center_y = start_y + (
-                ind * (line_height + spacing)) + (line_height // 2)
-            rect.center = (self.center_x, center_y)
+
+            rect.y = (
+                start_y
+                + row * (font_height + vertical_spacing)
+            )
+
             self.surface.blit(surf, rect)
 
         self._escape_footer()
@@ -351,12 +404,9 @@ class Renderer:
             f"Score:  {stats.current_score}",
             f"Level:  {stats.current_level}",
             f"Lives:  {stats.lives_remain}",
-<<<<<<< HEAD
-            # f"Cheat mode:  {'On' if stats.cheat_mode else 'Off'}",
-=======
             f"Invincibility: {'On' if (
-                self.state.cheat_invincibility) else 'Off'}"
->>>>>>> origin/backend_v0.2_refactor
+                self.state.cheat_invincibility) else 'Off'}",
+            f"Ghost freeze: {'On' if self.state.cheat_freeze else 'Off'}"
         ]
         start_y = center_y - ((len(items) - 1) * spacing) // 2
 
@@ -608,13 +658,11 @@ class Renderer:
     def _draw_gosts(self) -> None:
         config = self.state.config
         for ghost in self.state.ghosts:
-<<<<<<< HEAD
             if ghost.is_edible:
                 self.draw_edible_ghost(ghost)
-            else:
-=======
+            if ghost.is_dead:
+                continue
             if not ghost.is_edible:
->>>>>>> origin/backend_v0.2_refactor
                 self.draw_ghost(ghost)
                 continue
             remaining = config.ghost_edible_time - ghost.time_laps
