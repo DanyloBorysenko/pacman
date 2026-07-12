@@ -61,6 +61,10 @@ class MainMenuScene(Scene):
         scores = []
         for i, player in enumerate(top_players):
             scores.append((i+1, player["name"], player["score"]))
+        # test = []
+        # for i in range(1, 121):
+        #     test.append(tuple([f"{i}", f"Player___{i}", f"{i * 101}"]))
+        # self.switch_to(HighScoresScene(self, test))
         self.switch_to(HighScoresScene(self, scores))
 
     def _exit(self) -> None:

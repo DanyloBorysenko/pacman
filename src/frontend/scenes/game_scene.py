@@ -3,8 +3,8 @@ from src.backend.logic import GameLogic
 from .final_scene import FinalScene
 from .pause_scene import PauseScene
 from ...state import (Direction, GameState, GameOverEvent, VictoryEvent,
-                       PacmanDiedEvent, Pacman, Ghost, GhostEatenEvent,
-                       GameAudioFile, GameStartEvent, GumEatenEvent)
+                      PacmanDiedEvent, Pacman, Ghost, GhostEatenEvent,
+                      GameAudioFile, GameStartEvent, GumEatenEvent)
 from ..event import InputEvent
 from ..renderer import Renderer
 from typing import List, Tuple
@@ -196,7 +196,8 @@ class VictoryAnimation(Animation):
 
     GRAVITY = 500
 
-    def __init__(self, on_finish, grow_time: float = 0.6, hold_time: float = 2.5,
+    def __init__(self,
+                 on_finish, grow_time: float = 0.6, hold_time: float = 2.5,
                  particle_count: int = 120):
         self.grow_time = grow_time
         self.hold_time = hold_time
@@ -208,7 +209,8 @@ class VictoryAnimation(Animation):
 
         cx = WINDOW_WIDTH // 2
         cy = WINDOW_HEIGHT // 2
-        self.particles = [ConfettiParticle(cx, cy) for _ in range(particle_count)]
+        self.particles = [ConfettiParticle(cx, cy) for _ in range(
+            particle_count)]
 
     def update(self, dt: float) -> None:
         self.elapsed += dt
@@ -310,10 +312,14 @@ class GameScene(Scene):
 
         # Game Audio file
         self.sound_intro = pygame.mixer.Sound(GameAudioFile.INTRO.value)
-        self.sound_pacman_munch = pygame.mixer.Sound(GameAudioFile.PACMAN_MUNCH.value)
-        self.sound_ghost_eating = pygame.mixer.Sound(GameAudioFile.GHOST_EATING.value)
-        self.sound_ghost_chasing = pygame.mixer.Sound(GameAudioFile.GHOST_CHASING.value)
-        self.sound_ghost_fleeing = pygame.mixer.Sound(GameAudioFile.GHOST_FLEEING.value)
+        self.sound_pacman_munch = pygame.mixer.Sound(
+            GameAudioFile.PACMAN_MUNCH.value)
+        self.sound_ghost_eating = pygame.mixer.Sound(
+            GameAudioFile.GHOST_EATING.value)
+        self.sound_ghost_chasing = pygame.mixer.Sound(
+            GameAudioFile.GHOST_CHASING.value)
+        self.sound_ghost_fleeing = pygame.mixer.Sound(
+            GameAudioFile.GHOST_FLEEING.value)
         self.sound_death = pygame.mixer.Sound(GameAudioFile.DEATH.value)
 
         # Game Audio Volume
