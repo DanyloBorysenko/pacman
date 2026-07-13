@@ -2,6 +2,8 @@ from .renderer import Renderer
 from ..backend.logic import GameLogic
 from ..constants import WINDOW_WIDTH, WINDOW_HEIGHT
 from .scenes.main_menu_scene import MainMenuScene
+from .scenes.final_scene import FinalScene
+from .scene import Scene
 from .event import InputEvent
 from ..state import GameAudioFile
 import pygame
@@ -31,7 +33,7 @@ class Controller:
         self.screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
         self.clock = pygame.Clock()
         self.renderer = Renderer(self.screen)
-        self.current_scene = MainMenuScene(logic)
+        self.current_scene: Scene = MainMenuScene(logic)
         self.text_input = pygame_textinput.TextInputManager(
             validator=lambda name: len(name) <= 10)
 
@@ -55,7 +57,8 @@ class Controller:
                 if inp_event is not None:
                     self.current_scene.handle_event(inp_event)
             if wants_text:
-                self.current_scene.set_text_input(self.text_input.value)
+                if isinstance(self.current_scene, FinalScene):
+                    self.current_scene.set_text_input(self.text_input.value)
             self.current_scene.update(dt)
             next_scene = self.current_scene.next_scene
             if next_scene:
