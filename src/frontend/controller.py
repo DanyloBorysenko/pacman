@@ -46,7 +46,7 @@ class Controller:
 
     def start_background_music(self) -> None:
         self.background_sound.play(loops=-1)
-    
+
     def run_single_scene(self) -> None:
         raw_events = pygame.event.get()
         wants_text = getattr(self.current_scene, "wants_text_input", False)

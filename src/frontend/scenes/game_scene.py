@@ -364,7 +364,8 @@ class GameScene(Scene):
         self.sound_ghost_fleeing = pygame.mixer.Sound(
             GameAudioFile.GHOST_FLEEING.value)
         self.sound_death = pygame.mixer.Sound(GameAudioFile.DEATH.value)
-        self.sound_fruit_eating = pygame.mixer.Sound(GameAudioFile.FRUIT_EATING.value)
+        self.sound_fruit_eating = pygame.mixer.Sound(
+            GameAudioFile.FRUIT_EATING.value)
 
         # Game Audio Volume
         self.sound_intro.set_volume(0.3)
