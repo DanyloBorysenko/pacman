@@ -1,5 +1,5 @@
 import math
-from typing import Tuple, Optional, Callable
+from typing import Tuple, Optional
 from ..state import Direction, GameState
 
 
@@ -13,7 +13,7 @@ class GridMover:
         current_y: float,
         target_xd: int,
         target_yd: int,
-        direction: Optional[Tuple[int, int]], 
+        direction: Optional[Tuple[int, int]],
         speed: float,
         dt: float
     ) -> Tuple[float, float, bool]:
@@ -45,7 +45,7 @@ class PacmanMovementController:
             self, dt: float, requested_direction: Direction
             ) -> Tuple[bool, Optional[Tuple[int, int]]]:
         """
-        Updates Pacman's position. 
+        Updates Pacman's position.
         Returns (arrived_at_new_tile, tile_coordinates_if_arrived).
         """
         pacman = self.game_state.pacman
@@ -64,7 +64,8 @@ class PacmanMovementController:
         # 2. Compute fractional frame step via our core shared Mover component
         new_x, new_y, arrived = GridMover.advance_towards_target(
             pacman.x, pacman.y, pacman.xd, pacman.yd,
-            pacman.assigned_direction.value if pacman.assigned_direction else None,
+            pacman.assigned_direction.value
+            if pacman.assigned_direction else None,
             self.game_state.live_status.pacman_curr_spd, dt
         )
         pacman.x, pacman.y = new_x, new_y
@@ -130,7 +131,7 @@ class GhostMovementController:
             ghost.x, ghost.y = new_x, new_y
 
             # 3. Junction checking: Query AI behavior for the next path
-            if arrived and ghost.assigned_direction:
+            if arrived and ghost.assigned_direction and ghost.strategy:
                 dx, dy = ghost.strategy.get_next_move(
                     (int(ghost.y), int(ghost.x)), self.game_state.maze,
                     pacman_coords, ghost.assigned_direction, ghost.is_edible

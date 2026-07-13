@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import Any
 import numpy as np
 from ..state import (
     GameState, BitMaps, VictoryEvent, Ghost,
@@ -10,13 +11,13 @@ from ..state import (
 
 class GameAction(ABC):
     @abstractmethod
-    def execute(self, state: GameState, **kwargs) -> None:
+    def execute(self, state: GameState, **kwargs: Any) -> None:
         """Process a isolated rule change on the game state."""
         pass
 
 
 class ConsumeItemsAction(GameAction):
-    def execute(self, state: GameState, **kwargs) -> None:
+    def execute(self, state: GameState, **kwargs: Any) -> None:
         pacman = state.pacman
 
         y, x = int(pacman.y), int(pacman.x)
@@ -37,9 +38,10 @@ class ConsumeItemsAction(GameAction):
             state.maze[y, x] &= ~BitMaps.SUPER_PACGUM
             state.events.append(GumEatenEvent())
             for ghost in state.ghosts:
-                ghost.is_edible = True
-                ghost.colour = "blue"
-                ghost.time_laps = 0
+                if not ghost.is_dead:
+                    ghost.is_edible = True
+                    ghost.colour = "blue"
+                    ghost.time_laps = 0
 
         if (state.packgum_collected >= state.config.pacgum // 2) and\
                 not state.cherry_appeared:
@@ -50,7 +52,7 @@ class ConsumeItemsAction(GameAction):
 
 
 class CheckLevelClearAction(GameAction):
-    def execute(self, state: GameState, **kwargs) -> None:
+    def execute(self, state: GameState, **kwargs: Any) -> None:
         if np.any(state.maze & (BitMaps.SUPER_PACGUM | BitMaps.PACGUM)):
             return
         self.advance_to_next_level(state)
@@ -73,7 +75,7 @@ class CheckLevelClearAction(GameAction):
 
             state.pacman.xd = -1
             state.pacman.yd = -1
-            state.pacman.assigned_direction = state
+            state.pacman.assigned_direction = Direction.UP
 
         for ghost in state.ghosts:
             self._reset_ghost_state(ghost)
@@ -90,7 +92,7 @@ class CheckLevelClearAction(GameAction):
 
 
 class PlayerDeathAction(GameAction):
-    def execute(self, state: GameState, **kwargs) -> None:
+    def execute(self, state: GameState, **kwargs: Any) -> None:
         state.live_status.lives_remain -= 1
         if state.live_status.lives_remain >= 0:
             death_coord = (state.pacman.x, state.pacman.y)
@@ -119,8 +121,8 @@ class PlayerDeathAction(GameAction):
 
 
 class GhostEatenAction(GameAction):
-    def execute(self, state: GameState, **kwargs) -> None:
-        ghost: Ghost = kwargs.get("ghost")
+    def execute(self, state: GameState, **kwargs: Any) -> None:
+        ghost = kwargs.get("ghost")
         if not ghost:
             return
 

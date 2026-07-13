@@ -1,14 +1,14 @@
 from ..scene import Scene
 from ..event import InputEvent
 from ..renderer import Renderer
-from typing import List, Tuple
+from typing import List, Tuple, Any
 
 PLAYERS_PER_PAGE = 96
 
 
 class HighScoresScene(Scene):
     def __init__(self, prev_scene: Scene,
-                 scores: List[Tuple[str, str, str]]) -> None:
+                 scores: List[Tuple[Any, Any, Any]]) -> None:
         super().__init__()
         self.prev_scene = prev_scene
         self.scores = scores

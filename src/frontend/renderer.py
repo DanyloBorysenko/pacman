@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List, Tuple, Any
 from src.state import GameState, Direction, Ghost, BitMaps, GameConfig
 from src.constants import CELL_SIZE, WINDOW_HEIGHT, WINDOW_WIDTH
 from dataclasses import replace
@@ -90,7 +90,7 @@ class Renderer:
             self.surface.blit(surf, rect)
 
     def draw_top_players(self,
-                         data: List[Tuple[str, str, str]]) -> None:
+                         data: List[Tuple[Any, Any, Any]]) -> None:
         top_players_surf = self.top_players_tittle_font.render(
             "Top 10 players:", True, (150, 150, 150))
         top_players_rect = top_players_surf.get_frect()
@@ -114,8 +114,8 @@ class Renderer:
         body_top = int(WINDOW_HEIGHT * _BODY_TOP_FRAC)
 
         # ── Helpers ──
-        def blit_text(text: str, x: int, y: int,
-                      color: str = "white") -> None:
+        def build_text(text: str, x: int, y: int,
+                       color: str = "white") -> None:
             surf = self.instruction_font.render(text, True, color)
             self.surface.blit(surf, (x, y))
 
@@ -128,7 +128,7 @@ class Renderer:
             y = start_y
             for text, color in entries:
                 if text:
-                    blit_text(text, x, y, color)
+                    build_text(text, x, y, color)
                 y += self.line_h
 
         blank = ("", INSTRUCTION_COLOR)      # empty-line sentinel
@@ -146,17 +146,22 @@ class Renderer:
             ("E         Extra life",         INSTRUCTION_COLOR),
             blank,
             ("Pacgums",                      ACCENT),
-            (f"\u2022 Pacgum          +{config.points_per_pacgum} pts", INSTRUCTION_COLOR),
-            (f"\u2022 Super Pacgum    +{config.points_per_super_pacgum} pts", INSTRUCTION_COLOR),
+            (f"\u2022 Pacgum          +{config.points_per_pacgum} pts",
+                INSTRUCTION_COLOR),
+            (f"\u2022 Super Pacgum    +{config.points_per_super_pacgum} pts",
+                INSTRUCTION_COLOR),
             blank,
             ("Ghosts",                      ACCENT),
-            (f"\u2022 Ghost          +{config.points_per_ghost} pts", INSTRUCTION_COLOR),
-            (f"\u2022 Frightens ghosts for {config.ghost_edible_time} seconds", INSTRUCTION_COLOR)
+            (f"\u2022 Ghost          +{config.points_per_ghost} pts",
+                INSTRUCTION_COLOR),
+            (f"\u2022 Frightens ghosts for {config.ghost_edible_time} seconds",
+                INSTRUCTION_COLOR)
         ]
 
         right_column: list[tuple[str, str]] = [
             ("Gameplay",                            ACCENT),
-            (f"\u2022 Start with {config.lives} lives",            INSTRUCTION_COLOR),
+            (f"\u2022 Start with {config.lives} lives",
+                INSTRUCTION_COLOR),
             ("\u2022 Move only through corridors",   INSTRUCTION_COLOR),
             ("\u2022 Walls block movement",          INSTRUCTION_COLOR),
             ("\u2022 Touching a ghost loses a life", INSTRUCTION_COLOR),
@@ -167,7 +172,8 @@ class Renderer:
             ("Ghosts",                               ACCENT),
             ("\u2022 Chase Pac-Man",                 INSTRUCTION_COLOR),
             ("\u2022 Run away when edible",          INSTRUCTION_COLOR),
-            (f"\u2022 Respawn after {config.ghost_reappear_time} sec", INSTRUCTION_COLOR),
+            (f"\u2022 Respawn after {config.ghost_reappear_time} sec",
+                INSTRUCTION_COLOR),
             blank,
             ("Cheat Mode",                           ACCENT),
             ("\u2022 Invincibility",                 INSTRUCTION_COLOR),
@@ -187,9 +193,8 @@ class Renderer:
         self._escape_footer()
 
     def draw_highscores(
-        self,
-        data: List[Tuple[str, str, str]],
-        scroll: int = 0) -> None:
+        self, data: List[Tuple[str, str, str]],
+            scroll: int = 0) -> None:
         title_rect = self._draw_title("Highscores")
 
         if not data:
@@ -340,7 +345,7 @@ class Renderer:
         rect.center = (self.center_x, self.center_y)
         self.surface.blit(scaled, rect)
 
-    def draw_confetti(self, particles) -> None:
+    def draw_confetti(self, particles: Any) -> None:
         for p in particles:
             size = p.size
             surf = pygame.Surface((size, size), pygame.SRCALPHA)
@@ -443,7 +448,7 @@ class Renderer:
 
         if stats.time_left is not None:
             surf = self.menu_font.render(
-                f"Time: {stats.time_left}",
+                f"Time: {int(stats.time_left)}",
                 True,
                 PACK_MAN_COLOR,
             )
@@ -466,6 +471,8 @@ class Renderer:
         self.surface.blit(scores_surf, scores_rect)
 
     def draw_ghost(self, ghost: Ghost) -> None:
+        if not ghost.colour:
+            return
         center_x = int(ghost.x * CELL_SIZE + self.offset_x + self.cell_offset)
         center_y = int(ghost.y * CELL_SIZE + self.offset_y + self.cell_offset)
 
@@ -572,6 +579,8 @@ class Renderer:
         )
 
     def draw_edible_ghost(self, ghost: Ghost) -> None:
+        if not ghost.colour:
+            return
         center_x = int(ghost.x * CELL_SIZE + self.offset_x + self.cell_offset)
         center_y = int(ghost.y * CELL_SIZE + self.offset_y + self.cell_offset)
 
@@ -650,7 +659,7 @@ class Renderer:
 
         for i in range(num_points):
             t = i / (num_points - 1)
-            x = mouth_left + t * (mouth_right - mouth_left)
+            x = int(mouth_left + t * (mouth_right - mouth_left))
             y = mouth_y + math.sin(t * math.pi * waves) * amplitude
             points.append((x, y))
 
@@ -791,7 +800,8 @@ class Renderer:
         if len(points) >= 3:
             pygame.draw.polygon(self.surface, BACKGROUND_COLOR, points)
 
-    def draw_pacman_explosion(self, x: float, y: float, particles) -> None:
+    def draw_pacman_explosion(self, x: float, y: float, particles: Any
+                              ) -> None:
         center_x = x * CELL_SIZE + self.offset_x + self.cell_offset
         center_y = y * CELL_SIZE + self.offset_y + self.cell_offset
         for p in particles:

@@ -4,7 +4,7 @@ from .renderer import Renderer
 
 
 class Scene(ABC):
-    def __init__(self):
+    def __init__(self) -> None:
         self._next_scene: "Scene | None" = None
 
     @abstractmethod

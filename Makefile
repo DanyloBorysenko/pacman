@@ -1,7 +1,7 @@
 UV := uv
 PY := $(UV) run python3
 PACMAN := pac-man.py
-SRC := src/backend
+SRC := src
 DEB := pdb
 
 install: .venv/.installed

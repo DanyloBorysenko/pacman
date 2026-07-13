@@ -1,23 +1,22 @@
+from dataclasses import replace
+import random
+import math
+import pygame
+from typing import Callable, Any
 from ..scene import Scene
 from ...backend.logic import GameLogic
 from .final_scene import FinalScene
 from .pause_scene import PauseScene
-
 from ...state import (
     Direction, GameState, GameOverEvent, VictoryEvent,
     PacmanDiedEvent, Pacman, Ghost, GhostEatenEvent,
     GameAudioFile, GameStartEvent, GumEatenEvent,
-    LevelUpEvent, CherryAppearedEvent, CherryEatenEvent)
+    LevelUpEvent)
 from ..event import InputEvent
 from ..renderer import Renderer
 from typing import List, Tuple
 from abc import ABC, abstractmethod
 from ...constants import WINDOW_WIDTH, WINDOW_HEIGHT
-from dataclasses import replace
-import random
-import math
-import pygame
-from typing import Callable
 
 
 class Animation(ABC):
@@ -59,7 +58,7 @@ class PacmanDeathAnimation(Animation):
     blocking = True
 
     def __init__(self, pacman: Pacman, death_coord: Tuple[float, float],
-                 ghosts: List[Ghost], on_finish: Callable,
+                 ghosts: List[Ghost], on_finish: Any,
                  explosion_time: float = 1.5):
         self.pacman = pacman
         self.ghosts = ghosts
@@ -92,7 +91,7 @@ class PacmanDeathAnimation(Animation):
                 p.vy *= 0.9
 
     @property
-    def finished(self):
+    def finished(self) -> bool:
         return self._exploded and self.explosion_timer <= 0
 
     def on_finish(self) -> None:
@@ -137,7 +136,7 @@ class GhostDeathAnimation(Animation):
         self.score_coord_y = self.score_coord_y - dt * self.scores_speed
 
     @property
-    def finished(self):
+    def finished(self) -> bool:
         return self.timer <= 0
 
     def on_finish(self) -> None:
@@ -153,7 +152,7 @@ class GhostDeathAnimation(Animation):
 class GameOverAnimation(Animation):
     blocking = True
 
-    def __init__(self, on_finish, grow_time: float = 0.8,
+    def __init__(self, on_finish: Any, grow_time: float = 0.8,
                  hold_time: float = 1.5) -> None:
         self.grow_time = grow_time
         self.hold_time = hold_time
@@ -206,8 +205,9 @@ class VictoryAnimation(Animation):
     GRAVITY = 500
 
     def __init__(self,
-                 on_finish, grow_time: float = 0.6, hold_time: float = 2.5,
-                 particle_count: int = 120):
+                 on_finish: Any, grow_time: float = 0.6,
+                 hold_time: float = 2.5,
+                 particle_count: int = 120) -> None:
         self.grow_time = grow_time
         self.hold_time = hold_time
         self.total = grow_time + hold_time
@@ -316,7 +316,7 @@ class LevelUpAnimation(Animation):
 
 
 class AnimationManager:
-    def __init__(self):
+    def __init__(self) -> None:
         self._animations: List[Animation] = []
 
     def add(self, animation: Animation) -> None:
@@ -414,13 +414,13 @@ class GameScene(Scene):
             #     self.counter += 1
             self._process_events()
 
-    def start_audio(self):
+    def start_audio(self) -> None:
         """Executed automatically via Controller hook when
         entering gameplay."""
         self.sound_intro.play()
         # self.sound_ghost_chasing.play(loops=-1)
 
-    def stop_audio(self):
+    def stop_audio(self) -> None:
         """Executed automatically via Controller hook when
         exiting to main menu."""
         self.sound_intro.stop()

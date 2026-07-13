@@ -35,7 +35,8 @@ class Controller:
         self.text_input = pygame_textinput.TextInputManager(
             validator=lambda name: len(name) <= 10)
 
-        self.background_sound = pygame.mixer.Sound(GameAudioFile.BACKGROUND.value)
+        self.background_sound = pygame.mixer.Sound(
+            GameAudioFile.BACKGROUND.value)
         self.background_sound.set_volume(0.2)
 
     def run(self) -> None:
