@@ -316,6 +316,24 @@ class Renderer:
         rect.center = (self.center_x, self.center_y)
         self.surface.blit(scaled, rect)
 
+    def draw_level_up_text(self, scale: float, text: str, alpha: int) -> None:
+        overlay = pygame.Surface((
+            WINDOW_WIDTH, WINDOW_HEIGHT), pygame.SRCALPHA)
+        overlay.fill((0, 0, 0, alpha))
+        self.surface.blit(overlay, (0, 0))
+
+        if scale <= 0.01:
+            return
+        base_surf = self.title_font.render(text, True, "cyan")
+        w, h = base_surf.get_size()
+
+        scaled = pygame.transform.smoothscale(
+            base_surf, (max(1, int(w * scale)), max(1, int(h * scale))))
+
+        rect = scaled.get_frect()
+        rect.center = (self.center_x, self.center_y)
+        self.surface.blit(scaled, rect)
+
     def draw_confetti(self, particles) -> None:
         for p in particles:
             size = p.size

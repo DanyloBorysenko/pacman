@@ -3,7 +3,7 @@ import numpy as np
 from ..state import (
     GameState, BitMaps, VictoryEvent, Ghost,
     PacmanDiedEvent, Direction, GameOverEvent,
-    GumEatenEvent
+    GumEatenEvent, LevelUpEvent
 )
 
 
@@ -48,6 +48,7 @@ class CheckLevelClearAction(GameAction):
                 VictoryEvent(state.live_status.current_score))
         else:
             state.live_status.current_level += 1
+            state.events.append(LevelUpEvent(state.live_status.current_level))
             state.live_status.pacman_curr_spd *= 1.10
             state.live_status.ghost_curr_speed *= 1.10
 
@@ -76,7 +77,7 @@ class CheckLevelClearAction(GameAction):
 class PlayerDeathAction(GameAction):
     def execute(self, state: GameState, **kwargs) -> None:
         state.live_status.lives_remain -= 1
-        if state.live_status.lives_remain > 0:
+        if state.live_status.lives_remain >= 0:
             death_coord = (state.pacman.x, state.pacman.y)
             state.events.append(
                 PacmanDiedEvent(state.pacman, death_coord))

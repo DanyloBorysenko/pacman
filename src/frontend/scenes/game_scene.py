@@ -1,11 +1,13 @@
 from ..scene import Scene
-from src.backend.logic import GameLogic
+from ...backend.logic import GameLogic
 from .final_scene import FinalScene
 from .pause_scene import PauseScene
 
-from ...state import (Direction, GameState, GameOverEvent, VictoryEvent,
-                       PacmanDiedEvent, Pacman, Ghost, GhostEatenEvent,
-                       GameAudioFile, GameStartEvent, GumEatenEvent)
+from ...state import (
+    Direction, GameState, GameOverEvent, VictoryEvent,
+    PacmanDiedEvent, Pacman, Ghost, GhostEatenEvent,
+    GameAudioFile, GameStartEvent, GumEatenEvent,
+    LevelUpEvent)
 from ..event import InputEvent
 from ..renderer import Renderer
 from typing import List, Tuple
@@ -15,6 +17,7 @@ from dataclasses import replace
 import random
 import math
 import pygame
+from typing import Callable
 
 
 class Animation(ABC):
@@ -56,7 +59,8 @@ class PacmanDeathAnimation(Animation):
     blocking = True
 
     def __init__(self, pacman: Pacman, death_coord: Tuple[float, float],
-                 ghosts: List[Ghost], explosion_time: float = 1.5):
+                 ghosts: List[Ghost], on_finish: Callable,
+                 explosion_time: float = 1.5):
         self.pacman = pacman
         self.ghosts = ghosts
         self.death_coord = death_coord
@@ -66,6 +70,7 @@ class PacmanDeathAnimation(Animation):
         self.explosion_timer = explosion_time
         self.particles: List[ExplosionParticle] = []
         self._exploded = False
+        self._on_finish = on_finish
 
     def update(self, dt: float) -> None:
         for ghost in self.ghosts:
@@ -94,6 +99,7 @@ class PacmanDeathAnimation(Animation):
         self.pacman.death_phase = 0.0
         for ghost in self.ghosts:
             ghost.alpha = 1.0
+        self._on_finish()
 
     def draw(self, renderer: Renderer) -> None:
         if not self._exploded:
@@ -274,6 +280,38 @@ class GameStartAnimation(Animation):
         renderer.draw_start(self.scale, self.current_text)
 
 
+class LevelUpAnimation(Animation):
+    blocking = True
+
+    def __init__(self, current_level: int, on_finish: Callable,
+                 grow_time: float = 0.6, hold_time: float = 1.2):
+        self.grow_time = grow_time
+        self.hold_time = hold_time
+        self.total = grow_time + hold_time
+        self.elapsed = 0.0
+        self.scale = 0.0
+        self.alpha = 0
+        self.level_text = f"LEVEL {current_level}"
+        self._on_finish = on_finish
+
+    def update(self, dt: float) -> None:
+        self.elapsed += dt
+        progress = min(1.0, self.elapsed / self.grow_time)
+        self.scale = progress
+        self.alpha = int(150 * progress)  # overlay alpha values
+
+    @property
+    def finished(self) -> bool:
+        return self.elapsed >= self.total
+
+    def on_finish(self) -> None:
+        self._on_finish()
+
+    def draw(self, renderer: Renderer) -> None:
+        renderer.apply_blur()
+        renderer.draw_level_up_text(self.scale, self.level_text, self.alpha)
+
+
 class AnimationManager:
     def __init__(self):
         self._animations: List[Animation] = []
@@ -421,19 +459,34 @@ class GameScene(Scene):
                 self.anim_manager.add(GameStartAnimation())
                 self.sound_intro.play()
             if isinstance(event, PacmanDiedEvent):
+                self.stop_audio()
+                self.sound_death.play()
                 self.anim_manager.add(
                     PacmanDeathAnimation(
-                        self.state.pacman,
-                        event.death_coord,
-                        self.state.ghosts))
-                self.sound_death.play()
+                        pacman=self.state.pacman,
+                        death_coord=event.death_coord,
+                        ghosts=self.state.ghosts,
+                        on_finish=lambda: self.sound_ghost_chasing.play(loops=-1)
+                        )
+                    )
             if isinstance(event, GhostEatenEvent):
                 points_per_ghost = (100 if not self.state.config
                                     else self.state.config.points_per_ghost)
                 self.anim_manager.add(GhostDeathAnimation(
                     event.ghost, event.death_coord, points_per_ghost))
                 self.sound_ghost_eating.play()
+            if isinstance(event, LevelUpEvent):
+                self.stop_audio()
+                level_num = event.next_level
+                self.anim_manager.add(
+                    LevelUpAnimation(
+                        current_level=level_num,
+                        on_finish=lambda: self.sound_ghost_chasing.play(loops=-1)
+                    )
+                )
             if isinstance(event, GameOverEvent):
+                self.stop_audio()
+                # self.sound_death.play()
                 score = event.final_score
                 self.anim_manager.add(GameOverAnimation(
                     lambda score=score: self.switch_to(

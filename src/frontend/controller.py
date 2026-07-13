@@ -1,7 +1,6 @@
 from .renderer import Renderer
-from src.backend.logic import GameLogic
-from src.constants import WINDOW_WIDTH, WINDOW_HEIGHT
-from .scenes.game_scene import GameScene
+from ..backend.logic import GameLogic
+from ..constants import WINDOW_WIDTH, WINDOW_HEIGHT
 from .scenes.main_menu_scene import MainMenuScene
 from .event import InputEvent
 from ..state import GameAudioFile

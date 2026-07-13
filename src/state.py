@@ -8,15 +8,6 @@ if TYPE_CHECKING:
     from .backend.ghost_movement_logic import GhostMovementStrategy
 
 
-class GameConstants(Enum):
-    CELL_SIZE = 50
-    WINDOW_WIDTH = 1700
-    WINDOW_HEIGHT = 900
-    NUMBER_OF_GHOSTS = 4
-    GUM_SIZE = 2
-    SUPER_GUM_SIZE = 5
-
-
 class GameAudioFile(Enum):
     BACKGROUND = "assets/audio/pacmans-start.wav"
     INTRO = "assets/audio/pacman_ringtone.mp3"
@@ -144,8 +135,8 @@ class GhostEatenEvent(GameEvent):
 
 
 @dataclass
-class LevelCompletedEvent(GameEvent):
-    complited_level: int
+class LevelUpEvent(GameEvent):
+    next_level: int
 
 
 @dataclass
