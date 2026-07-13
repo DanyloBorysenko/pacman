@@ -13,8 +13,8 @@ def parse_game_config(file_path: str) -> Dict[str, Any]:
     # Define default configurations as our baseline
     config_data: Dict[str, Any] = {
         "high_score_filename": "scoreboard.json",
-        "maze_width": 10,
-        "maze_height": 15,
+        "maze_width": 15,
+        "maze_height": 20,
         "lives": 3,
         "pacgum": 5,
         "points_per_pacgum": 10,

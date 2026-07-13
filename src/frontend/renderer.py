@@ -49,7 +49,7 @@ class Renderer:
         self.left_x = int(WINDOW_WIDTH * _COL_LEFT_FRAC)
 
         self.cherry_image = pygame.image.load(
-            "assets/images/cherry.png").convert_alpha()
+            "assets/images/cherry_b.png").convert_alpha()
         self.cherry_image = pygame.transform.smoothscale(
             self.cherry_image, (int(CELL_SIZE), int(CELL_SIZE))
         )

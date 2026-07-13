@@ -9,13 +9,14 @@ if TYPE_CHECKING:
 
 
 class GameAudioFile(Enum):
-    BACKGROUND = "assets/audio/pacmans-start.wav"
-    INTRO = "assets/audio/pacman_ringtone.mp3"
-    PACMAN_MUNCH = "assets/audio/wakka.wav"
-    GHOST_EATING = "assets/audio/ghost-eaten.wav"
-    GHOST_CHASING = "assets/audio/siren.wav"
-    GHOST_FLEEING = "assets/audio/ghost-retreat.wav"
-    DEATH = "assets/audio/pacman_death.wav"
+    BACKGROUND = "assets/audio/pacmans-start.ogg"
+    INTRO = "assets/audio/pacman_ringtone.ogg"
+    PACMAN_MUNCH = "assets/audio/wakka.ogg"
+    GHOST_EATING = "assets/audio/ghost-eaten.ogg"
+    FRUIT_EATING = "assets/audio/pacman_eatfruit.ogg"
+    GHOST_CHASING = "assets/audio/siren.ogg"
+    GHOST_FLEEING = "assets/audio/ghost-retreat.ogg"
+    DEATH = "assets/audio/pacman_death.ogg"
 
 
 class Direction(Enum):

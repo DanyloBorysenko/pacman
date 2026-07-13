@@ -11,7 +11,7 @@ from ...state import (
     Direction, GameState, GameOverEvent, VictoryEvent,
     PacmanDiedEvent, Pacman, Ghost, GhostEatenEvent,
     GameAudioFile, GameStartEvent, GumEatenEvent,
-    LevelUpEvent)
+    LevelUpEvent, CherryEatenEvent)
 from ..event import InputEvent
 from ..renderer import Renderer
 from typing import List, Tuple
@@ -364,12 +364,14 @@ class GameScene(Scene):
         self.sound_ghost_fleeing = pygame.mixer.Sound(
             GameAudioFile.GHOST_FLEEING.value)
         self.sound_death = pygame.mixer.Sound(GameAudioFile.DEATH.value)
+        self.sound_fruit_eating = pygame.mixer.Sound(GameAudioFile.FRUIT_EATING.value)
 
         # Game Audio Volume
         self.sound_intro.set_volume(0.3)
         self.sound_pacman_munch.set_volume(0.5)
         self.sound_ghost_eating.set_volume(0.7)
         self.sound_ghost_chasing.set_volume(0.2)
+        self.sound_fruit_eating.set_volume(0.6)
         self.sound_death.set_volume(0.6)
 
         self.siren_playing = False
@@ -494,6 +496,8 @@ class GameScene(Scene):
                             loops=-1)
                     )
                 )
+            if isinstance(event, CherryEatenEvent):
+                self.sound_fruit_eating.play()
             if isinstance(event, GameOverEvent):
                 self.stop_audio()
                 # self.sound_death.play()

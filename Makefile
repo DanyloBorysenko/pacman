@@ -1,6 +1,6 @@
 UV := uv
 PY := $(UV) run python3
-PACMAN := pac-man.py
+PACMAN := main.py
 SRC := src
 DEB := pdb
 

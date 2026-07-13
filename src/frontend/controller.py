@@ -41,41 +41,50 @@ class Controller:
             GameAudioFile.BACKGROUND.value)
         self.background_sound.set_volume(0.2)
 
-    def run(self) -> None:
+    def set_running_status(self, status: bool) -> None:
         self.running = True
+
+    def start_background_music(self) -> None:
         self.background_sound.play(loops=-1)
+    
+    def run_single_scene(self) -> None:
+        raw_events = pygame.event.get()
+        wants_text = getattr(self.current_scene, "wants_text_input", False)
+        if wants_text:
+            self.text_input.update(raw_events)
+        dt = self.clock.tick(60) / 1000
+        for event in raw_events:
+            if self._should_exit(event):
+                self.running = False
+            inp_event = self._to_input_event(event)
+            if inp_event is not None:
+                self.current_scene.handle_event(inp_event)
+        if wants_text:
+            if isinstance(self.current_scene, FinalScene):
+                self.current_scene.set_text_input(self.text_input.value)
+        self.current_scene.update(dt)
+        next_scene = self.current_scene.next_scene
+        if next_scene:
+            if hasattr(self.current_scene, "stop_audio"):
+                self.current_scene.stop_audio()
+                self.background_sound.play(loops=-1)
+            self.text_input.value = ""
+
+            self.current_scene = next_scene
+
+            if hasattr(self.current_scene, "start_audio"):
+                self.background_sound.stop()
+                self.current_scene.start_audio()
+
+        self.screen.fill("black")
+        self.current_scene.render(self.renderer)
+        pygame.display.update()
+
+    def run(self) -> None:
+        self.set_running_status(True)
+        self.start_background_music()
         while self.running:
-            raw_events = pygame.event.get()
-            wants_text = getattr(self.current_scene, "wants_text_input", False)
-            if wants_text:
-                self.text_input.update(raw_events)
-            dt = self.clock.tick(60) / 1000
-            for event in raw_events:
-                if self._should_exit(event):
-                    self.running = False
-                inp_event = self._to_input_event(event)
-                if inp_event is not None:
-                    self.current_scene.handle_event(inp_event)
-            if wants_text:
-                if isinstance(self.current_scene, FinalScene):
-                    self.current_scene.set_text_input(self.text_input.value)
-            self.current_scene.update(dt)
-            next_scene = self.current_scene.next_scene
-            if next_scene:
-                if hasattr(self.current_scene, "stop_audio"):
-                    self.current_scene.stop_audio()
-                    self.background_sound.play(loops=-1)
-                self.text_input.value = ""
-
-                self.current_scene = next_scene
-
-                if hasattr(self.current_scene, "start_audio"):
-                    self.background_sound.stop()
-                    self.current_scene.start_audio()
-
-            self.screen.fill("black")
-            self.current_scene.render(self.renderer)
-            pygame.display.update()
+            self.run_single_scene()
         pygame.quit()
 
     def _to_input_event(self,
