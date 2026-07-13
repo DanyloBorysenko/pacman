@@ -1,6 +1,6 @@
 import numpy as np
 from typing import Tuple
-from ..state import GameState, BitMaps, GameStats, GameStartEvent
+from ..state import GameState, BitMaps, GameStats
 
 
 class GameInitializer:
@@ -106,7 +106,8 @@ class GameInitializer:
         found = False
         valid_y, valid_x = ideal_y, ideal_x
 
-        # We increase the radius step by step (0, 1, 2, 3 tiles away from center)
+        # We increase the radius step by step
+        # (0, 1, 2, 3 tiles away from center)
         for radius in range(max(height, width)):
             for dy in range(-radius, radius + 1):
                 for dx in range(-radius, radius + 1):

@@ -48,6 +48,12 @@ class Renderer:
         self.line_h = int(WINDOW_HEIGHT * _LINE_H_FRAC)
         self.left_x = int(WINDOW_WIDTH * _COL_LEFT_FRAC)
 
+        self.cherry_image = pygame.image.load(
+            "assets/images/cherry.png").convert_alpha()
+        self.cherry_image = pygame.transform.smoothscale(
+            self.cherry_image, (int(CELL_SIZE), int(CELL_SIZE))
+        )
+
     def draw_menu(self,
                   sel_item: int,
                   items: List[str],
@@ -829,6 +835,10 @@ class Renderer:
             pygame.draw.circle(self.surface, (255, 255, 0), center_pos, 8)
         elif cell & BitMaps.PACGUM.value:
             pygame.draw.circle(self.surface, (255, 184, 151), center_pos, 3)
+        elif cell & BitMaps.CHERRY.value:
+            cherry_rect = self.cherry_image.get_frect()
+            cherry_rect.center = center_pos
+            self.surface.blit(self.cherry_image, cherry_rect)
 
     def _draw_title(self, title: str) -> pygame.Rect:
         title_surf = self.title_font.render(

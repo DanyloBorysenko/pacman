@@ -2,12 +2,12 @@ from abc import ABC, abstractmethod
 import numpy as np
 from typing import Tuple, List
 import random
-import math
 from ..state import BitMaps, Direction
 
 
 class GhostMovementStrategy(ABC):
-    """Abstract base class establishing the contract for all Ghost AI behaviors."""
+    """Abstract base class establishing the contract for
+    all Ghost AI behaviors."""
 
     @abstractmethod
     def get_next_move(
@@ -21,14 +21,18 @@ class GhostMovementStrategy(ABC):
 
     def _get_valid_directions(self, current_pos: Tuple[int, int],
                               maze: np.ndarray,
-                              current_dir: Tuple[int, int] = (0, 0)) -> List[Tuple[int, int]]:
-        """Helper utility shared by all ghosts to scan unblocked paths, banning 180s."""
+                              current_dir: Tuple[int, int] = (0, 0)
+                              ) -> List[Tuple[int, int]]:
+        """Helper utility shared by all ghosts to scan unblocked paths,
+        banning 180s."""
         y, x = current_pos
         val = maze[y, x]
         valid_moves = []
 
         # Find the exact inverse direction vector to ban it
-        opposite_dir = (-current_dir[0], -current_dir[1]) if current_dir != (0, 0) else (0, 0)
+        opposite_dir = (
+            -current_dir[0], -current_dir[1]) if current_dir != \
+            (0, 0) else (0, 0)
 
         # Bitmask direction vectors: (dx, dy)
         if not (val & BitMaps.NORTH) and Direction.UP.value != opposite_dir:
@@ -40,7 +44,8 @@ class GhostMovementStrategy(ABC):
         if not (val & BitMaps.WEST) and Direction.LEFT.value != opposite_dir:
             valid_moves.append(Direction.LEFT.value)
 
-        # Emergency fallback: If it's a dead end, allowing a 180 turn is mandatory
+        # Emergency fallback: If it's a dead end, allowing 
+        # a 180 turn is mandatory
         if not valid_moves:
             if not (val & BitMaps.NORTH):
                 valid_moves.append(Direction.UP.value)
@@ -69,7 +74,8 @@ class RandomMovement(GhostMovementStrategy):
 
 
 class DirectionalMovement(GhostMovementStrategy):
-    """Aggressive ghost that always picks the path bringing it closest to Pac-Man."""
+    """Aggressive ghost that always picks the path bringing
+    it closest to Pac-Man."""
 
     def get_next_move(
             self, current_pos: Tuple[int, int],
@@ -78,7 +84,8 @@ class DirectionalMovement(GhostMovementStrategy):
             current_dir: Tuple[int, int] = (0, 0),
             ghost_edible: bool = False
             ) -> Tuple[int, int]:
-        valid_moves = self._get_valid_directions(current_pos, maze, current_dir)
+        valid_moves = self._get_valid_directions(
+            current_pos, maze, current_dir)
         y, x = current_pos
         target_y, target_x = pacman_pos
 
@@ -105,11 +112,11 @@ class DirectionalMovement(GhostMovementStrategy):
                     best_move = (dx, dy)
 
         return best_move
-    
 
 
 class PseudoRandomMovement(GhostMovementStrategy):
-    """Chases Pac-Man with high probability, but occasionally takes a random turn."""
+    """Chases Pac-Man with high probability,
+    but occasionally takes a random turn."""
 
     def __init__(self, chase_probability: float = 0.7):
         self.chase_probability = chase_probability
@@ -125,6 +132,8 @@ class PseudoRandomMovement(GhostMovementStrategy):
             ) -> Tuple[int, int]:
         # Generate a seed value between 0.0 and 1.0
         if random.random() < self.chase_probability:
-            return self._chaser.get_next_move(current_pos, maze, pacman_pos, current_dir, ghost_edible)
+            return self._chaser.get_next_move(
+                current_pos, maze, pacman_pos, current_dir, ghost_edible)
         else:
-            return self._randomizer.get_next_move(current_pos, maze, pacman_pos, current_dir, ghost_edible)
+            return self._randomizer.get_next_move(
+                current_pos, maze, pacman_pos, current_dir, ghost_edible)

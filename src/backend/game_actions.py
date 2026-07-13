@@ -3,7 +3,8 @@ import numpy as np
 from ..state import (
     GameState, BitMaps, VictoryEvent, Ghost,
     PacmanDiedEvent, Direction, GameOverEvent,
-    GumEatenEvent, LevelUpEvent
+    GumEatenEvent, LevelUpEvent, CherryAppearedEvent,
+    CherryEatenEvent
 )
 
 
@@ -24,7 +25,12 @@ class ConsumeItemsAction(GameAction):
         if current_tile & BitMaps.PACGUM:
             state.live_status.current_score += state.config.points_per_pacgum
             state.maze[y, x] &= ~BitMaps.PACGUM
+            state.packgum_collected += 1
             state.events.append(GumEatenEvent())
+        elif current_tile & BitMaps.CHERRY:
+            state.live_status.lives_remain += 1
+            state.maze[y, x] &= ~BitMaps.CHERRY
+            state.events.append(CherryEatenEvent())
         elif current_tile & BitMaps.SUPER_PACGUM:
             state.live_status.current_score += \
                 state.config.points_per_super_pacgum
@@ -34,6 +40,13 @@ class ConsumeItemsAction(GameAction):
                 ghost.is_edible = True
                 ghost.colour = "blue"
                 ghost.time_laps = 0
+
+        if (state.packgum_collected >= state.config.pacgum // 2) and\
+                not state.cherry_appeared:
+            state.maze[state.pacman.start_y, state.pacman.start_x] |=\
+                BitMaps.CHERRY
+            state.cherry_appeared = True
+            state.events.append(CherryAppearedEvent())
 
 
 class CheckLevelClearAction(GameAction):
@@ -48,6 +61,8 @@ class CheckLevelClearAction(GameAction):
                 VictoryEvent(state.live_status.current_score))
         else:
             state.live_status.current_level += 1
+            state.packgum_collected = 0
+            state.cherry_appeared = False
             state.events.append(LevelUpEvent(state.live_status.current_level))
             state.live_status.pacman_curr_spd *= 1.10
             state.live_status.ghost_curr_speed *= 1.10

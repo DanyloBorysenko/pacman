@@ -17,9 +17,6 @@ class GameAudioFile(Enum):
     GHOST_FLEEING = "assets/audio/ghost-retreat.wav"
     DEATH = "assets/audio/pacman_death.wav"
 
-if TYPE_CHECKING:
-    from .backend.ghost_movement import GhostMovementStrategy
-
 
 class Direction(Enum):
     RIGHT = (1, 0)
@@ -36,6 +33,7 @@ class BitMaps(IntEnum):
     WALL_MASK = 15
     PACGUM = 16
     SUPER_PACGUM = 32
+    CHERRY = 64
 
 
 @dataclass
@@ -110,6 +108,8 @@ class GameState:
     ghosts: List[Ghost]
     live_status: GameStats
     config: GameConfig
+    packgum_collected: int = 0
+    cherry_appeared: bool = False
     # Cheat Mode flags
     cheat_invincibility: bool = False
     cheat_freeze: bool = False
@@ -156,4 +156,14 @@ class GameStartEvent(GameEvent):
 
 @dataclass
 class GumEatenEvent(GameEvent):
+    pass
+
+
+@dataclass
+class CherryAppearedEvent(GameEvent):
+    pass
+
+
+@dataclass
+class CherryEatenEvent(GameEvent):
     pass

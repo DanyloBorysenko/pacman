@@ -7,7 +7,7 @@ from ...state import (
     Direction, GameState, GameOverEvent, VictoryEvent,
     PacmanDiedEvent, Pacman, Ghost, GhostEatenEvent,
     GameAudioFile, GameStartEvent, GumEatenEvent,
-    LevelUpEvent)
+    LevelUpEvent, CherryAppearedEvent, CherryEatenEvent)
 from ..event import InputEvent
 from ..renderer import Renderer
 from typing import List, Tuple
@@ -153,7 +153,8 @@ class GhostDeathAnimation(Animation):
 class GameOverAnimation(Animation):
     blocking = True
 
-    def __init__(self, on_finish, grow_time: float = 0.8, hold_time: float = 1.5):
+    def __init__(self, on_finish, grow_time: float = 0.8,
+                 hold_time: float = 1.5) -> None:
         self.grow_time = grow_time
         self.hold_time = hold_time
         self.total = grow_time + hold_time
@@ -181,7 +182,8 @@ class GameOverAnimation(Animation):
 
 
 class ConfettiParticle:
-    __slots__ = ("x", "y", "vx", "vy", "size", "color", "rotation", "rot_speed")
+    __slots__ = ("x", "y", "vx", "vy", "size",
+                 "color", "rotation", "rot_speed")
 
     def __init__(self, x: float, y: float) -> None:
         angle = random.uniform(0, math.tau)
@@ -261,7 +263,8 @@ class GameStartAnimation(Animation):
     def update(self, dt: float) -> None:
         self.elapsed += dt
 
-        index = min(int(self.elapsed // self.segment_time), len(self.texts) - 1)
+        index = min(int(
+            self.elapsed // self.segment_time), len(self.texts) - 1)
         self.current_text = self.texts[index]
 
         segment_elapsed = self.elapsed - index * self.segment_time
@@ -372,7 +375,6 @@ class GameScene(Scene):
         self.siren_playing = False
         self.intro_playing = True
 
-
     def update(self, dt: float) -> None:
         self._process_events()
         self.anim_manager.update(dt)
@@ -399,22 +401,28 @@ class GameScene(Scene):
         if not self.anim_manager.has_blocking():
             self.state.pacman.mouth_phase += dt * 8
             self.logic.update(self.state, dt)
-            # if self.state.live_status.current_score > 20 and self.counter == 0:
-            #     # self.state.events.append(GameOverEvent(self.state.live_status.current_score))
-            #     # self.state.events.append(VictoryEvent(self.state.live_status.current_score))
-            #     self.state.events.append(PacmanDiedEvent(self.state.pacman))
-            #     # self.state.events.append(GhostEatenEvent(self.state.ghosts.pop(0)))
-                # self.counter += 1
+            # if self.state.live_status.current_score > 20 and\
+            #     self.counter == 0:
+            #     # self.state.events.append(
+            # GameOverEvent(self.state.live_status.current_score))
+            #     # self.state.events.append(
+            # VictoryEvent(self.state.live_status.current_score))
+            #     self.state.events.append(
+            # PacmanDiedEvent(self.state.pacman))
+            #     # self.state.events.append(
+            # GhostEatenEvent(self.state.ghosts.pop(0)))
+            #     self.counter += 1
             self._process_events()
 
-
     def start_audio(self):
-        """Executed automatically via Controller hook when entering gameplay."""
+        """Executed automatically via Controller hook when
+        entering gameplay."""
         self.sound_intro.play()
         # self.sound_ghost_chasing.play(loops=-1)
 
     def stop_audio(self):
-        """Executed automatically via Controller hook when exiting to main menu."""
+        """Executed automatically via Controller hook when
+        exiting to main menu."""
         self.sound_intro.stop()
         self.sound_ghost_chasing.stop()
         self.sound_ghost_fleeing.stop()
@@ -466,7 +474,8 @@ class GameScene(Scene):
                         pacman=self.state.pacman,
                         death_coord=event.death_coord,
                         ghosts=self.state.ghosts,
-                        on_finish=lambda: self.sound_ghost_chasing.play(loops=-1)
+                        on_finish=lambda: self.sound_ghost_chasing.play(
+                            loops=-1)
                         )
                     )
             if isinstance(event, GhostEatenEvent):
@@ -481,7 +490,8 @@ class GameScene(Scene):
                 self.anim_manager.add(
                     LevelUpAnimation(
                         current_level=level_num,
-                        on_finish=lambda: self.sound_ghost_chasing.play(loops=-1)
+                        on_finish=lambda: self.sound_ghost_chasing.play(
+                            loops=-1)
                     )
                 )
             if isinstance(event, GameOverEvent):
