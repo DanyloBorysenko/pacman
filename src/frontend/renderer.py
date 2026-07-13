@@ -168,6 +168,7 @@ class Renderer:
             ("\u2022 Respawn in maze center",        INSTRUCTION_COLOR),
             ("\u2022 Game Over at 0 lives",          INSTRUCTION_COLOR),
             ("\u2022 Finish level by eating every pacgum", INSTRUCTION_COLOR),
+            ("\u2022 Increase lifes by eating cherry", INSTRUCTION_COLOR),
             blank,
             ("Ghosts",                               ACCENT),
             ("\u2022 Chase Pac-Man",                 INSTRUCTION_COLOR),
@@ -402,7 +403,7 @@ class Renderer:
         no_rect.center = right_rect.center
         self.surface.blit(no_surf, no_rect)
 
-    def draw_name_input(self, name: str) -> None:
+    def draw_name_input(self, name: str, msg: None | str) -> None:
         box_w, box_h = 400, 70
         box = pygame.Rect(0, 0, box_w, box_h)
         box.center = (self.center_x, self.center_y + WINDOW_HEIGHT // 4)
@@ -422,6 +423,13 @@ class Renderer:
         info_rect.bottom = box.top - 5
         info_rect.centerx = box.centerx
         self.surface.blit(info_surf, info_rect)
+        if msg:
+            err_surf = pygame.font.Font(size=name_size).render(
+                msg, True, "red")
+            err_rect = err_surf.get_frect()
+            err_rect.top = box.bottom + 10
+            err_rect.centerx = box.centerx
+            self.surface.blit(err_surf, err_rect)
 
     def _draw_game_stats(self) -> None:
         stats = self.state.live_status

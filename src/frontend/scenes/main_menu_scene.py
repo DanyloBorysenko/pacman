@@ -43,7 +43,7 @@ class MainMenuScene(Scene):
 
     def render(self, renderer: Renderer) -> None:
         renderer.draw_menu(self.selected, self.items, "Main menu")
-        top_players = self.logic.score_board.get_player_list()
+        top_players = self.logic.score_board.get_player_list(top_ten=True)
         scores = []
         for i, player in enumerate(top_players):
             scores.append((i+1, player["name"], player["score"]))
@@ -57,14 +57,10 @@ class MainMenuScene(Scene):
         self.switch_to(InstructionsScene(self, self.logic.config))
 
     def _highscores_scene(self) -> None:
-        top_players = self.logic.score_board.get_player_list()
+        top_players = self.logic.score_board.get_player_list(top_ten=False)
         scores = []
         for i, player in enumerate(top_players):
             scores.append((i+1, player["name"], player["score"]))
-        # test = []
-        # for i in range(1, 121):
-        #     test.append(tuple([f"{i}", f"Player___{i}", f"{i * 101}"]))
-        # self.switch_to(HighScoresScene(self, test))
         self.switch_to(HighScoresScene(self, scores))
 
     def _exit(self) -> None:

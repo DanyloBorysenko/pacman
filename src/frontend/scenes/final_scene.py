@@ -3,6 +3,8 @@ from ...backend.logic import GameLogic
 from ..event import InputEvent
 from ..renderer import Renderer
 
+ERR_MSG = "Invalid name! Use max 10 letters, numbers, or spaces."
+
 
 class FinalScene(Scene):
     def __init__(
@@ -21,6 +23,7 @@ class FinalScene(Scene):
         self.entering_name = False
         self.wants_text_input = False
         self.player_name = ""
+        self.err_msg: None | str = None
 
     def handle_event(self, event: InputEvent) -> None:
         if self.entering_name:
@@ -28,9 +31,12 @@ class FinalScene(Scene):
                 self.entering_name = False
             if (event.type == "keydown"
                and event.key == "enter" and self.player_name.strip()):
-                self.logic.score_board.add_new_player(
+                added = self.logic.score_board.add_new_player(
                     self.player_name, self.scores)
-                self.switch_to(self.main_menu)
+                if added:
+                    self.switch_to(self.main_menu)
+                else:
+                    self.err_msg = ERR_MSG
                 return
         if event.type == "keydown":
             if event.key == "escape":
@@ -55,7 +61,7 @@ class FinalScene(Scene):
         else:
             renderer.draw_defeat(self.selected)
         if self.wants_text_input:
-            renderer.draw_name_input(self.player_name)
+            renderer.draw_name_input(self.player_name, self.err_msg)
 
     def set_text_input(self, value: str) -> None:
         self.player_name = value

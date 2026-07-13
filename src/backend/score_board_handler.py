@@ -25,22 +25,28 @@ class ScoreBoardHandler:
         except (json.JSONDecodeError, IOError):
             self.top_scores = []
 
-    def get_player_list(self) -> List[Dict[str, Any]]:
+    def get_player_list(self, top_ten: bool) -> List[Dict[str, Any]]:
         if len(self.top_scores) == 0:
             self.load_top_players()
         return self.top_scores[:10] \
-            if len(self.top_scores) > 10 else self.top_scores
+            if top_ten else self.top_scores
 
-    def add_new_player(self, player_name: str, score: int) -> None:
+    def add_new_player(self, player_name: str, score: int) -> bool:
         """
-        Appends the new record profile entry, sorts descending by score value,
-        trims any entries past position 10, and updates the local storage file.
+        Validates player name (max 10 chars, alphanumeric/spaces only).
+        If valid, appends the entry, sorts, saves, and returns True.
+        If invalid, returns False.
         """
+        if len(player_name) > 10:
+            return False
+        if not player_name.replace(" ", "").isalnum():
+            return False
         new_entry = {"name": player_name, "score": score}
         self.top_scores.append(new_entry)
         self.top_scores.sort(key=lambda x: x['score'], reverse=True)
         # self.top_scores = self.top_scores
         self.save_to_file()
+        return True
 
     def save_to_file(self) -> None:
         """Serializes the current in-memory leaderboard tracking
