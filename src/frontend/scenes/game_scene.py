@@ -63,6 +63,7 @@ class PacmanDeathAnimation(Animation):
         self.pacman = pacman
         self.ghosts = ghosts
         self.death_coord = death_coord
+        self.direction = pacman.direction or Direction.RIGHT
         self.total = 1.0
         self.timer = self.total
         self.explosion_time = explosion_time
@@ -104,7 +105,8 @@ class PacmanDeathAnimation(Animation):
         if not self._exploded:
             renderer.draw_pacman_death(
                 self.death_coord[0],
-                self.death_coord[1], self.pacman.death_phase)
+                self.death_coord[1],
+                self.direction, self.pacman.death_phase)
         if self.particles:
             renderer.draw_pacman_explosion(
                 self.death_coord[0], self.death_coord[1], self.particles)
@@ -394,24 +396,10 @@ class GameScene(Scene):
                 self.sound_ghost_fleeing.stop()
                 self.sound_ghost_chasing.play(loops=-1)
                 self.siren_playing = False
-            # elif not any_ghost_edible and not self.siren_playing:
-            #     self.sound_ghost_chasing.play(loops=-1)
-            #     self.siren_playing = True
 
         if not self.anim_manager.has_blocking():
             self.state.pacman.mouth_phase += dt * 8
             self.logic.update(self.state, dt)
-            # if self.state.live_status.current_score > 20 and\
-            #     self.counter == 0:
-            #     # self.state.events.append(
-            # GameOverEvent(self.state.live_status.current_score))
-            #     # self.state.events.append(
-            # VictoryEvent(self.state.live_status.current_score))
-            #     self.state.events.append(
-            # PacmanDiedEvent(self.state.pacman))
-            #     # self.state.events.append(
-            # GhostEatenEvent(self.state.ghosts.pop(0)))
-            #     self.counter += 1
             self._process_events()
 
     def start_audio(self) -> None:

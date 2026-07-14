@@ -27,6 +27,13 @@ _COL_RIGHT_FRAC = 0.52   # right column x
 _LINE_H_FRAC = 0.038  # vertical step between lines
 _FOOTER_BOT_FRAC = 0.97   # footer bottom edge
 
+DIRECTION_ANGLES = {
+    Direction.RIGHT: 0,
+    Direction.DOWN: 90,
+    Direction.LEFT: 180,
+    Direction.UP: 270,
+}
+
 
 class Renderer:
     def __init__(
@@ -720,16 +727,55 @@ class Renderer:
     def _draw_pacman(self) -> None:
         pacman = self.state.pacman
         if pacman.death_phase > 0:
-            return  # death animation handles drawing instead
+            return
 
-        center_x = int(pacman.x * CELL_SIZE + self.offset_x + self.cell_offset)
-        center_y = int(pacman.y * CELL_SIZE + self.offset_y + self.cell_offset)
+        opening = 45 * abs(math.sin(pacman.mouth_phase))
+
+        self._draw_pacman_shape(
+            pacman.x,
+            pacman.y,
+            pacman.direction or Direction.RIGHT,
+            opening,
+            True,
+        )
+
+    def draw_pacman_death(
+        self,
+        x: float,
+        y: float,
+        direction: Direction,
+        death_phase: float,
+    ) -> None:
+        if death_phase >= 0.999:
+            return
+
+        self._draw_pacman_shape(
+            x,
+            y,
+            direction,
+            180 * death_phase,
+            False,
+        )
+
+    def _draw_pacman_shape(
+        self,
+        x: float,
+        y: float,
+        direction: Direction,
+        opening: float,
+        draw_eye: bool,
+    ) -> None:
+        center_x = int(x * CELL_SIZE + self.offset_x + self.cell_offset)
+        center_y = int(y * CELL_SIZE + self.offset_y + self.cell_offset)
         radius = CELL_SIZE // 3
 
         pygame.draw.circle(
-            self.surface, PACK_MAN_COLOR, (center_x, center_y), radius)
+            self.surface,
+            PACK_MAN_COLOR,
+            (center_x, center_y),
+            radius,
+        )
 
-        direction = pacman.direction or Direction.RIGHT
         base_angle = {
             Direction.RIGHT: 0,
             Direction.DOWN: 90,
@@ -737,22 +783,28 @@ class Renderer:
             Direction.UP: 270,
         }[direction]
 
-        dx, dy = direction.value
-        if dx != 0:
-            eye_x = center_x + dx * radius // 3
-            eye_y = center_y - radius // 3
-        else:
-            eye_x = center_x + radius // 3
-            eye_y = center_y + dy * radius // 3
+        if draw_eye:
+            dx, dy = direction.value
 
-        pygame.draw.circle(
-            self.surface, BACKGROUND_COLOR, (eye_x, eye_y), radius // 5)
+            if dx != 0:
+                eye_x = center_x + dx * radius // 3
+                eye_y = center_y - radius // 3
+            else:
+                eye_x = center_x + radius // 3
+                eye_y = center_y + dy * radius // 3
 
-        opening = 45 * abs(math.sin(pacman.mouth_phase))
+            pygame.draw.circle(
+                self.surface,
+                BACKGROUND_COLOR,
+                (eye_x, eye_y),
+                radius // 5,
+            )
+
         start_angle = base_angle - opening
         end_angle = base_angle + opening
 
         points = [(center_x, center_y)]
+
         step = 2
         angle = start_angle
         while angle <= end_angle:
@@ -769,44 +821,11 @@ class Renderer:
             round(center_y + radius * math.sin(rad)),
         ))
 
-        if len(points) >= 3:
-            pygame.draw.polygon(self.surface, BACKGROUND_COLOR, points)
-
-    def draw_pacman_death(
-            self, x: float, y: float, death_phase: float) -> None:
-        center_x = int(x * CELL_SIZE + self.offset_x + self.cell_offset)
-        center_y = int(y * CELL_SIZE + self.offset_y + self.cell_offset)
-        radius = CELL_SIZE // 3
-
-        if death_phase >= 0.999:
-            return  # fully closed — nothing left to draw
-
-        opening = 180 * death_phase
-        start_angle = -opening
-        end_angle = opening
-
-        pygame.draw.circle(
-            self.surface, PACK_MAN_COLOR, (center_x, center_y), radius)
-
-        points = [(center_x, center_y)]
-        step = 2
-        angle = start_angle
-        while angle <= end_angle:
-            rad = math.radians(angle)
-            points.append((
-                round(center_x + radius * math.cos(rad)),
-                round(center_y + radius * math.sin(rad)),
-            ))
-            angle += step
-
-        rad = math.radians(end_angle)
-        points.append((
-            round(center_x + radius * math.cos(rad)),
-            round(center_y + radius * math.sin(rad)),
-        ))
-
-        if len(points) >= 3:
-            pygame.draw.polygon(self.surface, BACKGROUND_COLOR, points)
+        pygame.draw.polygon(
+            self.surface,
+            BACKGROUND_COLOR,
+            points,
+        )
 
     def draw_pacman_explosion(self, x: float, y: float, particles: Any
                               ) -> None:
