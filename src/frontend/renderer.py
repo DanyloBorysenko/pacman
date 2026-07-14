@@ -36,9 +36,16 @@ DIRECTION_ANGLES = {
 
 
 class Renderer:
+    """Draws all game visuals onto a pygame Surface: menus,
+    instructions, highscores, the maze, HUD, Pac-Man, ghosts, and
+    transition/overlay effects. Stateless between frames aside from
+    cached fonts, images, and layout offsets."""
+
     def __init__(
             self,
             surface: pygame.Surface) -> None:
+        """Loads fonts and sprite assets and precomputes layout
+        offsets for the given render target surface."""
         self.surface = surface
         self.menu_font = pygame.font.Font(size=MENU_FONT_SIZE)
         self.title_font = pygame.font.Font(None, 50)
@@ -65,6 +72,8 @@ class Renderer:
                   sel_item: int,
                   items: List[str],
                   title: str) -> None:
+        """Draws a titled vertical menu list, highlighting the
+        item at index sel_item."""
         title_rect = self._draw_title(title)
         self.menu_title_bottom = title_rect.bottom
         available_height = WINDOW_HEIGHT - title_rect.bottom
@@ -98,6 +107,8 @@ class Renderer:
 
     def draw_top_players(self,
                          data: List[Tuple[Any, Any, Any]]) -> None:
+        """Renders a compact top-10 (place, name, score) list below
+        the menu title, used on the main menu screen."""
         top_players_surf = self.top_players_tittle_font.render(
             "Top 10 players:", True, (150, 150, 150))
         top_players_rect = top_players_surf.get_frect()
@@ -117,6 +128,9 @@ class Renderer:
             current_y += player_rect.height + spacing
 
     def draw_instructions(self, config: GameConfig) -> None:
+        """Draws the two-column instructions/help screen (controls,
+        pacgums, ghosts, gameplay, winning), populated with values
+        from the current GameConfig."""
         right_x = int(WINDOW_WIDTH * _COL_RIGHT_FRAC)
         body_top = int(WINDOW_HEIGHT * _BODY_TOP_FRAC)
 
@@ -195,6 +209,8 @@ class Renderer:
     def draw_highscores(
         self, data: List[Tuple[str, str, str]],
             scroll: int = 0) -> None:
+        """Draws a paginated, multi-column highscores table for
+        the given scroll page (up to 4 columns per page)."""
         title_rect = self._draw_title("Highscores")
 
         if not data:
@@ -271,6 +287,8 @@ class Renderer:
         self._escape_footer()
 
     def draw(self, state: GameState) -> None:
+        """Renders one full gameplay frame: maze, HUD stats,
+        Pac-Man, and ghosts, centering the maze on the surface."""
         self.state = state
         maze_width = CELL_SIZE * len(state.maze[0])
         maze_height = CELL_SIZE * len(state.maze)
@@ -282,9 +300,11 @@ class Renderer:
         self._draw_ghosts()
 
     def draw_victory(self, sel_item: int) -> None:
+        """Draws the victory result screen."""
         self._draw_game_result("You Win!", "green", sel_item)
 
     def draw_defeat(self, sel_item: int) -> None:
+        """Draws the game-over result screen."""
         self._draw_game_result("Game Over", "red", sel_item)
 
     def _draw_game_result(
@@ -293,6 +313,8 @@ class Renderer:
         color: str,
         sel_item: int,
     ) -> None:
+        """Shared layout for the victory/defeat screens: title,
+        final score, and the save-result yes/no question menu."""
         self._escape_footer()
 
         title_surf = self.menu_font.render(title, True, color)
@@ -313,6 +335,8 @@ class Renderer:
         self._draw_question_menu(sel_item)
 
     def apply_blur(self, factor: int = 8) -> None:
+        """Applies a cheap box-blur to the surface by downscaling
+        then upscaling by factor, used behind pause/overlay text."""
         small = pygame.transform.smoothscale(
             self.surface, (WINDOW_WIDTH // factor, WINDOW_HEIGHT // factor))
         blurred = pygame.transform.smoothscale(
@@ -320,6 +344,8 @@ class Renderer:
         self.surface.blit(blurred, (0, 0))
 
     def draw_game_over_text(self, scale: float, alpha: int) -> None:
+        """Draws a darkening overlay plus a scaling "GAME OVER"
+        title, for the death animation sequence."""
         overlay = pygame.Surface((
             WINDOW_WIDTH, WINDOW_HEIGHT), pygame.SRCALPHA)
         overlay.fill((0, 0, 0, alpha))
@@ -336,6 +362,8 @@ class Renderer:
         self.surface.blit(scaled, rect)
 
     def draw_level_up_text(self, scale: float, text: str, alpha: int) -> None:
+        """Draws a darkening overlay plus a scaling level-up
+        message, for the level transition sequence."""
         overlay = pygame.Surface((
             WINDOW_WIDTH, WINDOW_HEIGHT), pygame.SRCALPHA)
         overlay.fill((0, 0, 0, alpha))
@@ -354,6 +382,8 @@ class Renderer:
         self.surface.blit(scaled, rect)
 
     def draw_confetti(self, particles: Any) -> None:
+        """Draws a burst of small rotated rectangle particles,
+        used as a victory celebration effect."""
         for p in particles:
             size = p.size
             surf = pygame.Surface((size, size), pygame.SRCALPHA)
@@ -363,6 +393,8 @@ class Renderer:
             self.surface.blit(rotated, rect)
 
     def draw_victory_text(self, scale: float, alpha: int) -> None:
+        """Draws a darkening overlay plus a scaling "VICTORY!"
+        title, for the level-clear animation sequence."""
         overlay = pygame.Surface(
             (WINDOW_WIDTH, WINDOW_HEIGHT), pygame.SRCALPHA)
         overlay.fill((0, 0, 0, alpha))
@@ -379,6 +411,8 @@ class Renderer:
         self.surface.blit(scaled, rect)
 
     def _draw_question_menu(self, sel_item: int) -> None:
+        """Draws the "save your result?" Yes/No button pair,
+        highlighting the currently selected option."""
         surf = self.title_font.render(
             "Would you like to save your result?", True, "white")
         rect = surf.get_frect()
@@ -411,6 +445,8 @@ class Renderer:
         self.surface.blit(no_surf, no_rect)
 
     def draw_name_input(self, name: str, msg: None | str) -> None:
+        """Draws the highscore name-entry text box, its prompt
+        label, and an optional validation error message."""
         box_w, box_h = 400, 70
         box = pygame.Rect(0, 0, box_w, box_h)
         box.center = (self.center_x, self.center_y + WINDOW_HEIGHT // 4)
@@ -439,6 +475,8 @@ class Renderer:
             self.surface.blit(err_surf, err_rect)
 
     def _draw_game_stats(self) -> None:
+        """Draws the in-game HUD: score, level, lives, and
+        remaining time if the level has a time limit."""
         stats = self.state.live_status
 
         center_y = WINDOW_HEIGHT // 2
@@ -470,11 +508,15 @@ class Renderer:
             self.surface.blit(surf, rect)
 
     def _draw_maze(self) -> None:
+        """Draws every maze cell (walls and collectibles) by
+        iterating the current state's maze grid."""
         for row, line in enumerate(self.state.maze):
             for col, cell in enumerate(line):
                 self._draw_cell(row, col, cell)
 
     def draw_scores(self, scores: str, x: float, y: float) -> None:
+        """Draws a floating score-popup label centered on the
+        given maze grid coordinate."""
         scores_surf = self.instruction_font.render(scores, True, "ghostwhite")
         scores_rect = scores_surf.get_frect()
         center_x = x * CELL_SIZE + self.offset_x + self.cell_offset
@@ -483,6 +525,8 @@ class Renderer:
         self.surface.blit(scores_surf, scores_rect)
 
     def draw_ghost(self, ghost: Ghost) -> None:
+        """Draws a single ghost sprite (head, body, wavy bottom,
+        and face) at its current position, applying its alpha."""
         if not ghost.colour:
             return
 
@@ -568,6 +612,8 @@ class Renderer:
         center_y: int,
         radius: int,
     ) -> None:
+        """Draws a ghost's normal eyes, with pupils offset toward
+        its assigned_direction."""
         eye_w = radius // 2
         eye_h = radius
 
@@ -618,6 +664,8 @@ class Renderer:
         center_y: int,
         radius: int,
     ) -> None:
+        """Draws a frightened/edible ghost's face: small round eyes
+        and a wavy sine-curve mouth."""
         eye_size = radius // 5
 
         left_eye = pygame.Rect(0, 0, eye_size, eye_size)
@@ -650,6 +698,8 @@ class Renderer:
         pygame.draw.aalines(surface, "white", False, points)
 
     def _draw_ghosts(self) -> None:
+        """Draws all live ghosts, blinking edible ghosts back to
+        their normal color as their frightened time runs out."""
         config = self.state.config
 
         for ghost in self.state.ghosts:
@@ -673,6 +723,8 @@ class Renderer:
                     ghost, colour=ghost.initial_colour, is_edible=False))
 
     def draw_start(self, scale: float, text: str) -> None:
+        """Draws a large scaling countdown/start text, e.g. for a
+        "READY?" or "3-2-1" intro animation."""
         if scale <= 0.01:
             return
         base_surf = self.start_game_font.render(text, True, "red")
@@ -684,6 +736,8 @@ class Renderer:
         self.surface.blit(scaled, rect)
 
     def _draw_pacman(self) -> None:
+        """Draws Pac-Man at his current position with an animated
+        chomping mouth, unless mid-death animation."""
         pacman = self.state.pacman
         if pacman.death_phase > 0:
             return
@@ -705,6 +759,8 @@ class Renderer:
         direction: Direction,
         death_phase: float,
     ) -> None:
+        """Draws Pac-Man's death animation: his mouth opens wider
+        as death_phase progresses from 0 to 1."""
         if death_phase >= 0.999:
             return
 
@@ -724,6 +780,9 @@ class Renderer:
         opening: float,
         draw_eye: bool,
     ) -> None:
+        """Draws the Pac-Man circle-with-wedge-mouth shape at a
+        maze coordinate, facing direction, with the mouth opened
+        by opening degrees on each side and an optional eye."""
         center_x = int(x * CELL_SIZE + self.offset_x + self.cell_offset)
         center_y = int(y * CELL_SIZE + self.offset_y + self.cell_offset)
         radius = CELL_SIZE // 3
@@ -788,6 +847,8 @@ class Renderer:
 
     def draw_pacman_explosion(self, x: float, y: float, particles: Any
                               ) -> None:
+        """Draws Pac-Man's death explosion particles radiating from
+        his last maze position."""
         center_x = x * CELL_SIZE + self.offset_x + self.cell_offset
         center_y = y * CELL_SIZE + self.offset_y + self.cell_offset
         for p in particles:
@@ -797,6 +858,8 @@ class Renderer:
                 self.surface, p.color, (x, y), max(1, int(p.size)))
 
     def _draw_cell(self, row: int, col: int, cell: int) -> None:
+        """Draws a single maze cell's walls (per BitMaps flags) or
+        solid wall block, and any collectible it contains."""
         x, y = self._cell_top_left(row, col)
         x = x + self.offset_x
         y = y + self.offset_y
@@ -837,6 +900,8 @@ class Renderer:
             self.surface.blit(self.cherry_image, cherry_rect)
 
     def _draw_title(self, title: str) -> pygame.Rect:
+        """Draws a centered screen title with a separator line
+        below it, returning the separator's Rect for layout."""
         title_surf = self.title_font.render(
             title, True, ACCENT)
         title_rect = title_surf.get_frect()
@@ -851,6 +916,8 @@ class Renderer:
             (WINDOW_WIDTH - self.left_x, sep_y), 1)
 
     def _escape_footer(self) -> None:
+        """Draws the "ESC - Back to Menu" footer hint used on
+        instructions/highscores screens."""
         footer_surf = self.instruction_font.render(
             "ESC  -  Back to Menu", True, ACCENT)
         footer_rect = footer_surf.get_frect()
@@ -859,4 +926,6 @@ class Renderer:
         self.surface.blit(footer_surf, footer_rect)
 
     def _cell_top_left(self, row: int, col: int) -> Tuple[int, int]:
+        """Converts a (row, col) maze index to its top-left pixel
+        offset within the maze (before centering offsets)."""
         return (col * CELL_SIZE, row * CELL_SIZE)

@@ -20,30 +20,41 @@ from ...constants import WINDOW_WIDTH, WINDOW_HEIGHT
 
 
 class Animation(ABC):
+    """Base class for gameplay animations.
+
+    Defines the interface for animations that update over time,
+    can optionally block gameplay, and render visual effects.
+    """
     blocking: bool = False
 
     @abstractmethod
     def update(self, dt: float) -> None:
+        """Advances the animation by dt seconds."""
         pass
 
     @property
     @abstractmethod
     def finished(self) -> bool:
+        """Returns whether the animation has completed."""
         pass
 
     @abstractmethod
     def on_finish(self) -> None:
+        """Performs cleanup after the animation finishes."""
         pass
 
     @abstractmethod
     def draw(self, renderer: Renderer) -> None:
+        """Draws the animation using the given Renderer."""
         pass
 
 
 class ExplosionParticle:
+    """Represents a single particle in Pac-Man's death explosion."""
     __slots__ = ("dx", "dy", "vx", "vy", "size", "color")
 
     def __init__(self) -> None:
+        """Initializes the particle with a random direction and speed."""
         angle = random.uniform(0, math.tau)
         speed = random.uniform(1.0, 3.5)  # grid cells per second
         self.dx = 0.0
@@ -55,11 +66,13 @@ class ExplosionParticle:
 
 
 class PacmanDeathAnimation(Animation):
+    """Animates Pac-Man's death and explosion sequence."""
     blocking = True
 
     def __init__(self, pacman: Pacman, death_coord: Tuple[float, float],
                  ghosts: List[Ghost], on_finish: Any,
                  explosion_time: float = 1.5):
+        """Initializes the death animation and explosion effect."""
         self.pacman = pacman
         self.ghosts = ghosts
         self.death_coord = death_coord
@@ -73,6 +86,7 @@ class PacmanDeathAnimation(Animation):
         self._on_finish = on_finish
 
     def update(self, dt: float) -> None:
+        """Advances the animation and updates explosion particles."""
         for ghost in self.ghosts:
             ghost.alpha = 0.0
         if self.timer > 0:
@@ -93,15 +107,18 @@ class PacmanDeathAnimation(Animation):
 
     @property
     def finished(self) -> bool:
+        """Returns whether the animation has completed."""
         return self._exploded and self.explosion_timer <= 0
 
     def on_finish(self) -> None:
+        """Restores the game state after the animation finishes."""
         self.pacman.death_phase = 0.0
         for ghost in self.ghosts:
             ghost.alpha = 1.0
         self._on_finish()
 
     def draw(self, renderer: Renderer) -> None:
+        """Draws the death animation and explosion particles."""
         if not self._exploded:
             renderer.draw_pacman_death(
                 self.death_coord[0],
@@ -113,6 +130,7 @@ class PacmanDeathAnimation(Animation):
 
 
 class GhostDeathAnimation(Animation):
+    """Animates a defeated ghost and its awarded score."""
     blocking = False
 
     def __init__(
@@ -120,6 +138,7 @@ class GhostDeathAnimation(Animation):
             ghost: Ghost,
             death_coord: Tuple[float, float],
             points_per_ghost: int) -> None:
+        """Initializes the ghost death animation."""
         self.ghost = replace(ghost)
         self.death_coord = death_coord
         self.ghost.x = self.death_coord[0]
@@ -132,6 +151,7 @@ class GhostDeathAnimation(Animation):
         self.scores_speed = 1.0
 
     def update(self, dt: float) -> None:
+        """Advances the animation and moves the score display."""
         self.timer -= dt
         progress = min(1.0, 1.0 - self.timer / self.total)
         self.ghost.alpha = 1.0 - progress
@@ -139,12 +159,15 @@ class GhostDeathAnimation(Animation):
 
     @property
     def finished(self) -> bool:
+        """Returns whether the animation has completed."""
         return self.timer <= 0
 
     def on_finish(self) -> None:
+        """Restores the ghost's visual state."""
         self.ghost.alpha = 1.0
 
     def draw(self, renderer: Renderer) -> None:
+        """Draws the ghost and its score bonus."""
         renderer.draw_ghost(self.ghost)
         renderer.draw_scores(
             f"+{self.points_per_ghost}",
@@ -152,10 +175,12 @@ class GhostDeathAnimation(Animation):
 
 
 class GameOverAnimation(Animation):
+    """Displays the animated Game Over screen."""
     blocking = True
 
     def __init__(self, on_finish: Any, grow_time: float = 0.8,
                  hold_time: float = 1.5) -> None:
+        """Initializes the Game Over animation."""
         self.grow_time = grow_time
         self.hold_time = hold_time
         self.total = grow_time + hold_time
@@ -165,6 +190,7 @@ class GameOverAnimation(Animation):
         self._on_finish = on_finish
 
     def update(self, dt: float) -> None:
+        """Advances the animation."""
         self.elapsed += dt
         progress = min(1.0, self.elapsed / self.grow_time)
         self.scale = progress
@@ -172,21 +198,26 @@ class GameOverAnimation(Animation):
 
     @property
     def finished(self) -> bool:
+        """Returns whether the animation has completed."""
         return self.elapsed >= self.total
 
     def on_finish(self) -> None:
+        """Performs the configured action after the animation ends."""
         self._on_finish()
 
     def draw(self, renderer: Renderer) -> None:
+        """Draws the Game Over animation."""
         renderer.apply_blur()
         renderer.draw_game_over_text(self.scale, self.alpha)
 
 
 class ConfettiParticle:
+    """Represents a single confetti particle used in the victory animation."""
     __slots__ = ("x", "y", "vx", "vy", "size",
                  "color", "rotation", "rot_speed")
 
     def __init__(self, x: float, y: float) -> None:
+        """Initializes the particle with random motion and appearance."""
         angle = random.uniform(0, math.tau)
         speed = random.uniform(150, 400)
         self.x = x
@@ -202,6 +233,7 @@ class ConfettiParticle:
 
 
 class VictoryAnimation(Animation):
+    """Displays the victory animation with confetti effects."""
     blocking = True
 
     GRAVITY = 500
@@ -210,6 +242,7 @@ class VictoryAnimation(Animation):
                  on_finish: Any, grow_time: float = 0.6,
                  hold_time: float = 2.5,
                  particle_count: int = 120) -> None:
+        """Initializes the victory animation."""
         self.grow_time = grow_time
         self.hold_time = hold_time
         self.total = grow_time + hold_time
@@ -224,6 +257,7 @@ class VictoryAnimation(Animation):
             particle_count)]
 
     def update(self, dt: float) -> None:
+        """Advances the animation and updates the confetti particles."""
         self.elapsed += dt
         progress = min(1.0, self.elapsed / self.grow_time)
         self.scale = progress
@@ -237,21 +271,26 @@ class VictoryAnimation(Animation):
 
     @property
     def finished(self) -> bool:
+        """Returns whether the animation has completed."""
         return self.elapsed >= self.total
 
     def on_finish(self) -> None:
+        """Performs the configured action after the animation ends."""
         self._on_finish()
 
     def draw(self, renderer: Renderer) -> None:
+        """Draws the victory animation."""
         renderer.draw_confetti(self.particles)
         renderer.draw_victory_text(self.scale, self.alpha)
 
 
 class GameStartAnimation(Animation):
+    """Displays the countdown before gameplay begins."""
     blocking = True
 
     def __init__(self, grow_time: float = 0.6, hold_time: float = 0.4,
                  texts: tuple[str, ...] = ("3", "2", "1")):
+        """Initializes the countdown animation."""
         self.texts = texts
         self.grow_time = grow_time
         self.hold_time = hold_time
@@ -263,6 +302,7 @@ class GameStartAnimation(Animation):
         self.current_text = texts[0]
 
     def update(self, dt: float) -> None:
+        """Advances the countdown animation."""
         self.elapsed += dt
 
         index = min(int(
@@ -276,20 +316,25 @@ class GameStartAnimation(Animation):
 
     @property
     def finished(self) -> bool:
+        """Returns whether the countdown has completed."""
         return self.elapsed >= self.total
 
     def on_finish(self) -> None:
+        """Performs cleanup after the countdown finishes."""
         pass
 
     def draw(self, renderer: Renderer) -> None:
+        """Draws the current countdown value."""
         renderer.draw_start(self.scale, self.current_text)
 
 
 class LevelUpAnimation(Animation):
+    """Displays the level transition animation."""
     blocking = True
 
     def __init__(self, current_level: int, on_finish: Callable,
                  grow_time: float = 0.6, hold_time: float = 1.2):
+        """Initializes the level-up animation."""
         self.grow_time = grow_time
         self.hold_time = hold_time
         self.total = grow_time + hold_time
@@ -300,6 +345,7 @@ class LevelUpAnimation(Animation):
         self._on_finish = on_finish
 
     def update(self, dt: float) -> None:
+        """Advances the level-up animation."""
         self.elapsed += dt
         progress = min(1.0, self.elapsed / self.grow_time)
         self.scale = progress
@@ -307,24 +353,31 @@ class LevelUpAnimation(Animation):
 
     @property
     def finished(self) -> bool:
+        """Returns whether the animation has completed."""
         return self.elapsed >= self.total
 
     def on_finish(self) -> None:
+        """Performs the configured action after the animation ends."""
         self._on_finish()
 
     def draw(self, renderer: Renderer) -> None:
+        """Draws the level-up animation."""
         renderer.apply_blur()
         renderer.draw_level_up_text(self.scale, self.level_text, self.alpha)
 
 
 class AnimationManager:
+    """Manages all active gameplay animations."""
     def __init__(self) -> None:
+        """Initializes an empty animation manager."""
         self._animations: List[Animation] = []
 
     def add(self, animation: Animation) -> None:
+        """Adds an animation to the active animation list."""
         self._animations.append(animation)
 
     def update(self, dt: float) -> None:
+        """Updates all active animations and removes completed ones."""
         alive = []
 
         for animation in self._animations:
@@ -337,17 +390,28 @@ class AnimationManager:
         self._animations = alive
 
     def has_blocking(self) -> bool:
+        """Returns whether any active animation blocks gameplay."""
         return any([a.blocking for a in self._animations])
 
     def draw(self, render: Renderer) -> None:
+        """Draws all active animations."""
         for animation in self._animations:
             animation.draw(render)
 
 
 class GameScene(Scene):
+    """Primary gameplay scene.
+
+    Runs the game loop, processes player input, updates the game
+    state, manages animations and audio, and renders the current
+    game world. It also handles game events and transitions to
+    pause, final, or main menu scenes when appropriate.
+    """
     def __init__(self,
                  state: GameState,
                  logic: GameLogic, prev_scene: Scene) -> None:
+        """Initializes the gameplay scene with the current game
+        state, game logic, animations, and audio resources."""
         super().__init__()
         self.logic = logic
         self.state = state
@@ -378,6 +442,12 @@ class GameScene(Scene):
         self.intro_playing = True
 
     def update(self, dt: float) -> None:
+        """Advances the game by dt seconds.
+
+        Processes game events, updates animations, manages audio
+        playback, and updates the game state while no blocking
+        animation is active.
+        """
         self._process_events()
         self.anim_manager.update(dt)
 
@@ -417,6 +487,11 @@ class GameScene(Scene):
         self.siren_playing = False
 
     def handle_event(self, event: InputEvent) -> None:
+        """Handles player input.
+
+        Updates Pac-Man's movement direction, pauses or exits the
+        game, and processes cheat-mode key presses.
+        """
         if event.type == "quit":
             return
         if event.type == "keydown":
@@ -444,10 +519,16 @@ class GameScene(Scene):
                 self.logic.activate_cheat_mode(self.state, event.key)
 
     def render(self, renderer: Renderer) -> None:
+        """Draws the current game state and all active animations."""
         renderer.draw(self.state)
         self.anim_manager.draw(renderer)
 
     def _process_events(self) -> None:
+        """Processes queued game events.
+
+        Plays sounds, starts animations, and performs scene
+        transitions in response to gameplay events such as deaths,
+        level completion, victory, or game over."""
         for event in self.state.events:
             if isinstance(event, GumEatenEvent):
                 self.sound_pacman_munch.play()
