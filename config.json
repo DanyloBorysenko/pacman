@@ -1,0 +1,19 @@
+# --- Pac-Man System Configurations ---
+// Lines starting with hashtags are completely ignored by the parser hook.
+{
+    "high_score_filename": "scoreboard.json",
+    "maze_width": 16,
+    "maze_height": 12,
+    "points_per_pacgum": 10,
+    "lives": 2,
+    "pacgum": 50,
+    "points_per_super_pacgum": 50,
+    "points_per_ghost": 200,
+    "ghost_edible_time": 5.0,
+    "ghost_reappear_time": 5.0,
+    "seed": 42,
+    "level_max_time": 90.0,
+    "max_level": 10,
+    "pacman_speed": 4.0,
+    "ghost_speed": 3.5
+}

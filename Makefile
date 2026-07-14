@@ -11,7 +11,7 @@ install: .venv/.installed
 	@touch $@
 
 run: .venv/.installed
-	$(PY) $(PACMAN) config.txt
+	$(PY) $(PACMAN) config.json
 
 debug: .venv/.installed
 	$(PY) -m $(DEB) $(PACMAN)
@@ -19,6 +19,7 @@ debug: .venv/.installed
 clean: .venv/.installed
 	find . -type d -name "__pycache__" -exec rm -rf {} +
 	find . -type d -name ".mypy_cache" -exec rm -rf {} +
+	find . -type d -name ".pytest_cache" -exec rm -rf {} +
 
 fclean: clean
 	rm -rf .venv

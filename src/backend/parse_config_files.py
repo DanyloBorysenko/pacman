@@ -1,16 +1,17 @@
 import os
+import json
 from typing import Dict, Any
 
 
 def parse_game_config(file_path: str) -> Dict[str, Any]:
     """
-    Parses configuration values from a plaintext file,
-    skipping lines starting with '#'.
+    Parses configuration values from a JSON file.
+    Supports comments starting with '#' and '//' by preprocessing the file.
 
-    :param file_path: Path to the configuration text file.
+    :param file_path: Path to the configuration JSON file.
     :return: A dictionary containing the parsed configurations.
     """
-    # Define default configurations as our baseline
+    # 1. Define default configurations as our baseline
     config_data: Dict[str, Any] = {
         "high_score_filename": "scoreboard.json",
         "maze_width": 15,
@@ -30,51 +31,59 @@ def parse_game_config(file_path: str) -> Dict[str, Any]:
     }
 
     if not os.path.exists(file_path):
-        print(f"[Config Warning]: '{file_path}' not found."
+        print(f"[Config Warning]: '{file_path}' not found. "
               "Using default internal settings.")
         return config_data
 
     try:
-        with open(file_path, 'r') as file:
-            for line_num, line in enumerate(file, 1):
+        clean_lines = []
+        with open(file_path, 'r', encoding='utf-8') as file:
+            for line in file:
                 clean_line = line.strip()
 
-                if not clean_line or clean_line.startswith('#'):
+                if not clean_line or clean_line.startswith('#') or\
+                        clean_line.startswith('//'):
                     continue
 
-                # Ensure the line follows a clear key=value structure
-                if '=' not in clean_line:
-                    print(f"[Config Syntax Error] Line {line_num}: "
-                          "Missing '=' delimiter. Skipping line.")
-                    continue
+                clean_lines.append(clean_line)
 
-                key, val = clean_line.split('=', 1)
-                key = key.strip()
-                val = val.strip()
+        json_string = "".join(clean_lines)
 
-                if key not in config_data:
-                    print(f"[Config Warning] Line {line_num}: Unknown "
-                          "configuration key '{key}'. Skipping.")
-                    continue
+        if not json_string:
+            print("[Config Warning]: Configuration file is empty. "
+                  "Using defaults.")
+            return config_data
+
+        parsed_json = json.loads(json_string)
+
+        for key, value in parsed_json.items():
+            if key in config_data:
+                expected_type = type(config_data[key])
 
                 try:
-                    if key == "high_score_filename":
-                        config_data[key] = val
-                    elif key in ["ghost_edible_time",
-                                 "ghost_reappear_time",
-                                 "level_max_time",
-                                 "pacman_speed",
-                                 "ghost_speed"]:
-                        config_data[key] = float(val)
+                    if expected_type is float and isinstance(
+                            value, (int, float)):
+                        config_data[key] = float(value)
+                    elif isinstance(value, expected_type):
+                        config_data[key] = value
                     else:
-                        config_data[key] = int(val)
-                except ValueError:
-                    print(f"[Config Type Error] Line {line_num}: "
-                          "Invalid value '{val}' for key '{key}'. "
-                          "Retaining default.")
+                        print(f"[Config Type Warning]: Key '{key}' "
+                              f"expects type {expected_type.__name__}, "
+                              f"but got {type(value).__name__}. "
+                              "Retaining default.")
+                except (ValueError, TypeError):
+                    print(f"[Config Type Error]: Could not convert value "
+                          f"'{value}' to key '{key}' "
+                          f"expected type. Retaining default.")
+            else:
+                print(f"[Config Warning]: Unknown configuration key '{key}' "
+                      "found in file. Skipping.")
 
+    except json.JSONDecodeError as e:
+        print(f"[Config Syntax Error]: Failed to parse JSON configuration"
+              f"file. Details: {e}. Falling back to default settings.")
     except IOError as e:
-        print(f"[Config Critical Error]: Failed to read "
-              f"file from disk. Details: {e}")
+        print(f"[Config Critical Error]: Failed to read file from disk. "
+              f"Details: {e}. Falling back to default settings.")
 
     return config_data
