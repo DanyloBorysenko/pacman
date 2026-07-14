@@ -5,7 +5,7 @@
     "maze_width": 16,
     "maze_height": 12,
     "points_per_pacgum": 10,
-    "lives": 2,
+    "lives": 3,
     "pacgum": 50,
     "points_per_super_pacgum": 50,
     "points_per_ghost": 200,
