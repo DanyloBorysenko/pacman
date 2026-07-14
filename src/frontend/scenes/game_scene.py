@@ -404,17 +404,6 @@ class GameScene(Scene):
         if not self.anim_manager.has_blocking():
             self.state.pacman.mouth_phase += dt * 8
             self.logic.update(self.state, dt)
-            # if self.state.live_status.current_score > 20 and\
-            #     self.counter == 0:
-            #     # self.state.events.append(
-            # GameOverEvent(self.state.live_status.current_score))
-            #     # self.state.events.append(
-            # VictoryEvent(self.state.live_status.current_score))
-            #     self.state.events.append(
-            # PacmanDiedEvent(self.state.pacman))
-            #     # self.state.events.append(
-            # GhostEatenEvent(self.state.ghosts.pop(0)))
-            #     self.counter += 1
             self._process_events()
 
     def start_audio(self) -> None:
@@ -457,9 +446,34 @@ class GameScene(Scene):
                 self.logic.activate_cheat_mode(self.state, event.key)
             if event.key == "f":
                 self.logic.activate_cheat_mode(self.state, event.key)
+        elif event.type in [pygame.FINGERDOWN, pygame.MOUSEBUTTONDOWN]:
+            # Convert normalized finger position to actual pixels if needed
+            if hasattr(event, "x") and hasattr(event, "y"):
+                touch_pos = (event.x * WINDOW_WIDTH, event.y * WINDOW_HEIGHT)
+            else:
+                touch_pos = event.pos  # Fallback for local mouse click testing
+
+            # 1. Map D-Pad Directions to the Physics Engine
+            if self.touch_up.collidepoint(touch_pos):
+                self.logic.update_direction(self.state, Direction.UP)
+            elif self.touch_down.collidepoint(touch_pos):
+                self.logic.update_direction(self.state, Direction.DOWN)
+            elif self.touch_left.collidepoint(touch_pos):
+                self.logic.update_direction(self.state, Direction.LEFT)
+            elif self.touch_right.collidepoint(touch_pos):
+                self.logic.update_direction(self.state, Direction.RIGHT)
+
+            # Action Button Routing
+            elif self.touch_enter.collidepoint(touch_pos):
+                self.switch_to(PauseScene(self, self.main_menu))
+            # Back Button Routing (Clean Exit to Main Menu)
+            elif self.touch_back.collidepoint(touch_pos):
+                self.stop_audio()
+                self.switch_to(self.main_menu)
 
     def render(self, renderer: Renderer) -> None:
         renderer.draw(self.state)
+        renderer.draw_mobile_controls(renderer.surface)
         self.anim_manager.draw(renderer)
 
     def _process_events(self) -> None:
