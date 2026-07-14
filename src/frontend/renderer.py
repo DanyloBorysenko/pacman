@@ -147,10 +147,6 @@ class Renderer:
             ("\u2190 / A    Move Left",      INSTRUCTION_COLOR),
             ("\u2192 / D    Move Right",     INSTRUCTION_COLOR),
             ("Space      Pause",             INSTRUCTION_COLOR),
-            ("I         Invincibility",      INSTRUCTION_COLOR),
-            ("L         Skip level",         INSTRUCTION_COLOR),
-            ("F         Ghost freeze",       INSTRUCTION_COLOR),
-            ("E         Extra life",         INSTRUCTION_COLOR),
             blank,
             ("Pacgums",                      ACCENT),
             (f"\u2022 Pacgum          +{config.points_per_pacgum} pts",
@@ -182,10 +178,6 @@ class Renderer:
             ("\u2022 Run away when edible",          INSTRUCTION_COLOR),
             (f"\u2022 Respawn after {config.ghost_reappear_time} sec",
                 INSTRUCTION_COLOR),
-            blank,
-            ("Cheat Mode",                           ACCENT),
-            ("\u2022 Invincibility",                 INSTRUCTION_COLOR),
-            ("\u2022 Level Skip",                    INSTRUCTION_COLOR),
             blank,
             ("Winning",                      ACCENT),
             (f"\u2022 Complete {config.max_level} levels", INSTRUCTION_COLOR),
@@ -447,10 +439,7 @@ class Renderer:
         items = [
             f"Score:  {stats.current_score}",
             f"Level:  {stats.current_level}",
-            f"Lives:  {stats.lives_remain}",
-            f"Invincibility: {'On' if (
-                self.state.cheat_invincibility) else 'Off'}",
-            f"Ghost freeze: {'On' if self.state.cheat_freeze else 'Off'}"
+            f"Lives:  {stats.lives_remain}"
         ]
         start_y = center_y - ((len(items) - 1) * spacing) // 2
 
