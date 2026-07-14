@@ -198,6 +198,19 @@ Key relationships:
 - Ghost behavior is pluggable via the `GhostMovementStrategy` interface, letting each ghost carry an independent strategy instance without the collision/lifecycle code needing to know which one.
 - `GameScene` is the bridge between the two layers: it calls into the backend each frame, then reacts to whatever `GameEvent`s came out of that call to decide what to render/play next.
 
+## Project Management
+
+The project was driven with a lightweight, document-based process rather than an external PM tool: milestones, decisions, and issues were tracked directly as markdown files, one topic per file, alongside the code they document. All of it lives in the dedicated [project_menagement/](project_menagement/) subdirectory:
+
+| Document | Contents |
+|----------|----------|
+| [TIMELINE.md](project_menagement/TIMELINE.md) | Planned vs. actual completion per milestone, with deviations noted. |
+| [TEAM_ORGANIZATION.md](project_menagement/TEAM_ORGANIZATION.md) | Who worked on what, how decisions were made, how blocking points were handled. |
+| [ARCHITECTURAL_CHOICES.md](project_menagement/ARCHITECTURAL_CHOICES.md) | Key design decisions and the reasoning behind them. |
+| [RISK_ANALYSIS.md](project_menagement/RISK_ANALYSIS.md) | Identified risks and their mitigations. |
+| [TEST_PLAN.md](project_menagement/TEST_PLAN.md) | Feature acceptance test cases and pass/fail results. |
+| [BLOCKING_POINTS.md](project_menagement/BLOCKING_POINTS.md) | Chronological log of blocking points and merge conflicts, with evidence from commit history. |
+
 ## Resources
 
 - [Pygame Community Edition (pygame-ce) documentation](https://pyga.me/docs/) — rendering, event, audio, and sprite APIs used throughout `src/frontend/`.
