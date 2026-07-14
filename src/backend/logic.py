@@ -1,3 +1,5 @@
+"""Top-level facade tying the maze generator, config, score board,
+and per-frame simulation together."""
 from typing import List
 import numpy as np
 from ..state import (
@@ -11,13 +13,17 @@ from .ghost_movement_logic import PseudoRandomMovement
 
 
 class GameLogic:
+    """Facade used by the frontend to create and advance a game."""
+
     def __init__(self, generator: MazeGenerator, config: GameConfig):
+        """Store the maze generator, config, and open the score board."""
         self.generator = generator
         self.maze = generator.maze
         self.config = config
         self.score_board = ScoreBoardHandler(config.high_score_filename)
 
     def create_default_state(self) -> GameState:
+        """Build and initialize a fresh GameState for a new game."""
         state = GameState(
             maze=np.array(self.maze),
             pacman=Pacman(0, 0),
@@ -30,6 +36,7 @@ class GameLogic:
         return state
 
     def _initialize_ghost(self) -> List[Ghost]:
+        """Create the four ghosts with distinct chase probabilities."""
         return [
             Ghost(colour="red", strategy=PseudoRandomMovement(0.95),
                   initial_colour="red"),
@@ -42,6 +49,7 @@ class GameLogic:
         ]
 
     def update(self, state: GameState, dt: float) -> None:
+        """Advance the whole simulation by one frame."""
         pacman = state.pacman
         if pacman.direction is None:
             pacman.direction = Direction.UP
@@ -53,6 +61,7 @@ class GameLogic:
         self.game_manager.check_collisions()
 
     def update_direction(self, state: GameState, direction: Direction) -> None:
+        """Set Pac-Man's requested direction from player input."""
         # print(f"pacman direction before: {state.pacman.direction}")
         if direction is None:
             direction = Direction.UP
@@ -62,6 +71,7 @@ class GameLogic:
     #     state.paused = not state.paused
 
     def activate_cheat_mode(self, state: GameState, key: str) -> None:
+        """Toggle/apply the debug cheat bound to the given key."""
         if key == "i":
             state.cheat_invincibility = not state.cheat_invincibility
             print(f"[CHEAT] Invincibility is now: {state.cheat_invincibility}")

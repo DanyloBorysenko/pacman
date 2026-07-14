@@ -1,10 +1,14 @@
+"""Persists and validates the JSON highscore leaderboard."""
 import json
 import os
 from typing import List, Dict, Any
 
 
 class ScoreBoardHandler:
+    """Loads, queries, and persists the highscore leaderboard."""
+
     def __init__(self, path: str) -> None:
+        """Load the leaderboard from the given JSON file path."""
         self.file_path = path
         self.top_scores: List[Dict[str, Any]] = []
         self.load_top_players()
@@ -26,6 +30,7 @@ class ScoreBoardHandler:
             self.top_scores = []
 
     def get_player_list(self, top_ten: bool) -> List[Dict[str, Any]]:
+        """Return the top 10 entries, or the full leaderboard."""
         if len(self.top_scores) == 0:
             self.load_top_players()
         return self.top_scores[:10] \

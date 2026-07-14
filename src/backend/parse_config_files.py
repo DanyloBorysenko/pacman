@@ -1,3 +1,4 @@
+"""Loads and validates the game's comment-tolerant JSON config file."""
 import os
 import json
 from typing import Dict, Any

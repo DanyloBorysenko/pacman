@@ -1,3 +1,4 @@
+"""Per-frame orchestrator that advances the game simulation."""
 import math
 from ..state import GameState, Direction
 from .game_physics import PacmanMovementController, GhostMovementController
@@ -9,7 +10,11 @@ from .game_actions import (
 
 
 class GameStateManager:
+    """Composes movement controllers, timers, and actions into one
+    per-frame update pipeline."""
+
     def __init__(self, game_state: GameState):
+        """Wire up the movement/lifecycle controllers and game actions."""
         self.game_state = game_state
         self.pacman_ctrl = PacmanMovementController(game_state)
         self.ghost_ctrl = GhostMovementController(game_state)
@@ -22,6 +27,7 @@ class GameStateManager:
         self.player_death_action = PlayerDeathAction()
 
     def update_remaining_time(self, dt: float) -> None:
+        """Tick the level clock down, costing a life if it runs out."""
         self.game_state.live_status.time_left -= dt
         if self.game_state.live_status.time_left <= 0:
             self.player_death_action.execute(self.game_state)

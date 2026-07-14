@@ -1,15 +1,20 @@
+"""Populates a raw maze with pacgums, ghosts, and Pac-Man's spawn point."""
 import numpy as np
 from typing import Tuple
 from ..state import GameState, BitMaps, GameStats
 
 
 class GameInitializer:
+    """Sets up (or resets) a level's maze content and entity placement."""
+
     def __init__(self, game_state: GameState):
+        """Store the game state, ensuring its maze is a numpy array."""
         self.game_state = game_state
         if not isinstance(self.game_state.maze, np.ndarray):
             self.game_state.maze = np.array(self.game_state.maze)
 
     def initialize(self) -> None:
+        """Populate the maze and reset live stats for a fresh game."""
         self._get_valid_center_and_corners()
         self._place_pacgums()
         self._place_super_pacgums()
@@ -22,6 +27,7 @@ class GameInitializer:
             ghost_curr_speed=self.game_state.config.ghost_speed)
 
     def reload_new_level_map(self, game_state: GameState) -> None:
+        """Generate a fresh maze and re-populate it for the next level."""
         from mazegenerator.mazegenerator import MazeGenerator
         generator = MazeGenerator(
             size=(self.game_state.config.maze_width,
@@ -38,6 +44,7 @@ class GameInitializer:
             self.game_state.config.level_max_time
 
     def _get_valid_center_and_corners(self) -> None:
+        """Cache the maze's four corners and its nearest open center tile."""
         self.corners = [
             (0, 0),
             (0, self.game_state.maze.shape[1] - 1),
@@ -48,6 +55,7 @@ class GameInitializer:
         self.valid_center = self.find_valid_center(self.game_state.maze)
 
     def _place_pacgums(self) -> None:
+        """Scatter regular pacgums across open corridor cells."""
         total_pacgums = self.game_state.config.pacgum
         is_valid_corridors = (self.game_state.maze & BitMaps.WALL_MASK) < 15
 
@@ -66,11 +74,13 @@ class GameInitializer:
             BitMaps.PACGUM
 
     def _place_super_pacgums(self) -> None:
+        """Force each of the four maze corners to hold a super pacgum."""
         for y, x in self.corners:
             self.game_state.maze[y, x] &= ~BitMaps.PACGUM
             self.game_state.maze[y, x] |= BitMaps.SUPER_PACGUM
 
     def _place_ghosts(self) -> None:
+        """Assign each of the four ghosts to one maze corner as its home."""
         self.game_state.ghosts[0].y, self.game_state.ghosts[0].x = 0, 0
         self.game_state.ghosts[1].y, self.game_state.ghosts[1].x =\
             0, self.game_state.maze.shape[1] - 1
@@ -90,6 +100,7 @@ class GameInitializer:
             self.game_state.maze.shape[1] - 1
 
     def _place_pacman(self) -> None:
+        """Spawn Pac-Man at the maze's valid center tile."""
         self.game_state.pacman.y, self.game_state.pacman.x =\
             self.valid_center[0], self.valid_center[1]
         self.game_state.pacman.start_x = self.valid_center[1]
@@ -97,6 +108,7 @@ class GameInitializer:
 
     @staticmethod
     def find_valid_center(maze: np.ndarray) -> Tuple[int, int]:
+        """Find the open corridor tile nearest to the maze's geometric center."""
         height, width = maze.shape
 
         ideal_y = height // 2

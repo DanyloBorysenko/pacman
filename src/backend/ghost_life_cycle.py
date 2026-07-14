@@ -1,3 +1,4 @@
+"""Ghost edible/respawn timer bookkeeping."""
 from ..state import GameState
 
 

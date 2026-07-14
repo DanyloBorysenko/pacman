@@ -1,3 +1,4 @@
+"""Pluggable ghost AI strategies (Strategy pattern)."""
 from abc import ABC, abstractmethod
 import numpy as np
 from typing import Tuple, List
@@ -17,6 +18,7 @@ class GhostMovementStrategy(ABC):
             current_dir: Tuple[int, int] = (0, 0),
             ghost_edible: bool = False
             ) -> Tuple[int, int]:
+        """Return the (dx, dy) direction this ghost should move next."""
         pass
 
     def _get_valid_directions(self, current_pos: Tuple[int, int],
@@ -69,6 +71,7 @@ class RandomMovement(GhostMovementStrategy):
             current_dir: Tuple[int, int] = (0, 0),
             ghost_edible: bool = False
             ) -> Tuple[int, int]:
+        """Pick a uniformly random valid direction."""
         valid_moves = self._get_valid_directions(current_pos, maze)
         return random.choice(valid_moves)
 
@@ -84,6 +87,8 @@ class DirectionalMovement(GhostMovementStrategy):
             current_dir: Tuple[int, int] = (0, 0),
             ghost_edible: bool = False
             ) -> Tuple[int, int]:
+        """Pick the valid direction that gets closest to (or, when
+        edible, farthest from) Pac-Man."""
         valid_moves = self._get_valid_directions(
             current_pos, maze, current_dir)
         y, x = current_pos
@@ -116,6 +121,7 @@ class PseudoRandomMovement(GhostMovementStrategy):
     takes a random turn."""
 
     def __init__(self, chase_probability: float = 0.7):
+        """Store the odds of chasing vs. moving randomly at each junction."""
         self.chase_probability = chase_probability
         self._chaser = DirectionalMovement()
         self._randomizer = RandomMovement()
@@ -127,6 +133,7 @@ class PseudoRandomMovement(GhostMovementStrategy):
             current_dir: Tuple[int, int] = (0, 0),
             ghost_edible: bool = False
             ) -> Tuple[int, int]:
+        """Roll chase_probability to delegate to the chaser or randomizer."""
         # Generate a seed value between 0.0 and 1.0
         if random.random() < self.chase_probability:
             return self._chaser.get_next_move(

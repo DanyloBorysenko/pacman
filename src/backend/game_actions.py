@@ -1,3 +1,4 @@
+"""Command-style rule actions applied to the game state."""
 from abc import ABC, abstractmethod
 from typing import Any
 import numpy as np
@@ -10,14 +11,19 @@ from ..state import (
 
 
 class GameAction(ABC):
+    """Base class for a single, isolated rule change on the game state."""
+
     @abstractmethod
     def execute(self, state: GameState, **kwargs: Any) -> None:
-        """Process a isolated rule change on the game state."""
+        """Apply this action's rule change to the given state."""
         pass
 
 
 class ConsumeItemsAction(GameAction):
+    """Handles Pac-Man eating a pacgum, super pacgum, or cherry."""
+
     def execute(self, state: GameState, **kwargs: Any) -> None:
+        """Award points/effects for whatever item is on Pac-Man's tile."""
         pacman = state.pacman
 
         y, x = int(pacman.y), int(pacman.x)
@@ -52,12 +58,16 @@ class ConsumeItemsAction(GameAction):
 
 
 class CheckLevelClearAction(GameAction):
+    """Detects when no pacgums remain and advances the level."""
+
     def execute(self, state: GameState, **kwargs: Any) -> None:
+        """Trigger level advancement once all pacgums are eaten."""
         if np.any(state.maze & (BitMaps.SUPER_PACGUM | BitMaps.PACGUM)):
             return
         self.advance_to_next_level(state)
 
     def advance_to_next_level(self, state: GameState) -> None:
+        """Move to the next level, or emit victory if at max_level."""
         if state.live_status.current_level == state.config.max_level:
             state.events.append(
                 VictoryEvent(state.live_status.current_score))
@@ -81,6 +91,7 @@ class CheckLevelClearAction(GameAction):
             self._reset_ghost_state(ghost)
 
     def _reset_ghost_state(self, ghost: Ghost) -> None:
+        """Return a ghost to its home tile with default state/colour."""
         ghost.x, ghost.y = float(ghost.home_x), float(ghost.home_y)
         ghost.xd, ghost.yd = -1, -1
         ghost.assigned_direction = (0, -1)
@@ -92,7 +103,10 @@ class CheckLevelClearAction(GameAction):
 
 
 class PlayerDeathAction(GameAction):
+    """Handles Pac-Man losing a life: respawn, or game over."""
+
     def execute(self, state: GameState, **kwargs: Any) -> None:
+        """Decrement lives and respawn, or emit game over if none remain."""
         state.live_status.lives_remain -= 1
         if state.live_status.lives_remain >= 0:
             death_coord = (state.pacman.x, state.pacman.y)
@@ -121,7 +135,10 @@ class PlayerDeathAction(GameAction):
 
 
 class GhostEatenAction(GameAction):
+    """Handles Pac-Man eating a frightened ghost."""
+
     def execute(self, state: GameState, **kwargs: Any) -> None:
+        """Award points and send the eaten ghost home to respawn."""
         ghost = kwargs.get("ghost")
         if not ghost:
             return

@@ -1,3 +1,4 @@
+"""Grid-based continuous movement for Pac-Man and ghosts."""
 import math
 from typing import Tuple, Optional
 from ..state import Direction, GameState
@@ -38,7 +39,10 @@ class GridMover:
 
 
 class PacmanMovementController:
+    """Drives Pac-Man's movement and turn handling at junctions."""
+
     def __init__(self, game_state: GameState):
+        """Store a reference to the shared game state."""
         self.game_state = game_state
 
     def update(
@@ -91,6 +95,7 @@ class PacmanMovementController:
         return False, None
 
     def _is_move_allowed(self, direction: Direction) -> bool:
+        """Check whether Pac-Man's current tile is open in that direction."""
         from ..state import BitMaps
         curr_tile = self.game_state.maze[
             int(self.game_state.pacman.y), int(self.game_state.pacman.x)]
@@ -102,10 +107,15 @@ class PacmanMovementController:
 
 
 class GhostMovementController:
+    """Drives movement for every living ghost each frame."""
+
     def __init__(self, game_state: GameState):
+        """Store a reference to the shared game state."""
         self.game_state = game_state
 
     def update(self, dt: float) -> None:
+        """Advance each ghost and ask its strategy for the next move
+        at junctions."""
         if self.game_state.cheat_freeze:
             return
 
