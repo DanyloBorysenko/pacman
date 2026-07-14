@@ -473,7 +473,7 @@ class GameScene(Scene):
 
     def render(self, renderer: Renderer) -> None:
         renderer.draw(self.state)
-        renderer.draw_mobile_controls(renderer.surface)
+        self.draw_mobile_controls(renderer.surface)
         self.anim_manager.draw(renderer)
 
     def _process_events(self) -> None:

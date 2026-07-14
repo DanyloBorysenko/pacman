@@ -20,3 +20,4 @@ class InstructionsScene(Scene):
 
     def render(self, renderer: Renderer) -> None:
         renderer.draw_instructions(self.config)
+        self.draw_mobile_controls(renderer.surface)

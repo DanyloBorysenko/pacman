@@ -8,6 +8,7 @@ from .event import InputEvent
 from ..state import GameAudioFile
 import pygame
 import pygame_textinput
+from typing import Any
 
 
 class Controller:
@@ -54,6 +55,7 @@ class Controller:
             self.text_input.update(raw_events)
         dt = self.clock.tick(60) / 1000
         for event in raw_events:
+            self._check_touch(event)
             if self._should_exit(event):
                 self.running = False
             inp_event = self._to_input_event(event)
@@ -79,6 +81,39 @@ class Controller:
         self.screen.fill("black")
         self.current_scene.render(self.renderer)
         pygame.display.update()
+
+    def _check_touch(self, event: Any) -> None:
+        if event.type in [pygame.FINGERDOWN, pygame.MOUSEBUTTONDOWN]:
+            if hasattr(event, "x") and hasattr(event, "y"):
+                touch_pos = (event.x * WINDOW_WIDTH, event.y * WINDOW_HEIGHT)
+            else:
+                touch_pos = event.pos
+
+            active = self.current_scene
+            virtual_key = None
+
+            if not hasattr(active, "touch_up"):
+                return
+
+            # Translate screen touches directly to standard keyboard signals
+            if active.touch_up.collidepoint(touch_pos):
+                virtual_key = pygame.K_UP
+            elif active.touch_down.collidepoint(touch_pos):
+                virtual_key = pygame.K_DOWN
+            elif active.touch_left.collidepoint(touch_pos):
+                virtual_key = pygame.K_LEFT
+            elif active.touch_right.collidepoint(touch_pos):
+                virtual_key = pygame.K_RIGHT
+            elif active.touch_enter.collidepoint(touch_pos):
+                virtual_key = pygame.K_RETURN  # Maps to Enter
+            elif active.touch_back.collidepoint(touch_pos):
+                virtual_key = pygame.K_ESCAPE  # Maps to Escape
+
+            if virtual_key is not None:
+                # Create a fake Pygame KEYDOWN event
+                fake_event = pygame.event.Event(
+                    pygame.KEYDOWN, key=virtual_key)
+                pygame.event.post(fake_event)
 
     def run(self) -> None:
         self.set_running_status(True)

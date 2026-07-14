@@ -30,3 +30,4 @@ class HighScoresScene(Scene):
 
     def render(self, renderer: Renderer) -> None:
         renderer.draw_highscores(self.scores, self.scroll)
+        self.draw_mobile_controls(renderer.surface)

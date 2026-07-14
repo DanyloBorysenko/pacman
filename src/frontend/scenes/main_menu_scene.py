@@ -48,6 +48,7 @@ class MainMenuScene(Scene):
         for i, player in enumerate(top_players):
             scores.append((i+1, player["name"], player["score"]))
         renderer.draw_top_players(scores)
+        self.draw_mobile_controls(renderer.surface)
 
     def _game_scene(self) -> None:
         state = self.logic.create_default_state()
