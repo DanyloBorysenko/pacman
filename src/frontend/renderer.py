@@ -49,7 +49,8 @@ class Renderer:
         self.surface = surface
         self.menu_font = pygame.font.Font(size=MENU_FONT_SIZE)
         self.title_font = pygame.font.Font(None, 50)
-        self.instruction_font = pygame.font.SysFont("DejaVu Sans", 20)
+        self.instruction_font = pygame.font.Font(
+            "assets/fonts/DejaVuSans.ttf", 20)
         self.start_game_font = pygame.font.Font(size=200)
         self.top_players_tittle_font = pygame.font.Font(
             size=MENU_FONT_SIZE // 2)
