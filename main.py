@@ -21,13 +21,13 @@ async def main() -> None:
     is_wasm = sys.platform == "emscripten"
 
     if is_wasm:
-        config_path = "config.txt"
+        config_path = "config.json"
     else:
         if len(sys.argv) == 1:
-            print("'config.txt' file missing")
+            print("'config.json' file missing")
             return
         if len(sys.argv) > 2:
-            print("Only single 'config.txt' file allowed")
+            print("Only single 'config.json' file allowed")
             return
         config_path = sys.argv[1]
     config_data = parse_game_config(config_path)

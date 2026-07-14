@@ -3,10 +3,10 @@
 {
     "high_score_filename": "scoreboard.json",
     "maze_width": 16,
-    "maze_height": 12,
+    "maze_height": 13,
     "points_per_pacgum": 10,
     "lives": 3,
-    "pacgum": 50,
+    "pacgum": 80,
     "points_per_super_pacgum": 50,
     "points_per_ghost": 200,
     "ghost_edible_time": 5.0,

@@ -450,8 +450,6 @@ class GameScene(Scene):
             # Convert normalized finger position to actual pixels if needed
             if hasattr(event, "x") and hasattr(event, "y"):
                 touch_pos = (event.x * WINDOW_WIDTH, event.y * WINDOW_HEIGHT)
-            else:
-                touch_pos = event.pos  # Fallback for local mouse click testing
 
             # 1. Map D-Pad Directions to the Physics Engine
             if self.touch_up.collidepoint(touch_pos):

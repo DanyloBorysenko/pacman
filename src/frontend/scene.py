@@ -13,8 +13,8 @@ class Scene(ABC):
         self.is_mobile = True  # Toggle for mobile overlays
 
         # Geometry
-        dpad_x, dpad_y = WINDOW_WIDTH - 100, WINDOW_HEIGHT - 100
-        btn_sz = 50
+        dpad_x, dpad_y = WINDOW_WIDTH - 150, WINDOW_HEIGHT - 150
+        btn_sz = 80
         self.touch_up = pygame.Rect(
             dpad_x - btn_sz // 2, dpad_y - btn_sz * 1.5, btn_sz, btn_sz)
         self.touch_down = pygame.Rect(
@@ -23,8 +23,8 @@ class Scene(ABC):
             dpad_x - btn_sz * 1.5, dpad_y - btn_sz // 2, btn_sz, btn_sz)
         self.touch_right = pygame.Rect(
             dpad_x + btn_sz * 0.5, dpad_y - btn_sz // 2, btn_sz, btn_sz)
-        self.touch_enter = pygame.Rect(dpad_x, 20, 70, 40)
-        self.touch_back = pygame.Rect(20, 20, 70, 40)
+        self.touch_enter = pygame.Rect(dpad_x + 30, 10, 100, 60)
+        self.touch_back = pygame.Rect(20, 10, 100, 60)
 
         # Pre-rendered cached surface
         self.controls_overlay = pygame.Surface(
@@ -56,7 +56,7 @@ class Scene(ABC):
 
         font = pygame.font.Font(None, 24)
         for rect, label in [
-            (self.touch_up, "▲"), (self.touch_down, "▼"), 
+            (self.touch_up, "▲"), (self.touch_down, "▼"),
             (self.touch_left, "◀"), (self.touch_right, "▶")
         ]:
             text = font.render(label, True, (255, 255, 255, 180))

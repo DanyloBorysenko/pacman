@@ -108,7 +108,8 @@ class GameInitializer:
 
     @staticmethod
     def find_valid_center(maze: np.ndarray) -> Tuple[int, int]:
-        """Find the open corridor tile nearest to the maze's geometric center."""
+        """Find the open corridor tile nearest to
+        the maze's geometric center."""
         height, width = maze.shape
 
         ideal_y = height // 2

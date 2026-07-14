@@ -61,9 +61,8 @@ class GameStateManager:
         for ghost in self.game_state.ghosts:
             if ghost.is_dead:
                 continue
-            distance = math.sqrt(
-                (pacman.x - ghost.x)**2 + (pacman.y - ghost.y)**2)
-            if distance < 0.5:
+            distance = (pacman.x - ghost.x)**2 + (pacman.y - ghost.y)**2
+            if distance < 0.25:
                 if ghost.is_edible:
                     self.ghost_eaten_action.execute(
                         self.game_state, ghost=ghost)
