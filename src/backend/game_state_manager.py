@@ -1,5 +1,4 @@
 """Per-frame orchestrator that advances the game simulation."""
-import math
 from ..state import GameState, Direction
 from .game_physics import PacmanMovementController, GhostMovementController
 from .ghost_life_cycle import GhostLifecycleManager

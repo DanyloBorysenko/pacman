@@ -178,7 +178,8 @@ class GameOverAnimation(Animation):
     """Displays the animated Game Over screen."""
     blocking = True
 
-    def __init__(self, on_finish: Any, grow_time: float = 0.8,
+    def __init__(self, on_finish: Any,
+                 grow_time: float = 0.8,
                  hold_time: float = 1.5) -> None:
         """Initializes the Game Over animation."""
         self.grow_time = grow_time
@@ -239,7 +240,8 @@ class VictoryAnimation(Animation):
     GRAVITY = 500
 
     def __init__(self,
-                 on_finish: Any, grow_time: float = 0.6,
+                 on_finish: Any,
+                 grow_time: float = 0.6,
                  hold_time: float = 2.5,
                  particle_count: int = 120) -> None:
         """Initializes the victory animation."""
@@ -281,7 +283,8 @@ class VictoryAnimation(Animation):
     def draw(self, renderer: Renderer) -> None:
         """Draws the victory animation."""
         renderer.draw_confetti(self.particles)
-        renderer.draw_victory_text(self.scale, self.alpha)
+        renderer.draw_victory_text(
+            self.scale, self.alpha)
 
 
 class GameStartAnimation(Animation):
@@ -540,7 +543,8 @@ class GameScene(Scene):
 
             # Action Button Routing
             elif self.touch_enter.collidepoint(touch_pos):
-                self.switch_to(PauseScene(self, self.main_menu))
+                self.switch_to(PauseScene(
+                    self, self.main_menu, self.sound_ghost_chasing))
             # Back Button Routing (Clean Exit to Main Menu)
             elif self.touch_back.collidepoint(touch_pos):
                 self.stop_audio()
@@ -599,11 +603,11 @@ class GameScene(Scene):
                 # self.sound_death.play()
                 score = event.final_score
                 self.anim_manager.add(GameOverAnimation(
-                    lambda score=score: self.switch_to(
+                    on_finish=lambda score=score: self.switch_to(
                         FinalScene(self.main_menu, self.logic, score, False))))
             elif isinstance(event, VictoryEvent):
                 score = event.final_score
                 self.anim_manager.add(VictoryAnimation(
-                    lambda score=score: self.switch_to(
+                    on_finish=lambda score=score: self.switch_to(
                         FinalScene(self.main_menu, self.logic, score, True))))
         self.state.events.clear()

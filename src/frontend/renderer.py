@@ -354,7 +354,8 @@ class Renderer:
 
         if scale <= 0.01:
             return
-        base_surf = self.title_font.render("GAME OVER", True, "red")
+        base_surf = self.title_font.render(
+            "GAME OVER", True, "red")
         w, h = base_surf.get_size()
         scaled = pygame.transform.smoothscale(
             base_surf, (max(1, int(w * scale)), max(1, int(h * scale))))
@@ -403,7 +404,8 @@ class Renderer:
 
         if scale <= 0.01:
             return
-        base_surf = self.title_font.render("VICTORY!", True, "lime")
+        base_surf = self.title_font.render(
+            "VICTORY!", True, "lime")
         w, h = base_surf.get_size()
         scaled = pygame.transform.smoothscale(
             base_surf, (max(1, int(w * scale)), max(1, int(h * scale))))

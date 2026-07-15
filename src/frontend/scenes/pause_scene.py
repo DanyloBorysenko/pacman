@@ -1,5 +1,6 @@
 from __future__ import annotations
-from typing import Callable
+# from typing import Callable
+import pygame
 from ..scene import Scene
 from ..event import InputEvent
 from ..renderer import Renderer
@@ -13,7 +14,7 @@ class PauseScene(Scene):
     main menu.
     """
     def __init__(self, prev_scene: Scene, main_menu: Scene,
-                 chasing_sound: Callable) -> None:
+                 chasing_sound: pygame.mixer.Sound) -> None:
         """Initializes the pause menu and its available actions."""
         super().__init__()
         self.prev_scene = prev_scene
@@ -26,7 +27,8 @@ class PauseScene(Scene):
         self.chasing_sound = chasing_sound
 
     def _resume_game(self) -> None:
-        """Centralizes audio resumption rules and returns to the game screen."""
+        """Centralizes audio resumption rules and returns
+        to the game screen."""
         self.chasing_sound.play(loops=-1)
         self.switch_to(self.prev_scene)
 
