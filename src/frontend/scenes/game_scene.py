@@ -478,7 +478,8 @@ class GameScene(Scene):
     def start_audio(self) -> None:
         """Executed automatically via Controller hook when
         entering gameplay."""
-        self.sound_intro.play()
+        if self.intro_playing:
+            self.sound_intro.play()
         # self.sound_ghost_chasing.play(loops=-1)
 
     def stop_audio(self) -> None:
@@ -507,7 +508,9 @@ class GameScene(Scene):
             if event.key == "right" or event.key == "d":
                 self.logic.update_direction(self.state, Direction.RIGHT)
             if event.key == "space":
-                self.switch_to(PauseScene(self, self.main_menu))
+                self.switch_to(PauseScene(
+                    self, self.main_menu,
+                    self.sound_ghost_chasing))
             if event.key == "escape":
                 self.switch_to(self.main_menu)
 

@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import Callable
 from ..scene import Scene
 from ..event import InputEvent
 from ..renderer import Renderer
@@ -11,7 +12,8 @@ class PauseScene(Scene):
     Allows the player to resume the current game or return to the
     main menu.
     """
-    def __init__(self, prev_scene: Scene, main_menu: Scene) -> None:
+    def __init__(self, prev_scene: Scene, main_menu: Scene,
+                 chasing_sound: Callable) -> None:
         """Initializes the pause menu and its available actions."""
         super().__init__()
         self.prev_scene = prev_scene
@@ -21,6 +23,12 @@ class PauseScene(Scene):
             PauseMenu.MAIN_MENU.value
         ]
         self.main_menu = main_menu
+        self.chasing_sound = chasing_sound
+
+    def _resume_game(self) -> None:
+        """Centralizes audio resumption rules and returns to the game screen."""
+        self.chasing_sound.play(loops=-1)
+        self.switch_to(self.prev_scene)
 
     def handle_event(self, event: InputEvent) -> None:
         """Handles menu navigation and option selection.
@@ -30,14 +38,14 @@ class PauseScene(Scene):
         """
         if event.type == "keydown":
             if event.key == "escape" or event.key == "space":
-                self.switch_to(self.prev_scene)
+                self._resume_game()
             if event.key == "up":
                 self.selected = (self.selected - 1) % len(self.items)
             if event.key == "down":
                 self.selected = (self.selected + 1) % len(self.items)
             if event.key == "enter":
                 if self.items[self.selected] == PauseMenu.CONTINUE.value:
-                    self.switch_to(self.prev_scene)
+                    self._resume_game()
                 elif self.items[self.selected] == PauseMenu.MAIN_MENU.value:
                     self.switch_to(self.main_menu)
 
