@@ -12,7 +12,15 @@ from typing import Any
 
 
 class Controller:
+    """Owns the pygame main loop: initializes the window, renderer
+    and audio, translates raw pygame events into InputEvents, and
+    drives the active Scene's handle_event/update/render cycle,
+    swapping scenes as they request via Scene.next_scene."""
+
     def __init__(self, logic: GameLogic):
+        """Sets up pygame, the display window, renderer, key
+        mapping, text input, and background audio, and starts on
+        the MainMenuScene."""
         pygame.init()
         self.events_keys_dict = {
             pygame.K_UP: "up",
@@ -43,7 +51,7 @@ class Controller:
         self.background_sound.set_volume(0.2)
 
     def set_running_status(self, status: bool) -> None:
-        self.running = True
+        self.running = status
 
     def start_background_music(self) -> None:
         self.background_sound.play(loops=-1)
@@ -116,6 +124,10 @@ class Controller:
                 pygame.event.post(fake_event)
 
     def run(self) -> None:
+        """Runs the main game loop until exit: polls events, feeds
+        them to the active scene, updates/renders it each frame,
+        and swaps to the next scene (including audio handoff) when
+        one is queued."""
         self.set_running_status(True)
         self.start_background_music()
         while self.running:
@@ -124,6 +136,8 @@ class Controller:
 
     def _to_input_event(self,
                         pygame_event: pygame.event.Event) -> InputEvent | None:
+        """Converts a raw pygame event into an InputEvent, or None
+        if the event type isn't one the game reacts to."""
         input_event = None
         if pygame_event.type == pygame.QUIT:
             input_event = InputEvent(type="quit", key=None)
@@ -133,6 +147,8 @@ class Controller:
         return input_event
 
     def _should_exit(self, event: pygame.event.Event) -> bool:
+        """Returns True if the game window should close: on a QUIT
+        event, or Escape pressed while on the main menu."""
         if (event.type == pygame.QUIT):
             return True
         if (event.type == pygame.KEYDOWN

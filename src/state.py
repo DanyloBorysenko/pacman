@@ -9,6 +9,7 @@ if TYPE_CHECKING:
 
 
 class GameAudioFile(Enum):
+    """Maps game audio cues to their asset file paths."""
     BACKGROUND = "assets/audio/pacmans-start.ogg"
     INTRO = "assets/audio/pacman_ringtone.ogg"
     PACMAN_MUNCH = "assets/audio/wakka.ogg"
@@ -20,6 +21,9 @@ class GameAudioFile(Enum):
 
 
 class Direction(Enum):
+    """Cardinal movement directions, each stored as an (dx, dy)
+    unit-vector tuple."""
+
     RIGHT = (1, 0)
     DOWN = (0, 1)
     LEFT = (-1, 0)
@@ -27,6 +31,13 @@ class Direction(Enum):
 
 
 class BitMaps(IntEnum):
+    """Bit flags packed into a single maze cell integer.
+
+    NORTH/SOUTH/EAST/WEST mark which walls a cell has, WALL_MASK
+    covers all four wall bits, and PACGUM/SUPER_PACGUM/CHERRY are
+    collectible flags combinable with wall bits via bitwise OR.
+    """
+
     NORTH = 1
     SOUTH = 4
     WEST = 8
@@ -39,6 +50,9 @@ class BitMaps(IntEnum):
 
 @dataclass
 class GameConfig:
+    """Tunable game parameters loaded once per run/level, covering
+    maze size, scoring, timers, and entity speeds."""
+
     high_score_filename: str = "scoreboard.json"
     maze_width: int = 15
     maze_height: int = 20
@@ -58,6 +72,13 @@ class GameConfig:
 
 @dataclass
 class Pacman:
+    """Player entity state.
+
+    x/y are the center coordinate of Pacman. direction is the
+    current facing/movement direction, while assigned_direction
+    tracks the queued turn used for cornering logic.
+    """
+
     # coord for the pacman center
     x: float
     y: float
@@ -73,6 +94,13 @@ class Pacman:
 
 @dataclass
 class Ghost:
+    """Ghost entity state.
+
+    colour/initial_colour distinguish the current display color from
+    the original one, used when toggling edible state. home_x/home_y
+    is the respawn point after being eaten.
+    """
+
     x: float = 0.0
     y: float = 0.0
     xd: int = -1
@@ -92,6 +120,9 @@ class Ghost:
 
 @dataclass
 class GameStats:
+    """Live HUD data: score, level, lives, remaining time, and
+    current edibility/speed status for display."""
+
     current_score: int = 0
     current_level: int = 1
     lives_remain: int = 3
@@ -104,6 +135,13 @@ class GameStats:
 
 @dataclass
 class GameState:
+    """Aggregate root holding the full game snapshot for a frame.
+
+    events collects GameEvent instances produced this frame (e.g.
+    a gum eaten, a ghost death); consumers such as audio, scoring,
+    and UI transitions drain and react to them each update.
+    """
+
     maze: np.ndarray
     pacman: Pacman
     ghosts: List[Ghost]
@@ -119,52 +157,62 @@ class GameState:
 
 @dataclass
 class GameEvent:
-    """Base class for all game events."""
+    """Base class for all game events dispatched via
+    GameState.events."""
     pass
 
 
 @dataclass
 class PacmanDiedEvent(GameEvent):
+    """Fired when Pacman is caught by a ghost."""
     pacman: Pacman
     death_coord: Tuple[float, float]
 
 
 @dataclass
 class GhostEatenEvent(GameEvent):
+    """Fired when Pacman eats an edible ghost."""
     ghost: Ghost
     death_coord: Tuple[float, float]
 
 
 @dataclass
 class LevelUpEvent(GameEvent):
+    """Fired when the player clears a level and advances."""
     next_level: int
 
 
 @dataclass
 class GameOverEvent(GameEvent):
+    """Fired when the player runs out of lives."""
     final_score: int
 
 
 @dataclass
 class VictoryEvent(GameEvent):
+    """Fired when the player clears the final level."""
     final_score: int
 
 
 @dataclass
 class GameStartEvent(GameEvent):
+    """Fired when a new game run begins."""
     pass
 
 
 @dataclass
 class GumEatenEvent(GameEvent):
+    """Fired when Pacman eats a pacgum or super pacgum."""
     pass
 
 
 @dataclass
 class CherryAppearedEvent(GameEvent):
+    """Fired when a bonus cherry spawns in the maze."""
     pass
 
 
 @dataclass
 class CherryEatenEvent(GameEvent):
+    """Fired when Pacman eats the bonus cherry."""
     pass
