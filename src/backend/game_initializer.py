@@ -133,7 +133,9 @@ class GameInitializer:
                         # Make sure we don't look outside the array boundaries
                         if 0 <= test_y < height and 0 <= test_x < width:
                             # Check if it's a valid walkable corridor
-                            if (maze[test_y, test_x] & BitMaps.WALL_MASK) < 15:
+                            if (maze[test_y, test_x] & BitMaps.WALL_MASK) < 15 and\
+                                not maze[test_y, test_x] & BitMaps.CHERRY and \
+                                    not maze[test_y, test_x] & BitMaps.PACGUM:
                                 valid_y = test_y
                                 valid_x = test_x
                                 found = True

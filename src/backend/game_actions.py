@@ -116,8 +116,13 @@ class PlayerDeathAction(GameAction):
             state.events.append(
                 GameOverEvent(state.live_status.current_score))
         else:
-            state.pacman.x = float(state.pacman.start_x)
-            state.pacman.y = float(state.pacman.start_y)
+            if not state.cherry_appeared:
+                state.pacman.x = float(state.pacman.start_x)
+                state.pacman.y = float(state.pacman.start_y)
+            else:
+                from ..backend.game_initializer import GameInitializer
+                state.pacman.y, state.pacman.x = \
+                    GameInitializer.find_valid_center(state.maze)
 
             state.pacman.xd = -1
             state.pacman.yd = -1

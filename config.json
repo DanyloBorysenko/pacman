@@ -2,11 +2,11 @@
 // Lines starting with hashtags are completely ignored by the parser hook.
 {
     "high_score_filename": "scoreboard.json",
-    "maze_width": 16,
-    "maze_height": 13,
+    "maze_width": 5,
+    "maze_height": 7,
     "points_per_pacgum": 10,
     "lives": 3,
-    "pacgum": 80,
+    "pacgum": 10,
     "points_per_super_pacgum": 50,
     "points_per_ghost": 200,
     "ghost_edible_time": 5.0,
