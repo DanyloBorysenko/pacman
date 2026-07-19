@@ -55,8 +55,18 @@ Other Makefile targets:
 The in-game **Instructions** screen (accessible from the main menu) always displays the live scoring/timing values read from the active `config.json`.
 
 ### Web / browser version
+A pre-built WebAssembly export lives in [build/web/](https://sukanta00.itch.io/pacman-web?secret=1yGtL7RUQQRceGstiIDjbQU4) (`index.html`, `pacman.tar.gz` / `pacman.apk`), generated with `pygbag`. It can be served with any static file server — the whole game (rules + rendering) runs client-side inside a WASM Python 3.12 runtime in the browser, there is no backend server involved. Regenerating it requires running `pygbag` against `main.py` (not itself wired into the Makefile).
 
-A pre-built WebAssembly export lives in [build/web/](build/web/) (`index.html`, `pacman.tar.gz` / `pacman.apk`), generated with `pygbag`. It can be served with any static file server — the whole game (rules + rendering) runs client-side inside a WASM Python 3.12 runtime in the browser, there is no backend server involved. Regenerating it requires running `pygbag` against `main.py` (not itself wired into the Makefile).
+To run the html file directly after downloading it from the [Itch](https://sukanta00.itch.io/pacman-web?secret=1yGtL7RUQQRceGstiIDjbQU4), unzip the file and move inside the unzip folder and run 
+bash
+```
+python -m httl.server 8080
+```
+open your browser and run 
+bash
+```
+http://localhost:8080
+```
 
 ## Configuration
 
