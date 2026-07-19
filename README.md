@@ -60,7 +60,7 @@ A pre-built WebAssembly export lives in [build/web/](https://sukanta00.itch.io/p
 To run the html file directly after downloading it from the [Itch](https://sukanta00.itch.io/pacman-web?secret=1yGtL7RUQQRceGstiIDjbQU4), unzip the file and move inside the unzip folder and run 
 bash
 ```
-python -m httl.server 8080
+python -m http.server 8080
 ```
 open your browser and run 
 bash
