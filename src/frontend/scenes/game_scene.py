@@ -606,6 +606,7 @@ class GameScene(Scene):
                     on_finish=lambda score=score: self.switch_to(
                         FinalScene(self.main_menu, self.logic, score, False))))
             elif isinstance(event, VictoryEvent):
+                self.stop_audio()
                 score = event.final_score
                 self.anim_manager.add(VictoryAnimation(
                     on_finish=lambda score=score: self.switch_to(
