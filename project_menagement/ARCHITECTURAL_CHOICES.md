@@ -1,0 +1,15 @@
+## Architectural Choices
+
+**Decoupled Architecture:** We separated the game loop logic (`GameStateManager`) entirely from the display layer (`Renderer`) so that backend simulations remain independent of graphics rendering. This is enforced at the package level via `src/backend/` (no pygame dependency) and `src/frontend/` (pygame only, no game rules); the split was formalized during the `make sub modules` refactor (2026-07-10) after early merges showed the two areas were still too entangled (see [BLOCKING_POINTS.md](BLOCKING_POINTS.md)).
+
+**Event Queue for Cross-Layer Communication:** Rather than having the renderer inspect raw game state to infer what just happened, the backend appends typed `GameEvent`s (`GumEatenEvent`, `GhostEatenEvent`, `LevelUpEvent`, `PacmanDiedEvent`, `GameOverEvent`, `VictoryEvent`, ...) to `GameState.events`. `GameScene` drains this queue once per frame to decide which sound to play and which animation to enqueue. This keeps the backend ignorant of sound/animation concerns entirely.
+
+**Strategy Pattern for Ghost AI:** Ghost movements utilize an abstract base class (`GhostMovementStrategy`) allowing polymorphic behavior swaps (`RandomMovement`, `DirectionalMovement`, `PseudoRandomMovement`) seamlessly at runtime. Each ghost is assigned its own strategy instance with an independent `chase_probability`, giving the four ghosts distinct behavior without branching logic in the collision/lifecycle code.
+
+**Scene State Machine:** The UI layer is modeled as a stack of `Scene` objects (`MainMenuScene`, `GameScene`, `PauseScene`, `InstructionsScene`, `HighScoresScene`, `FinalScene`) sharing a common `handle_event` / `update` / `render` interface and a one-shot `switch_to(...)` transition request, so the `Controller` never needs scene-specific branching to drive the game.
+
+**Time Delta (dt) & Target Snapping:** We chose float coordinate tracking along with target snapping (`step_size >= distance_to_target`) to ensure accurate speed pacing across any user hardware/frame rate, and to guarantee Pac-Man and ghosts always land exactly on tile centers rather than drifting past them — this was the direct mitigation for the wall-clipping risk in [RISK_ANALYSIS.md](RISK_ANALYSIS.md).
+
+**Reusing the Maze Bitmask for Gameplay Content:** The provided `mazegenerator` package encodes walls as a 4-bit mask per cell (`NORTH/EAST/SOUTH/WEST`). Instead of maintaining a parallel data structure for pac-gums/super pac-gums/cherries, we OR extra bits (`PACGUM`, `SUPER_PACGUM`, `CHERRY`) onto the same integer, so a single `numpy` array is both the maze's wall layout and its content layout.
+
+**Comment-Tolerant, Fail-Soft Config Parsing:** `config.json` supports `#`/`//` comment lines and is parsed key-by-key against typed defaults rather than loaded as a raw `json.load(...)` and trusted; unknown keys, type mismatches, or a missing/corrupt file all degrade to sane defaults with a printed warning instead of crashing the game. This choice was driven directly by a real config-parsing bug found on 2026-07-06 (see [RISK_ANALYSIS.md](RISK_ANALYSIS.md)).
