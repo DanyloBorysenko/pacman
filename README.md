@@ -10,6 +10,8 @@ The player controls Pac-Man through a maze, eating pac-gums for points while avo
 
 The game also ships as a browser-playable WebAssembly build (via [pygbag](https://github.com/pygame-web/pygbag)) in [build/web/](build/web/), in addition to running natively as a desktop application.
 
+![](https://github.com/DanyloBorysenko/pacman/blob/main/assets/images/pacman.gif)
+
 ## Instructions
 
 ### Requirements
