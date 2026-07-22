@@ -17,4 +17,4 @@ dependencies = [
 override-dependencies = ["pygame; sys_platform == 'never'"]
 
 [tool.uv.sources]
-mazegenerator = { path = "mazegenerator-2.0.1-py3-none-any.whl" }
+mazegenerator = { path = "mazegenerator-2.1.0-py3-none-any.whl" }
